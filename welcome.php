@@ -70,9 +70,10 @@
 
   $('form').on('submit', function(e) {
     $.post('php/init.php', $(this).serialize(),
-           function(exception) {
-             if (exception) {
-               alert.text(exception).fadeIn(300);
+           function(result) {
+             console.log(result);
+             if (result) {
+               alert.text(result).fadeIn(300);
              } else {
                alert.fadeOut(300);
                $('p.modal-body').text(
