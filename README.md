@@ -7,3 +7,4 @@ Simple web site backoffice
  * Setup welcome & home page
  * 1st step with JQuery
  * 1st step with PHP & MySQL
+ * establish connection with database
