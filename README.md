@@ -3,6 +3,10 @@ WEB-Zeek
 
 Simple web site backoffice
 
+10/07/2014 Leo
+ * add creation, check_presence & deletion of databases
+ * begin to create tables
+
 09/07/2014 Leo
  * add unit tests
  * try to check database presence

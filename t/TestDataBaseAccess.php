@@ -29,6 +29,13 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
 {
     private $access;
 
+    private function connect()
+    {
+        $access = $this->access;
+        $access->connect('test', 'test', 'test');
+        return $access;
+    }
+
     public function setUp()
     {
         $access = new ExtendsDataBaseAccess();
@@ -70,14 +77,50 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
                 . " (using password: YES)"));
     }
 
-    public function test_check_database()
+    public function test_database()
     {
-        $access = $this->access;
+        $access = $this->connect();
 
-        $access->connect('test', 'test', 'test');
+        $this->assertFalse(
+            $access->database_use('test'));
+
+        $this->assertFalse(
+            $access->database_check('test'));
 
         $this->assertTrue(
-            $this->access->check_database('test'));
+            $access->database_create('test'));
+
+        $this->assertTrue(
+            $access->database_create('test'));
+
+        $this->assertTrue(
+            $access->database_check('test'));
+
+        $this->assertTrue(
+            $access->database_use('test'));
+
+        $attributes = array(
+            "id"   => "INT",
+            "data" => array(
+                "VARCHAR",
+                "limit"   => 100,
+                "default" => 'NULL'),
+            "current_time" => "TIMESTAMP");
+
+        $this->assertTrue(
+            $access->table_create('persons', $attributes));
+
+        $this->assertTrue(
+            $access->database_delete('test'));
+
+        $this->assertTrue(
+            $access->database_delete('test'));
+
+        $this->assertFalse(
+            $access->database_check('test'));
+
+        $this->assertFalse(
+            $access->database_use('test'));
     }
 }
 ?>
