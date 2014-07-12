@@ -3,6 +3,10 @@ WEB-Zeek
 
 Simple web site backoffice
 
+13/07/2014 Leo
+ * add creation, check_presence & deletion of tables, rows
+ * add methods to view & select data easily
+
 10/07/2014 Leo
  * add creation, check_presence & deletion of databases
  * begin to create tables

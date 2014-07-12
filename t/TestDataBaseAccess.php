@@ -1,6 +1,6 @@
 <?php
 
-require_once 'php/functions.php';
+require_once 'php/database_access.php';
 
 class ExtendsDataBaseAccess extends DataBaseAccess
 {
@@ -28,12 +28,18 @@ class ExtendsDataBaseAccess extends DataBaseAccess
 class TestDataBaseAccess extends PHPUnit_Framework_TestCase
 {
     private $access;
+    private $test_dbname = 'zeek_test';
 
     private function connect()
     {
         $access = $this->access;
-        $access->connect('test', 'test', 'test');
+        $access->connect('zeek_test', 'test', 'test');
         return $access;
+    }
+
+    private function clean()
+    {
+        $this->access->database_delete($this->test_dbname);
     }
 
     public function setUp()
@@ -53,13 +59,13 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
         $access = $this->access;
 
         $this->assertTrue(
-            $access->connect('test', 'test', 'test'));
+            $access->connect($this->test_dbname, 'test', 'test'));
 
         $this->assertTrue(
             $access->checkOutput(NULL));
 
         $this->assertFalse(
-            $access->connect('test', 'test', 'tes'));
+            $access->connect($this->test_dbname, 'test', 'tes'));
 
         $this->assertTrue(
             $access->checkOutput(
@@ -68,7 +74,7 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
                 . " (using password: YES)"));
 
         $this->assertFalse(
-            $access->connect('test', 'tes', 'test'));
+            $access->connect($this->test_dbname, 'tes', 'test'));
 
         $this->assertTrue(
             $access->checkOutput(
@@ -81,46 +87,56 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
     {
         $access = $this->connect();
 
-        $this->assertFalse(
-            $access->database_use('test'));
+        $this->clean();
 
         $this->assertFalse(
-            $access->database_check('test'));
-
-        $this->assertTrue(
-            $access->database_create('test'));
-
-        $this->assertTrue(
-            $access->database_create('test'));
-
-        $this->assertTrue(
-            $access->database_check('test'));
-
-        $this->assertTrue(
-            $access->database_use('test'));
-
-        $attributes = array(
-            "id"   => "INT",
-            "data" => array(
-                "VARCHAR",
-                "limit"   => 100,
-                "default" => 'NULL'),
-            "current_time" => "TIMESTAMP");
-
-        $this->assertTrue(
-            $access->table_create('persons', $attributes));
-
-        $this->assertTrue(
-            $access->database_delete('test'));
-
-        $this->assertTrue(
-            $access->database_delete('test'));
+            $access->database_use($this->test_dbname));
 
         $this->assertFalse(
-            $access->database_check('test'));
+            $access->database_check($this->test_dbname));
+
+        $this->assertTrue(
+            $access->database_create($this->test_dbname));
+
+        $this->assertTrue(
+            $access->database_create($this->test_dbname));
+
+        $this->assertTrue(
+            $access->database_check($this->test_dbname));
+
+        $this->assertTrue(
+            $access->database_use($this->test_dbname));
 
         $this->assertFalse(
-            $access->database_use('test'));
+            $access->table_check('just_id'));
+
+        $this->assertTrue(
+            $access->table_create('just_id', NULL));
+
+        $this->assertTrue(
+            $access->table_check('just_id'));
+
+        $this->assertTrue(
+            $access->table_delete('just_id'));
+
+        $this->assertFalse(
+            $access->table_check('just_id'));
+
+        $this->assertTrue(
+            $access->table_create('one_more_attributes',
+            array('menu_name', 'VARCHAR(30)')));
+
+        $this->assertTrue(
+            $access->database_delete($this->test_dbname));
+
+        $this->assertTrue(
+            $access->database_delete($this->test_dbname));
+
+        $this->assertFalse(
+            $access->database_check($this->test_dbname));
+
+        $this->assertFalse(
+            $access->database_use($this->test_dbname));
     }
 }
 ?>
