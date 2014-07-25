@@ -1,0 +1,20 @@
+$("<?php echo $element_to_click; ?>").on("click", function() {
+  $.ajax({
+    type: "POST",
+    url: "php/zeek.php",
+    data: {
+      "method": "<?php echo $method; ?>",
+      "project_id": "<?php echo $project_id; ?>",
+    },
+    dataType: "text",
+    success: function($input)
+    {
+      <?php echo $on_success; ?>
+    },
+    error: function($request, $status, $error)
+    {
+      $("div.dynamic").replaceWith(
+        '<div class="dynamic"><h2>' + $error + '</h2></div>');
+    }
+  });
+});

@@ -15,7 +15,7 @@
       <div class="col-sm-4">
 	<input class="form-control"
 	       type="text"
-	       name="dname">
+	       name="project_name">
       </div>
     </div>
     <div class="form-group">
@@ -55,8 +55,8 @@
 	<p class="modal-body"></p>
       </div>
       <div class="modal-footer">
-	<button type="button" class="btn btn-success">Yep</button>
-	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	<button type="button" class="btn btn-success">Yes</button>
+	<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
       </div>
     </div>
   </div>
@@ -69,20 +69,22 @@
   alert.hide();
 
   $('form').on('submit', function(e) {
-    $.post('php/init.php', $(this).serialize(),
-           function(result) {
-             console.log(result);
-             if (result) {
-               alert.text(result).fadeIn(300);
-             } else {
-               alert.fadeOut(300);
-               $('p.modal-body').text(
-                 'Do you want to create the new project ?');
-               $('div.modal').modal('show');
-             }
+      $.post('php/zeek.php',
+      { method: 'connect',
+        params: $(this).serialize() },
+      function(result) {
+          console.log(result);
+          if (result) {
+              alert.text(result).fadeIn(300);
+          } else {
+              alert.fadeOut(300);
+              $('p.modal-body').text(
+                  'Do you want to create the new project ?');
+              $('div.modal').modal('show');
+          }
 
-             $('input').val('');
-           });
+          $('input').val('');
+      });
 
     e.preventDefault();
   });

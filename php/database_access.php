@@ -3,11 +3,12 @@
 /**
  * DataBaseAccess : all the function to access to the database.
  *
- * @package DataBase Access
+ * @package DataBaseAccess
  */
 class DataBaseAccess {
 
     private $pdo;
+    private $debug = false;
 
     private $valid_type = array(
         "TINYINT", "SMALLINT", "MEDIUMINT", "INT", "INTEGER", "BIGINT",
@@ -16,6 +17,17 @@ class DataBaseAccess {
         "ENUM", "SET", "DATE", "DATETIME", "TIMESTAMP", "TIME", "YEAR");
 
     private $translation = array("(" => "", ")" => "");
+
+/**
+ * Display SQL request sent
+ *
+ * @method set_debug
+ * @param boolean true/false
+ */
+    public function set_debug($status)
+    {
+        $this->debug = $status;
+    }
 
 /**
  * Establish a connection with MySQL database
@@ -116,90 +128,77 @@ class DataBaseAccess {
 
         if (isset($attributes) && is_array($attributes)) {
 
-            $step = 0;
-            $value = NULL;
+            foreach ($attributes as $key => $type) {
 
-            $remaining_size = count($attributes);
+                $request .= "$key  ";
 
-            while ($remaining_size--) {
+                $vartype = NULL;
+                $size = NULL;
+                $default = NULL;
 
-                $value = array_shift($attributes);
+                /* we validate the type at first */
+                if (is_array($type)) {
 
-                if ($step == 2) {
+                    $type_size = count($type);
 
-                    if (substr($value, 0, 8) == 'DEFAULT=') {
-                        $request .= "NOT NULL DEFAULT " . substr($value, 8) . ", ";
-                        $step = 0;
-                        continue;
+                    /* 1st element is the vartype */
+                    $vartype = $type[0];
+
+                    if ($type_size > 1) {
+                        $size = $type[1];
                     }
 
-                    if ($value == "NOT NULL" or $value == "NULL") {
-                        $request .= "$value, ";
-                        $step = 0;
-                        continue;
+                    if ($type_size > 2) {
+                        $default = $type[2];
                     }
 
-                    /* actual value start a new attribute */
-                    $request .= "NOT NULL, ";
-                    $step = 0;
+                } else {
+                    $vartype = $type;
                 }
 
-                if ($step == 1) {
-                    $vartype = strstr($value, '(', true);
-                    $size = NULL;
+                /* the vartype should be defined */
+                if ($vartype == NULL) {
+                    $this->output(
+                        "Unknown attribute type for value '$value'"
+                        . " when creating table '$name'");
+                    return false;
+                }
 
-                    if ($vartype) {
-                        $size = strstr($value, '(', false);
-                        $size = strtr($size, $this->translation);
-                    } else {
-                        $vartype = $value;
-                    }
-
-                    if (in_array($vartype, $this->valid_type)) {
+                /* the vartype should be valid */
+                if (in_array($vartype, $this->valid_type)) {
                         $request .= $vartype;
-                    } else {
-                        $this->output(
-                            "Unexpected attribute type '$vartype'"
-                            . " when creating table '$name'");
-                        return false;
-                    }
-
-                    if ($size) {
-                        if (is_numeric($size)) {
-                            $request .= "($size) ";
-                        } else {
-                            $this->output(
-                                "Unexpected attribute size '$size' on type "
-                                . "'$vartype' when creating table '$name'");
-                            return false;
-                        }
-                    }
-
-                    /* on gère le cas où c'est le dernier élément */
-                    if ($remaining_size == 0) {
-                        $request .= "NOT NULL, ";
-                    } else {
-                        $request .= " ";
-                        $step = 2;
-                    }
-
-                    continue;
+                } else {
+                    $this->output(
+                        "Unexpected attribute type '$vartype'"
+                        . " when creating table '$name'");
                 }
 
-                if ($step == 0) {
-
-                    /* on gènère une erreur au cas où c'est le dernier élément */
-                    if ($remaining_size == 0) {
+                /* 2nd element is the size */
+                if (isset($size)) {
+                    if (is_numeric($size)) {
+                        $request .= "($size) ";
+                    } else {
                         $this->output(
-                            "Unknown attribute type for value '$value'"
-                            . " when creating table '$name'");
+                            "Unexpected attribute size '$size' on type "
+                            . "'$vartype' when creating table '$name'");
                         return false;
                     }
-
-                    $request .= "$value ";
-                    $step = 1;
-                    continue;
                 }
+
+                /* 3rd element is or the default value or the 'NULL' /
+                 * 'NOT NULL' */
+                if (isset($default)) {
+                    if ($default == "NOT NULL" or $default == "NULL") {
+                        $request .= "$default ";
+                    } else {
+                        $request .= "NOT NULL DEFAULT '$default' ";
+                    }
+                } else {
+                    /* by default the value is NOT NULL */
+                    $request .= " NOT NULL ";
+                }
+
+                $request .= ", ";
             }
         }
 
@@ -214,7 +213,7 @@ class DataBaseAccess {
  * @method table_delete
  * @param string table name
  */
-    public function table_delete($name)
+        public function table_delete($name)
     {
         return $this->send_query("DROP TABLE IF EXISTS $name", true);
     }
@@ -228,6 +227,35 @@ class DataBaseAccess {
     public function table_check($name)
     {
         return $this->send_query("SHOW COLUMNS FROM $name", true);
+    }
+
+/**
+ * Count number of row in the specified table
+ *
+ * @method table_count
+ * @param string table name
+ * @param string specify the field to count
+ * @param array specific parameters
+ */
+    public function table_count($name, $field, $params)
+    {
+        $request = "SELECT COUNT($field) FROM $name";
+
+        if ($params) {
+            $request .= " WHERE " . implode(' AND ', $this->get_values($params));
+        }
+
+        $result = $this->send_request($request, $params);
+        if ($result == NULL) {
+            return 0;
+        }
+
+        if ($count = $result->fetch(PDO::FETCH_ASSOC))
+        {
+            return $count['COUNT(*)'];
+        }
+
+        return 0;
     }
 
 /**
@@ -250,8 +278,9 @@ class DataBaseAccess {
  * @param array specify how to sort the data 'field_name => [ASC/DESC]'
  * @param integer number of data
  * @param integer offset (size attribute above is mandatory
+ * @param array specific conditions
  */
-    public function table_view($name, $fields, $sort, $size, $offset)
+    public function table_view($name, $fields, $sort, $size, $offset, $params)
     {
         $options = '';
 
@@ -273,7 +302,12 @@ class DataBaseAccess {
             $options .= " OFFSET $offset";
         }
 
-        return $this->send_request("SELECT $fields FROM $name$options", NULL);
+        if (is_array($params)){
+            $options .= " WHERE " . implode(' AND ', $this->get_values($params));
+        }
+
+        return $this->send_request("SELECT $fields FROM $name $options",
+                                   $params);
     }
 
 /**
@@ -281,20 +315,21 @@ class DataBaseAccess {
  *
  * @method row_insert
  * @param string table name
- * @param array parameters to insert
+ * @param array values to insert
  */
-    public function row_insert($name, $params)
+    public function row_insert($name, $values)
     {
-        $fields = array_keys($params);
-        $values = array();
+        $fields = array_keys($values);
+        $protected_values = array();
 
         for ($i = 0; $i < count($fields); $i++) {
-            $values[$i] = ':' . $fields[$i];
+            $protected_values[$i] = ':' . $fields[$i];
         }
 
-        return $this->send_request(
+        return ($this->send_request(
             "INSERT INTO $name(" . implode(',', $fields)
-            . ') VALUES(' . implode(',', $values) . ')', $params);
+            . ') VALUES(' . implode(',', $protected_values) . ')', $values))
+            ? true : false;
     }
 
 /**
@@ -303,13 +338,20 @@ class DataBaseAccess {
  * @method row_update
  * @param string table name
  * @param integer id of the row
- * @param array parameters to alter
+ * @param array new values
  */
-    public function row_update($name, $id, $params)
+    public function row_update($name, $id, $values)
     {
-        return $this->send_request(
-            "UPDATE $name SET " . implode(',', $this->get_values($params))
-            . " WHERE id = $id", $params);
+        $result =
+            $this->table_view($name, 'id', NULL, NULL, NULL, array('id' => $id));
+
+        if (gettype($result) == 'object' and $result->rowCount()) {
+            return $this->send_request(
+                "UPDATE $name SET " . implode(',', $this->get_values($values))
+                . " WHERE id = $id", $values) ? true : false;
+        }
+
+        return false;
     }
 
 
@@ -348,6 +390,11 @@ class DataBaseAccess {
         if ($pdo) {
 
             try {
+
+                if ($this->debug) {
+                    print("\n query = $request; \n");
+                }
+
                 $result = $pdo->query("$request;");
 
                 return ($boolean)
@@ -387,9 +434,14 @@ class DataBaseAccess {
         if ($pdo) {
 
             try {
+                if ($this->debug) {
+                    print("\n request = $request;\n"
+                          . "last_request = $last_request\n"
+                          . "params = " . var_dump($params) . "\n");
+                    }
+
                 if ($request != $last_request)
                 {
-                    print("$request; \n" . var_dump($params));
                     $result = $pdo->prepare("$request;");
                     $result->setFetchMode(PDO::FETCH_OBJ);
                     $last_request = $request;
@@ -409,7 +461,7 @@ class DataBaseAccess {
             return true;
         }
 
-        $this->output("Need to establish connection with database 1st");
+        $this->output("Need to establish connection with database at first");
         return false;
     }
 
