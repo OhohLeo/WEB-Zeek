@@ -3,6 +3,10 @@ WEB-Zeek
 
 Simple web site backoffice
 
+29/07/2014 Leo
+ * add user table
+ * setup the welcome page & handle simple authentification
+
 25/07/2014 Leo
  * setup display menus & disconnection
  * finished database get & set methods
@@ -17,7 +21,7 @@ Simple web site backoffice
  * begin to create tables
 
 09/07/2014 Leo
- * add unit tests
+ * add unit testsx
  * try to check database presence
 
 08/07/2O14 Leo

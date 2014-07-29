@@ -3,12 +3,12 @@
 <div class="navbar navbar-default navbar-static-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <a class="navbar-brand" data-type='Statistics'>Zeek!</a>
+      <a class="navbar-brand" data-type='Home'>Zeek!</a>
     </div>
     <div class="collapse navbar-collapse">
       <div class="row">
         <ul class="nav navbar-nav">
-          <li><a data-type='Statistics'>Home</a></li>
+          <li><a class="clickable" data-type='Home'>Home</a></li>
           <li><a class="clickable" data-type='Configuration'>Configuration</a></li>
         </ul>
 
@@ -65,7 +65,9 @@
       $.ajax({
         type: 'POST',
               url: "php/zeek.php",
-              data: { 'method': 'get_structure' },
+              data: {
+                'method': 'get_structure'
+              },
               dataType: "html",
               success: function($input)
               {
@@ -77,7 +79,9 @@
                       var $type = $this.data('type');
                       var $project_id = 1;
 
-                      if ($type != 'Disconnect') {
+                      if ($type == 'Home') {
+                          $title.text('Welcome to Zeek!');
+                      } else if ($type != 'Disconnect') {
                           $title.text($type);
                       }
 

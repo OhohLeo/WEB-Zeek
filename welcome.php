@@ -7,6 +7,7 @@
 
   <div class="col-sm-8 col-sm-offset-2">
     <div class="alert alert-danger" role="alert"></div>
+    <div class="alert alert-success" role="alert"></div>
   </div>
 
   <form action="enter" class="form-horizontal" role="form">
@@ -15,6 +16,7 @@
       <div class="col-sm-4">
 	<input class="form-control"
 	       type="text"
+           maxlength="25"
 	       name="project_name">
       </div>
     </div>
@@ -23,7 +25,8 @@
       <div class="col-sm-4">
 	<input class="form-control"
 	       type="login"
-	       name="login">
+	       maxlength="25"
+           name="login">
       </div>
     </div>
     <div class="form-group">
@@ -31,6 +34,7 @@
       <div class="col-sm-4">
 	<input class="form-control"
 	       type="password"
+           maxlength="25"
 	       name="password">
       </div>
     </div>
@@ -65,26 +69,52 @@
 <?php include '_partials/scripts.php'; ?>
 
 <script>
-  alert = $('div.alert');
-  alert.hide();
+  $('input.form-control').maxlength({
+    alwaysShow: true,
+    threshold: 25,
+    warningClass: "label label-success",
+    limitReachedClass: "label label-danger"
+  });
+
+  $danger = $('div.alert-danger');
+  $danger.hide();
+
+  $success = $('div.alert-success');
+  $success.hide();
 
   $('form').on('submit', function(e) {
-      $.post('php/zeek.php',
-      { method: 'connect',
-        params: $(this).serialize() },
-      function(result) {
-          console.log(result);
-          if (result) {
-              alert.text(result).fadeIn(300);
-          } else {
-              alert.fadeOut(300);
-              $('p.modal-body').text(
-                  'Do you want to create the new project ?');
-              $('div.modal').modal('show');
-          }
 
-          $('input').val('');
-      });
+      $danger.hide();
+      $success.hide();
+
+      $.ajax({
+        type: "POST",
+              url: "php/zeek.php",
+              dataType: "json",
+              data: {
+                   "method": "connect",
+                   "params": $(this).serialize(),
+                  },
+              success: function($result) {
+              console.log($result);
+              if ($result['action'] == 'new_project') {
+                  $('p.modal-body').text(
+                      'Do you want to create the new project ?');
+                  $('div.modal').modal('show');
+              }
+
+             if ($result['success']) {
+                 $success.text($result['success'])
+                         .show();
+                 $danger.hide();
+             } else if ($result['error']) {
+                 $danger.text($result['error'])
+                        .show();
+                 $success.hide();
+             } else {
+                 $('div.alert').fadeOut(300);
+             }
+          }});
 
     e.preventDefault();
   });

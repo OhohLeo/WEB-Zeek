@@ -9,6 +9,7 @@ class DataBaseAccess {
 
     private $pdo;
     private $debug = false;
+    private $master;
 
     private $valid_type = array(
         "TINYINT", "SMALLINT", "MEDIUMINT", "INT", "INTEGER", "BIGINT",
@@ -28,6 +29,18 @@ class DataBaseAccess {
     {
         $this->debug = $status;
     }
+
+/**
+ * Display output to master
+ *
+ * @method set_master
+ * @param boolean true/false
+ */
+    public function set_master($master)
+    {
+        $this->master = $master;
+    }
+
 
 /**
  * Establish a connection with MySQL database
@@ -97,9 +110,9 @@ class DataBaseAccess {
  * @param string database name
  */
      public function database_check($name)
-    {
-        $result = $this->send_query(
-            "SHOW DATABASES LIKE '$name'", false);
+     {
+         $result = $this->send_query(
+             "SHOW DATABASES LIKE '$name'", false);
 
         foreach ($result as $row) {
             return true;
@@ -403,7 +416,7 @@ class DataBaseAccess {
 
            } catch (Exception $e) {
                 $this->output(
-                    "Impossible to send request : " . $e->getMessage());
+                    "Impossible to send request '$request' : " . $e->getMessage());
 
                 return false;
             }
@@ -491,7 +504,11 @@ class DataBaseAccess {
  * @param string data to display
  */
     protected function output($input) {
-        echo $input . "\n";
+        if ($this->master == NULL) {
+            echo $input . "\n";
+        } else {
+            $this->master->error($input);
+        }
     }
 }
 

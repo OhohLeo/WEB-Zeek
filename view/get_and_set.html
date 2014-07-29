@@ -1,0 +1,96 @@
+<div class="set">
+  <h3>Create new <?php echo $type; ?></h3>
+  <form id="create_type">
+    <?php foreach ($structure as $key => $format) {
+
+ if ($key == "project_id") {
+   continue;
+ }
+
+ $var_type = "text";
+
+ switch ($format) {
+   case "VARCHAR":
+     $var_type = "text";
+     break;
+   case "TEXT":
+     $var_type = "text";
+     break;
+   case "DATE":
+     $var_type = "text";
+     break;
+   case "INT":
+     $var_type = "text";
+     break;
+  }
+
+ if (is_array($format)) {
+     $format = $format[0];
+ }
+?>
+    <br>
+    <label for="<?php echo $key; ?>"><?php echo ucfirst($key); ?></label>
+    <input type="<?php echo $var_type; ?>"
+	   class="form-control"
+	   name="<?php echo $key; ?>"
+	   placeholder="<?php echo "Enter $key"; ?>">
+    <?php } ?>
+    <br>
+    <div style="text-align: center;">
+      <div class="btn-group">
+	<input type="submit" class="btn btn-success btn-valid-form">
+	<button type="button" class="btn btn-default btn-large" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </form>
+</div>
+<hr>
+<div class="get">
+<table class="table table-hover">
+<thead>
+  <tr>
+    <th>#</th>
+    <?php foreach ($structure as $key => $format) {
+    if ($key == "project_id") {
+      continue;
+    }
+    ?>
+    <th><?php echo $key; ?></th>
+    <?php } ?>
+    <th></th>
+</thead>
+<tbody>
+  <td></td>
+</tbody>
+</table>
+</div>
+<script>
+  $form = $("form");
+  $form.hide();
+  $("div.set").on("mouseenter", function() {
+    $form.slideDown(200);
+  }).on("mouseleave", function() {
+    $form.slideUp(200);
+  });
+
+  $(document).ready(function() {
+    $("#create_type").on("submit", function(e) {
+        e.preventDefault();
+        var $this = $(this);
+
+        $.ajax({
+          type: "POST",
+          url: "php/zeek.php",
+          data: {
+           "method": "create_type",
+           "project_id": "<?php echo $project_id; ?>",
+           "type": "<?php echo $type; ?>",
+           "params": $this.serialize(),
+          },
+          dataType: "text",
+          success: function($input) {
+            console.log("ok!!" + $this.serialize());
+          }});
+    });
+});
+</script>
