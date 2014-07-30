@@ -2,12 +2,12 @@
 
 <div class="hero-unit">
   <h1 class="text-center">Welcome to Zeek!</h1>
-  <p class="text-center">"Simply handle your artistic website."</p>
+  <p class="text-center">"Simply administrate your website."</p>
   <hr>
 
   <div class="col-sm-8 col-sm-offset-2">
-    <div class="alert alert-danger" role="alert"></div>
-    <div class="alert alert-success" role="alert"></div>
+    <div class="alert alert-danger text-center" role="alert"></div>
+    <div class="alert alert-success text-center" role="alert"></div>
   </div>
 
   <form action="enter" class="form-horizontal" role="form">
@@ -87,6 +87,24 @@
       $danger.hide();
       $success.hide();
 
+
+      $handle_rsp = function($result) {
+          if ($result['success']) {
+              $danger.hide();
+              $success.text($result['success'])
+                      .show();
+          } else if ($result['error']) {
+              $('div.modal').modal('hide');
+              $success.hide();
+              $danger.text($result['error'])
+                     .show();
+          } else if ($result['redirect']) {
+              $(location).attr('href', $result['redirect']);
+          } else {
+              $('div.alert').fadeOut(300);
+          }
+      };
+
       $.ajax({
         type: "POST",
               url: "php/zeek.php",
@@ -96,24 +114,29 @@
                    "params": $(this).serialize(),
                   },
               success: function($result) {
-              console.log($result);
+
               if ($result['action'] == 'new_project') {
                   $('p.modal-body').text(
                       'Do you want to create the new project ?');
                   $('div.modal').modal('show');
+
+                  $('button.btn-success').on('click', function() {
+                      $.ajax({
+                        type: "POST",
+                              url: "php/zeek.php",
+                              dataType: "json",
+                              data: {
+                                  "method": "create_new_project",
+                                  "project_name": $("input:text[name=project_name]").val(),
+                                  },
+                              success: function ($result) {
+                              $handle_rsp($result);
+                          }
+                      });
+                  });
               }
 
-             if ($result['success']) {
-                 $success.text($result['success'])
-                         .show();
-                 $danger.hide();
-             } else if ($result['error']) {
-                 $danger.text($result['error'])
-                        .show();
-                 $success.hide();
-             } else {
-                 $('div.alert').fadeOut(300);
-             }
+              $handle_rsp($result);
           }});
 
     e.preventDefault();

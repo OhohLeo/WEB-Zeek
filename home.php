@@ -1,9 +1,30 @@
-<?php include '_partials/header.php'; ?>
+<?php
+
+/* we check the session */
+session_start();
+
+$username = $_SESSION["username"];
+$project_name = $_SESSION["project_name"];
+
+if (!(isset($username) and isset($project_name))) {
+
+    include '_partials/scripts.php';
+?>
+<script>
+    $(location).attr('href', 'welcome.php');
+</script>
+<?php
+    die();
+}
+
+include '_partials/header.php';
+
+?>
 
 <div class="navbar navbar-default navbar-static-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <a class="navbar-brand" data-type='Home'>Zeek!</a>
+    <a class="navbar-brand" data-type='Home'><?php echo "$project_name";?></a>
     </div>
     <div class="collapse navbar-collapse">
       <div class="row">
@@ -26,8 +47,14 @@
     </ul>
   </div>
 
+  <div class="col-sm-6 col-sm-offset-1">
+    <div class="alert alert-danger" role="alert"></div>
+    <div class="alert alert-success" role="alert"></div>
+  </div>
+
   <div class="col-sm-2 col-sm-offset-2 col-md-8 col-md-offset-0 main">
-    <h2 data-type="data-title" style="text-align:center;">Welcome to Zeek!</h1>
+    <h2 data-type="data-title" style="text-align:center;">Welcome to Zeek,
+         <b><?php echo $username; ?></b>!</h1>
     <hr>
     <div class="dynamic"></div>
     <hr>
@@ -57,6 +84,12 @@
 <?php include '_partials/scripts.php'; ?>
 
 <script>
+  $danger = $('div.alert-danger');
+  $danger.hide();
+
+  $success = $('div.alert-success');
+  $success.hide();
+
   (function()
   {
       var $title = $('h2').first();
@@ -75,6 +108,9 @@
 
                   $('a.clickable').on('click', function()
                   {
+                      $danger.hide();
+                      $success.hide();
+
                       var $this = $(this);
                       var $type = $this.data('type');
                       var $project_id = 1;

@@ -1,8 +1,5 @@
 <?php
 
-/* we start the session */
-session_start();
-
 $zeek = new ZeekProject();
 
 if (isset($_POST)) {
@@ -145,10 +142,6 @@ class ZeekProject {
         $access->table_create(
             'project', $this->data_structure['project']);
 
-        $this->success(
-            "New environment installed!",
-            array('action' => 'new_project'));
-
         return true;
     }
 
@@ -272,7 +265,7 @@ class ZeekProject {
 
         /* We check if the project already exists */
         if ($this->project_check($project_name)) {
-            $this->debug(
+            $this->error(
                 "Another project have the same name $project_name!");
             return false;
         }
@@ -280,7 +273,7 @@ class ZeekProject {
         /* we insert the new project */
         if ($this->value_insert(
             'project', array('name' => $project_name)) == false) {
-            $this->debug("Impossible to create new project!");
+            $this->error("Impossible to create new project!");
             return false;
         }
 
@@ -289,7 +282,7 @@ class ZeekProject {
             return true;
         }
 
-        $this->debug("New project not found!");
+        $this->error("New project not found!");
         return false;
     }
 
@@ -394,7 +387,7 @@ class ZeekProject {
          * static datastructure */
         $structure = $this->data_structure[$name];
         if ($structure == NULL) {
-            $this->debug("'$name' not found in static database structure!");
+            $this->error("'$name' not found in static database structure!");
             return false;
         }
 
@@ -404,7 +397,7 @@ class ZeekProject {
             return true;
         }
 
-        $this->debug("Impossible to create $name table!");
+        $this->error("Impossible to create $name table!");
         return false;
     }
 
@@ -498,7 +491,7 @@ class ZeekProject {
 
         /* we check if the method name does exist */
         if ($this->check_string($params['method']) == false) {
-            $this->debug("method not found");
+            $this->error("method not found");
             return false;
         }
 
@@ -509,7 +502,7 @@ class ZeekProject {
         /* and does exist (TODO) */
         if ($project_id != NULL) {
             if (is_numeric($project_id) == false) {
-                $this->debug("unexpected project_id '$project_id'!");
+                $this->error("unexpected project_id '$project_id'!");
             }
         }
 
@@ -519,7 +512,7 @@ class ZeekProject {
             parse_str($params['params']);
 
             /* we establish the connection with the database */
-            $this->connect_to_database('test', 'test', 'test');
+            $this->connect_to_database();
 
             /* we check the validity of the login & password */
             if ($this->check_string_and_size($project_name, 25)
@@ -527,22 +520,24 @@ class ZeekProject {
             and $this->check_string_and_size($password, 32)
             and $this->user_check($login, $password)) {
 
-                /* we store the session user & project_id */
-                $_SESSION["user"] = $login;
+                /* we start the session */
+                session_start();
+
+                /* we store the session user */
+                $_SESSION["username"] = $login;
 
                 /* we check if the project_name does exist */
                 if ($this->project_check($project_name)) {
-                    $_SESSION["project_id"] = $this->project_id;
 
-                    $this->success('connection ok : redirection');
+                    $_SESSION["project_name"] = $project_name;
 
                     /* we redirect to the home */
-                    header("Location: ../home.php");
-                    return true;
+                    $this->redirect('home.php');
+                    die();
                 }
 
                 $this->success(
-                    'connection ok : create new project!',
+                    'Connection accepted, now create new project!',
                     array('action' => 'new_project'));
 
                 return false;
@@ -552,18 +547,48 @@ class ZeekProject {
        return false;
 
          case 'disconnect':
-            /* we destroy the session here */
-            session_destroy();
+             /* we start the session */
+             session_start();
 
-            /* we destroy all the data here */
-            $_SESSION = array();
+             /* we destroy all the data here */
+             $_SESSION = array();
 
-            /* we destroy the cookie */
+             /* we destroy the session here */
+             session_destroy();
 
+             die();
 
-            /* we redirect */
-            header("Location: ../welcome.php");
-            return true;
+        case 'create_new_project':
+
+            $project_name = $params['project_name'];
+
+            /* we start the session */
+            session_start();
+
+            /* we check the session id */
+            if (isset($_SESSION["username"])
+                and $this->check_string_and_size($project_name, 25)) {
+
+                /* we establish the connection with the database */
+                $this->connect_to_database();
+
+                /* we check if the project_name does not exist */
+                if ($this->project_check($project_name) == false) {
+
+                    /* we create the project */
+                    $this->project_add($project_name);
+
+                    /* we store it */
+                    $_SESSION["project_name"] = $project_name;
+
+                    /* we redirect to the home */
+                    $this->redirect('home.php');
+                    die();
+                }
+            }
+
+            $this->error('Project name unacceptable, try again!');
+            die();
 
         case 'get_structure':
 
@@ -613,7 +638,7 @@ class ZeekProject {
                 $handle = fopen($file, 'r');
 
                 if ($handle == NULL) {
-                    $this->debug("impossible to open file '$file'!");
+                    $this->error("impossible to open file '$file'!");
                     return false;
                 }
 
@@ -629,11 +654,11 @@ class ZeekProject {
                 return true;
             }
 
-            $this->debug("unexpected type '$type'!");
+            $this->error("unexpected type '$type'!");
             return false;
         }
 
-        $this->debug("unknown method '$method' with parameters "
+        $this->error("unknown method '$method' with parameters "
         . var_dump($params));
         return false;
     }
@@ -650,7 +675,7 @@ class ZeekProject {
          * datastructure */
         $structure = $this->data_structure[$type];
         if ($structure == NULL) {
-            $this->debug("'$type' not found in static database structure!");
+            $this->error("'$type' not found in static database structure!");
             return false;
         }
 
@@ -720,6 +745,16 @@ class ZeekProject {
         return ob_get_clean();
     }
 
+/*
+ * launch jquery redirection.
+ *
+ * @method redirect
+ * @param string where to redirect
+ */
+    public function redirect($url) {
+        $this->output(json_encode(array('redirect' => $url)));
+    }
+
 /**
  * Echo all data to send to the client side.
  *
@@ -751,18 +786,6 @@ class ZeekProject {
  */
     public function error($input) {
         echo json_encode(array('error' => $input));
-    }
-
-    private function debug($data) {
-        if (is_array($data)) {
-            $output =
-                "<script>console.log('debug: " . implode( ',', $data)
-                                               . "' );</script>";
-        } else {
-            $output = "<script>console.log('debug: $data' );</script>";
-        }
-
-        echo $output;
     }
 
     private function check_string($input) {

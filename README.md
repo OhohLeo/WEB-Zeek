@@ -5,7 +5,8 @@ Simple web site backoffice
 
 29/07/2014 Leo
  * add user table
- * setup the welcome page & handle simple authentification
+ * setup the welcome page & handle simple authentification & disconnection
+ * create project at startup if it doesn't exist yet
 
 25/07/2014 Leo
  * setup display menus & disconnection
