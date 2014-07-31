@@ -475,6 +475,88 @@ class ZeekProject {
         return NULL;
     }
 
+    public function connect($project_name, $login, $password)
+    {
+        /* we establish the connection with the database */
+        $this->connect_to_database();
+
+        /* we check the validity of the login & password */
+        if ($this->check_string_and_size($project_name, 25)
+        and $this->check_string_and_size($login, 25)
+        and $this->check_string_and_size($password, 32)
+        and $this->user_check($login, $password)) {
+
+            /* we start the session */
+            session_start();
+
+            /* we store the session user */
+            $_SESSION["username"] = $login;
+            $_SESSION["start_ts"] = time();
+
+            /* we check if the project_name does exist */
+            if ($this->project_check($project_name)) {
+
+                $_SESSION["project_name"] = $project_name;
+
+                /* we redirect to the home */
+                $this->redirect('home.php');
+                return true;
+            }
+
+            $this->success(
+                'Connection accepted, now create new project!',
+                array('action' => 'new_project'));
+
+            return true;
+        }
+
+       $this->error('unexpected login & password!');
+       return false;
+    }
+
+    public function disconnect()
+    {
+        /* we start the session */
+        session_start();
+
+        /* we destroy the session here */
+        session_destroy();
+
+        /* we destroy all the data here */
+        session_unset();
+    }
+
+    public function create_new_project()
+    {
+        $project_name = $params['project_name'];
+
+        /* we start the session */
+        session_start();
+
+        /* we check the session id */
+        if (isset($_SESSION["username"])
+        and $this->check_string_and_size($project_name, 25)) {
+
+            /* we establish the connection with the database */
+            $this->connect_to_database();
+
+            /* we check if the project_name does not exist */
+            if ($this->project_check($project_name) == false) {
+
+                /* we create the project */
+                $this->project_add($project_name);
+
+                /* we store it */
+                $_SESSION["project_name"] = $project_name;
+
+                /* we redirect to the home */
+                $this->redirect('home.php');
+                die();
+            }
+        }
+
+        $this->error('Project name unacceptable, try again!');
+    }
 
 /**
  * Received all the data from client side.
@@ -510,88 +592,17 @@ class ZeekProject {
 
         case 'connect':
             parse_str($params['params']);
-
-            /* we establish the connection with the database */
-            $this->connect_to_database();
-
-            /* we check the validity of the login & password */
-            if ($this->check_string_and_size($project_name, 25)
-            and $this->check_string_and_size($login, 25)
-            and $this->check_string_and_size($password, 32)
-            and $this->user_check($login, $password)) {
-
-                /* we start the session */
-                session_start();
-
-                /* we store the session user */
-                $_SESSION["username"] = $login;
-
-                /* we check if the project_name does exist */
-                if ($this->project_check($project_name)) {
-
-                    $_SESSION["project_name"] = $project_name;
-
-                    /* we redirect to the home */
-                    $this->redirect('home.php');
-                    die();
-                }
-
-                $this->success(
-                    'Connection accepted, now create new project!',
-                    array('action' => 'new_project'));
-
-                return false;
-        }
-
-       $this->error('unexpected login & password!');
-       return false;
+            return $this->connect($project_name, $login, $password);
 
          case 'disconnect':
-             /* we start the session */
-             session_start();
-
-             /* we destroy all the data here */
-             $_SESSION = array();
-
-             /* we destroy the session here */
-             session_destroy();
-
-             die();
+             $this->disconnect();
+             return true;
 
         case 'create_new_project':
-
-            $project_name = $params['project_name'];
-
-            /* we start the session */
-            session_start();
-
-            /* we check the session id */
-            if (isset($_SESSION["username"])
-                and $this->check_string_and_size($project_name, 25)) {
-
-                /* we establish the connection with the database */
-                $this->connect_to_database();
-
-                /* we check if the project_name does not exist */
-                if ($this->project_check($project_name) == false) {
-
-                    /* we create the project */
-                    $this->project_add($project_name);
-
-                    /* we store it */
-                    $_SESSION["project_name"] = $project_name;
-
-                    /* we redirect to the home */
-                    $this->redirect('home.php');
-                    die();
-                }
-            }
-
-            $this->error('Project name unacceptable, try again!');
-            die();
+            $this->create_new_project();
+            return true;
 
         case 'get_structure':
-
             $result = "<ul class=\"nav nav-sidebar\">\n";
 
             foreach ($this->data_structure as $key => $value) {

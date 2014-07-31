@@ -1,14 +1,19 @@
-<form role="form">
-  <label for="admin_name">new admin name</label>
-  <input type="text" class="form-control" id="admin_name"
+<div class="boxed-group">
+  <h3>Add new administrator</h3>
+  <form role="form">
+    <label for="admin_name">new admin name</label>
+    <input type="text" class="form-control" id="admin_name"
 	   placeholder="enter new admin name"></input>
-  <label for="admin_name">e-mail</label>
-  <input type="email" class="form-control" id="admin_email"
-	 placeholder="enter e-mail"></input>
-</form>
-<button class="btn btn-block btn-success" type="button">ADD new admin</button>
+    <label for="admin_name">e-mail</label>
+    <input type="email" class="form-control" id="admin_email"
+	   placeholder="enter e-mail"></input>
+  </form>
+  <input type="submit" class="btn btn-block btn-success">
+</div>
 <hr>
-<form role="form">
+<div class="boxed-group">
+  <h3>Change password</h3>
+  <form role="form">
     <label for="old_password">old password</label>
     <input type="password" class="form-control" id="old_password"
 	   placeholder="enter old password"></input>
@@ -19,9 +24,16 @@
     <input type="password" class="form-control"
 	   id="confirm_new_password"
 	   placeholder="enter new password again"></input>
-</form>
-<button class="btn btn-block btn-danger" type="button">CHANGE your password</button>
+    <input type="submit" class="btn btn-block btn-success">
+  </form>
+</div>
 <hr>
-<button class="btn btn-block btn-danger" type="button">RESET all stored data</button>
+<div class="boxed-group danger-zone">
+  <h3>Reset all data</h3>
+  <button class="btn btn-block btn-danger" type="button">RESET all stored data</button>
+</div>
 <hr>
-<button class="btn btn-block btn-danger" type="button">DELETE this account</button>
+<div class="boxed-group danger-zone">
+  <h3>Delete account</h3>
+  <button class="btn btn-block btn-danger" type="button">DELETE this account</button>
+</div>

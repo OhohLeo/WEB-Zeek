@@ -3,6 +3,9 @@ WEB-Zeek
 
 Simple web site backoffice
 
+31/07/2014 Leo
+ * regenerate session id each 5 minutes
+
 29/07/2014 Leo
  * add user table
  * setup the welcome page & handle simple authentification & disconnection

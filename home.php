@@ -3,10 +3,15 @@
 /* we check the session */
 session_start();
 
-$username = $_SESSION["username"];
+$username     = $_SESSION["username"];
 $project_name = $_SESSION["project_name"];
+$start_ts     = $_SESSION["start_ts"];
 
-if (!(isset($username) and isset($project_name))) {
+/* if one field is not define : do not authorize to display the
+ * page */
+if (!(isset($username)
+      and isset($project_name)
+      and isset($start_ts))) {
 
     include '_partials/scripts.php';
 ?>
@@ -15,6 +20,14 @@ if (!(isset($username) and isset($project_name))) {
 </script>
 <?php
     die();
+}
+
+/* we regenerate session id each 5 minutes */
+if ((time() - $start_ts) >= 300) {
+
+    session_regenerate_id(true);
+
+    $_SESSION["start_ts"] = time();
 }
 
 include '_partials/header.php';

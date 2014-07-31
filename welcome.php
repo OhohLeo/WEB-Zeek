@@ -2,7 +2,7 @@
 
 <div class="hero-unit">
   <h1 class="text-center">Welcome to Zeek!</h1>
-  <p class="text-center">"Simply administrate your website."</p>
+  <p class="text-center">"Simply administrate your websites."</p>
   <hr>
 
   <div class="col-sm-8 col-sm-offset-2">
