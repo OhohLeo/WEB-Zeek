@@ -3,6 +3,12 @@ WEB-Zeek
 
 Simple web site backoffice
 
+04/08/2014 Leo
+ * script to deploy website on free.fr services
+ * some adaptation to accept old php version (json_encode)
+ * new structuration of project
+ * setup file configuration
+
 31/07/2014 Leo
  * regenerate session id each 5 minutes
 

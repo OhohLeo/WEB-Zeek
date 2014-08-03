@@ -1,6 +1,6 @@
 <?php
 
-require_once 'php/zeek.php';
+require_once 'lib/zeek.php';
 
 class ExtendsZeekProject extends ZeekProject
 {
@@ -38,6 +38,7 @@ class TestZeekProject extends PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->zeek_project = new ExtendsZeekProject();
+        $this->zeek_project->config('t/test.ini');
     }
 
     public function test_environment()
@@ -183,7 +184,7 @@ class TestZeekProject extends PHPUnit_Framework_TestCase
 /*             '$("div.modal-footer").on("click", function() { */
 /*   $.ajax({ */
 /*     type: "POST", */
-/*     url: "php/zeek.php", */
+/*     url: "lib/zeek.php", */
 /*     data: { */
 /*       "method": "create_type", */
 /*       "project_id": "", */
@@ -219,7 +220,7 @@ class TestZeekProject extends PHPUnit_Framework_TestCase
 /*             \'<div class="modal-body"> */
 /*              </div>\'); */
 /*              $("div.modal-footer").hide(); */
-/*              $(location).attr("href", "welcome.php");')), */
+/*              $(location).attr("href", "index.php");')), */
 /*             '<script> */
 /*     $("h3.modal-body").text("Are you sure you want to disconnect from Zeek ?"); */
 /*   $("div.modal-body").replaceWith( */
@@ -230,7 +231,7 @@ class TestZeekProject extends PHPUnit_Framework_TestCase
 /*   $("button.btn-modal").on("click", function() { */
 /*   $.ajax({ */
 /*     type: "POST", */
-/*     url: "php/zeek.php", */
+/*     url: "lib/zeek.php", */
 /*     data: { */
 /*       "method": "disconnect", */
 /*       "project_id": "", */
@@ -243,7 +244,7 @@ class TestZeekProject extends PHPUnit_Framework_TestCase
 /*             \'<div class="modal-body"> */
 /*              </div>\'); */
 /*              $("div.modal-footer").hide(); */
-/*              $(location).attr("href", "welcome.php");    }, */
+/*              $(location).attr("href", "index.php");    }, */
 /*     error: function($request, $status, $error) */
 /*     { */
 /*       $("div.dynamic").replaceWith( */
@@ -254,6 +255,12 @@ class TestZeekProject extends PHPUnit_Framework_TestCase
 /* </script> */
 /* '); */
 /*     } */
+
+
+    public function test_json_encode()
+    {
+        $this->zeek_project->json_encode('toto');
+    }
 
     public function test_input()
     {

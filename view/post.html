@@ -1,7 +1,7 @@
 $("<?php echo $element; ?>").on("<?php echo $action; ?>", function() {
   $.ajax({
     type: "POST",
-    url: "php/zeek.php",
+    url: "lib/zeek.php",
     data: {
       "method": "<?php echo $method; ?>",
       "project_id": "<?php echo $project_id; ?>",

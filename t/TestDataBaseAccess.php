@@ -1,6 +1,6 @@
 <?php
 
-require_once 'php/database_access.php';
+require_once 'lib/database_access.php';
 
 class ExtendsDataBaseAccess extends DataBaseAccess
 {
@@ -33,7 +33,7 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
     private function connect()
     {
         $access = $this->access;
-        $access->connect('zeek_test', 'test', 'test');
+        $access->connect('localhost', 'zeek_test', 'test', 'test');
         return $access;
     }
 
@@ -57,26 +57,26 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
         $access = $this->access;
 
         $this->assertTrue(
-            $access->connect($this->test_dbname, 'test', 'test'));
+            $access->connect('localhost', $this->test_dbname, 'test', 'test'));
 
         $this->assertTrue(
             $access->checkOutput(NULL));
 
         $this->assertFalse(
-            $access->connect($this->test_dbname, 'test', 'tes'));
+            $access->connect('localhost', $this->test_dbname, 'test', 'tes'));
 
         $this->assertTrue(
             $access->checkOutput(
-                "Impossible to connect with MySQL SQLSTATE[28000] [1045] "
+                "Impossible to connect to 'localhost' with MySQL SQLSTATE[28000] [1045] "
                 . "Access denied for user 'test'@'localhost'"
                 . " (using password: YES)"));
 
         $this->assertFalse(
-            $access->connect($this->test_dbname, 'tes', 'test'));
+            $access->connect('localhost', $this->test_dbname, 'tes', 'test'));
 
         $this->assertTrue(
             $access->checkOutput(
-                "Impossible to connect with MySQL SQLSTATE[28000] [1045] "
+                "Impossible to connect to 'localhost' with MySQL SQLSTATE[28000] [1045] "
                 . "Access denied for user 'tes'@'localhost'"
                 . " (using password: YES)"));
     }

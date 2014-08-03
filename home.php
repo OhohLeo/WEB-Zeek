@@ -16,7 +16,7 @@ if (!(isset($username)
     include '_partials/scripts.php';
 ?>
 <script>
-    $(location).attr('href', 'welcome.php');
+    $(location).attr('href', 'index.php');
 </script>
 <?php
     die();
@@ -110,7 +110,7 @@ include '_partials/header.php';
 
       $.ajax({
         type: 'POST',
-              url: "php/zeek.php",
+              url: "lib/zeek.php",
               data: {
                 'method': 'get_structure'
               },
@@ -136,7 +136,7 @@ include '_partials/header.php';
 
                       $.ajax({
                         type: 'POST',
-                              url: "php/zeek.php",
+                              url: "lib/zeek.php",
                               data: {
                                 'method': 'clicked',
                                 'type': $type,

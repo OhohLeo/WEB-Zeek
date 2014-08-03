@@ -4,14 +4,14 @@
         $('button.btn-success').on('click', function() {
            $.ajax({
         type: 'POST',
-        url: 'php/zeek.php',
+        url: 'lib/zeek.php',
         data: { 'method': 'disconnect',
         'project_id': 1 },
         dataType: 'text',
         success: function($input)
         {
 	console.log('success!!');
-	$(location).attr('href', 'welcome.php');
+	$(location).attr('href', 'index.php');
         },
         error: function($request, $status, $error)
         {
