@@ -7,7 +7,7 @@
  */
 class DataBaseAccess {
 
-    private $pdo;
+    private $db;
     private $debug = false;
     private $master;
 
@@ -55,7 +55,7 @@ class DataBaseAccess {
         $project_name = $name;
 
         try {
-            $this->pdo = new PDO(
+            $this->db = new PDO(
                 "mysql:host=$host;dname=$name", $login, $password,
                 array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
          } catch (Exception $e) {
@@ -399,9 +399,9 @@ class DataBaseAccess {
  */
     private function send_query($request, $boolean)
     {
-        $pdo = $this->pdo;
+        $db = $this->db;
 
-        if ($pdo) {
+        if ($db) {
 
             try {
 
@@ -409,7 +409,7 @@ class DataBaseAccess {
                     print("\n query = $request; \n");
                 }
 
-                $result = $pdo->query("$request;");
+                $result = $db->query("$request;");
 
                 return ($boolean)
                     ? (isset($result) ? true : false)
@@ -441,11 +441,11 @@ class DataBaseAccess {
  */
     public function send_request($request, $params)
     {
-        $pdo = $this->pdo;
+        $db = $this->db;
         static $last_request;
         static $result;
 
-        if ($pdo) {
+        if ($db) {
 
             try {
                 if ($this->debug) {
@@ -456,7 +456,7 @@ class DataBaseAccess {
 
                 if ($request != $last_request)
                 {
-                    $result = $pdo->prepare("$request;");
+                    $result = $db->prepare("$request;");
                     $result->setFetchMode(PDO::FETCH_OBJ);
                     $last_request = $request;
                 }

@@ -511,7 +511,7 @@ class ZeekProject {
         and $this->user_check($login, $password)) {
 
             /* we start the session */
-            session_start();
+            $this->session_start();
 
             /* we store the session user */
             $_SESSION["username"] = $login;
@@ -529,7 +529,7 @@ class ZeekProject {
 
             $this->success(
                 'Connection accepted, now create new project!',
-                array('action' => 'new_project'));
+                array('action' => 'project_create'));
 
             return true;
         }
@@ -541,7 +541,7 @@ class ZeekProject {
     public function disconnect()
     {
         /* we start the session */
-        session_start();
+        $this->session_start();
 
         /* we destroy the session here */
         session_destroy();
@@ -550,19 +550,18 @@ class ZeekProject {
         session_unset();
     }
 
-    public function create_new_project()
+    public function create_new_project($project_name)
     {
-        $project_name = $params['project_name'];
-
         /* we start the session */
-        session_start();
+        $this->session_start();
 
         /* we check the session id */
         if (isset($_SESSION["username"])
             and $this->check_string_and_size($project_name, 25)) {
 
             /* we establish the connection with the database */
-            $this->connect_to_database();
+            if ($this->connect_to_database() == false)
+                return false;
 
             /* we check if the project_name does not exist */
             if ($this->project_check($project_name) == false) {
@@ -671,7 +670,7 @@ class ZeekProject {
              return true;
 
         case 'project_create':
-            $this->create_new_project();
+            $this->create_new_project($params['project_name']);
             return true;
 
         case 'project_delete':
@@ -849,7 +848,13 @@ class ZeekProject {
         return isset($input) and $input != '' and strlen($input) <= $size;
     }
 
-    public function json_encode($input)
+
+    protected function session_start()
+    {
+        session_start();
+    }
+
+    private function json_encode($input)
     {
         /* la version php de free est obsolète et ne propose pas le json */
         if (!defined('PHP_VERSION_ID')) {
