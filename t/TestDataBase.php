@@ -1,8 +1,8 @@
 <?php
 
-require_once 'lib/database_access.php';
+require_once 'lib/database.php';
 
-class ExtendsDataBaseAccess extends DataBaseAccess
+class ExtendsDataBase extends DataBase
 {
     private $output;
 
@@ -25,57 +25,57 @@ class ExtendsDataBaseAccess extends DataBaseAccess
     }
 }
 
-class TestDataBaseAccess extends PHPUnit_Framework_TestCase
+class TestDataBase extends PHPUnit_Framework_TestCase
 {
-    private $access;
+    private $db;
     private $test_dbname = 'zeek_test';
 
     private function connect()
     {
-        $access = $this->access;
-        $access->connect('localhost', 'zeek_test', 'test', 'test');
-        return $access;
+        $db = $this->db;
+        $db->connect('localhost', 'zeek_test', 'test', 'test');
+        return $db;
     }
 
     private function clean()
     {
-        $this->access->database_delete($this->test_dbname);
+        $this->db->database_delete($this->test_dbname);
     }
 
     public function setUp()
     {
-        $this->access = new ExtendsDataBaseAccess();
+        $this->db = new ExtendsDataBase();
     }
 
-    public function test_access()
+    public function test_db()
     {
-        $this->assertNotNull($this->access);
+        $this->assertNotNull($this->db);
     }
 
     public function test_connect()
     {
-        $access = $this->access;
+        $db = $this->db;
 
         $this->assertTrue(
-            $access->connect('localhost', $this->test_dbname, 'test', 'test'));
+            $db->connect('localhost', $this->test_dbname, 'test', 'test'));
 
         $this->assertTrue(
-            $access->checkOutput(NULL));
+            $db->checkOutput(NULL));
 
         $this->assertFalse(
-            $access->connect('localhost', $this->test_dbname, 'test', 'tes'));
+            $db->connect('localhost', $this->test_dbname, 'test', 'tes'));
 
         $this->assertTrue(
-            $access->checkOutput(
+            $db->checkOutput(
                 "Impossible to connect to 'localhost' with MySQL SQLSTATE[28000] [1045] "
                 . "Access denied for user 'test'@'localhost'"
                 . " (using password: YES)"));
 
         $this->assertFalse(
-            $access->connect('localhost', $this->test_dbname, 'tes', 'test'));
+            $db->connect('localhost', $this->test_dbname, 'tes', 'test'));
 
         $this->assertTrue(
-            $access->checkOutput(
+            $db->checkOutput(
                 "Impossible to connect to 'localhost' with MySQL SQLSTATE[28000] [1045] "
                 . "Access denied for user 'tes'@'localhost'"
                 . " (using password: YES)"));
@@ -83,69 +83,69 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
 
     public function test_database()
     {
-        $access = $this->connect();
+        $db = $this->connect();
 
         $this->clean();
 
         $this->assertFalse(
-            $access->database_use($this->test_dbname));
+            $db->database_use($this->test_dbname));
 
         $this->assertFalse(
-            $access->database_check($this->test_dbname));
+            $db->database_check($this->test_dbname));
 
         $this->assertTrue(
-            $access->database_create($this->test_dbname));
+            $db->database_create($this->test_dbname));
 
         $this->assertTrue(
-            $access->database_create($this->test_dbname));
+            $db->database_create($this->test_dbname));
 
         $this->assertTrue(
-            $access->database_check($this->test_dbname));
+            $db->database_check($this->test_dbname));
 
         $this->assertTrue(
-            $access->database_use($this->test_dbname));
+            $db->database_use($this->test_dbname));
 
         $this->assertFalse(
-            $access->table_check('just_id'));
+            $db->table_check('just_id'));
 
         $this->assertTrue(
-            $access->table_create('just_id', NULL));
+            $db->table_create('just_id', NULL));
 
         $this->assertTrue(
-            $access->table_check('just_id'));
+            $db->table_check('just_id'));
 
         $this->assertTrue(
-            $access->table_delete('just_id'));
+            $db->table_delete('just_id'));
 
         $this->assertFalse(
-            $access->table_check('just_id'));
+            $db->table_check('just_id'));
 
         $this->assertFalse(
-            $access->row_insert(
+            $db->row_insert(
                 'more_attributes',
                 array('first_element' => 'test',
                       'second_element' => 0,
                       'third_element' => 'test')));
 
         $this->assertFalse(
-            $access->row_update('more_attributes', 3,
+            $db->row_update('more_attributes', 3,
                                 array('second_element' => 6,
                                 'third_element' => 'juliette')));
 
         $this->assertEquals(
-            $access->table_count('more_attributes', '*', NULL), 0);
+            $db->table_count('more_attributes', '*', NULL), 0);
 
         $this->assertTrue(
-            $access->table_create('more_attributes', array(
+            $db->table_create('more_attributes', array(
                 'first_element'  => array('VARCHAR', 30),
                 'second_element' => array('INT', 11, 'NOT NULL'),
                 'third_element'  => 'TEXT')));
 
         $this->assertTrue(
-            $access->table_check('more_attributes'));
+            $db->table_check('more_attributes'));
 
         $this->assertEquals(
-            $access->table_count('more_attributes', '*', NULL), 0);
+            $db->table_count('more_attributes', '*', NULL), 0);
 
         $first_elements = array('toto', 'titi', 'tata', 'tutu');
         $second_elements = array(2, 4, 3, 5);
@@ -154,7 +154,7 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
 
         for ($i = 0; $i < count($first_elements); $i++) {
             $this->assertTrue(
-                $access->row_insert(
+                $db->row_insert(
                     'more_attributes',
                     array('first_element' => $first_elements[$i],
                           'second_element' => $second_elements[$i],
@@ -162,15 +162,15 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
         }
 
         $this->assertEquals(
-            $access->table_count('more_attributes', '*', NULL), 4);
+            $db->table_count('more_attributes', '*', NULL), 4);
 
         $this->assertEquals(
-            $access->table_count(
+            $db->table_count(
                 'more_attributes', '*', array('second_element' => 3)), 1);
 
         $id = 0;
 
-        $result = $access->table_view('more_attributes', '*',
+        $result = $db->table_view('more_attributes', '*',
                                       array('id', 'ASC'), NULL, NULL, NULL);
 
         while ($row = $result->fetch()) {
@@ -180,7 +180,7 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
             $this->assertTrue($row->id == ++$id);
         }
 
-        $result = $access->table_view('more_attributes', '*',
+        $result = $db->table_view('more_attributes', '*',
                                       array('id', 'DESC'), NULL, NULL, NULL);
 
         while ($row = $result->fetch()) {
@@ -190,7 +190,7 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
             $this->assertTrue($row->third_element == $third_elements[$id]);
         }
 
-        $result = $access->table_view('more_attributes',
+        $result = $db->table_view('more_attributes',
                                       array('id', 'first_element'),
                                       NULL, NULL, NULL, array('id' => 1));
 
@@ -199,7 +199,7 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
             $this->assertTrue($row->id == 1);
         }
 
-        $result = $access->table_view('more_attributes', '*',
+        $result = $db->table_view('more_attributes', '*',
                                       NULL, 2, NULL, NULL);
         $id = 0;
 
@@ -211,7 +211,7 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
             $this->assertTrue($row->id == ++$id);
         }
 
-        $result = $access->table_view('more_attributes', '*',
+        $result = $db->table_view('more_attributes', '*',
                                       NULL, 1, 2, NULL);
         $id = 2;
 
@@ -225,16 +225,16 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
 
 
         $this->assertTrue(
-            $access->row_update('more_attributes', 3,
+            $db->row_update('more_attributes', 3,
                                 array('second_element' => 6,
                                       'third_element' => 'juliette')));
 
         $this->assertFalse(
-            $access->row_update('more_attributes', 118,
+            $db->row_update('more_attributes', 118,
                                 array('second_element' => 33,
                                       'third_element' => 'failed')));
 
-        $result = $access->table_describe('more_attributes');
+        $result = $db->table_describe('more_attributes');
 
         $fields = array('id', 'first_element', 'second_element', 'third_element');
         $types  = array('int(11)', 'varchar(30)', 'int(11)', 'text');
@@ -251,16 +251,16 @@ class TestDataBaseAccess extends PHPUnit_Framework_TestCase
         }
 
         $this->assertTrue(
-            $access->database_delete($this->test_dbname));
+            $db->database_delete($this->test_dbname));
 
         $this->assertTrue(
-            $access->database_delete($this->test_dbname));
+            $db->database_delete($this->test_dbname));
 
         $this->assertFalse(
-            $access->database_check($this->test_dbname));
+            $db->database_check($this->test_dbname));
 
         $this->assertFalse(
-            $access->database_use($this->test_dbname));
+            $db->database_use($this->test_dbname));
     }
 }
 ?>

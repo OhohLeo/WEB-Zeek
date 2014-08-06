@@ -1,15 +1,16 @@
 <?php
 
 /**
- * DataBaseAccess : all the function to access to the database.
+ * DataBase : all the function to access to the database.
  *
- * @package DataBaseAccess
+ * @package DataBase
  */
-class DataBaseAccess {
+class DataBase {
 
     private $db;
-    private $debug = false;
+    protected $debug = true;
     private $master;
+    private $config;
 
     private $valid_type = array(
         "TINYINT", "SMALLINT", "MEDIUMINT", "INT", "INTEGER", "BIGINT",
@@ -28,6 +29,17 @@ class DataBaseAccess {
     public function set_debug($status)
     {
         $this->debug = $status;
+    }
+
+/**
+ * Set configuration
+ *
+ * @method set_config
+ * @param string PDO/MYSQL
+ */
+    public function set_config($config)
+    {
+        $this->config = $config;
     }
 
 /**
@@ -52,8 +64,6 @@ class DataBaseAccess {
  */
     public function connect($host, $name, $login, $password)
     {
-        $project_name = $name;
-
         try {
             $this->db = new PDO(
                 "mysql:host=$host;dname=$name", $login, $password,
@@ -397,7 +407,7 @@ class DataBaseAccess {
  * @param boolean  if true = return true if there is an answer, false otherwise
  *          if false = return the result of the request
  */
-    private function send_query($request, $boolean)
+    protected function send_query($request, $boolean)
     {
         $db = $this->db;
 
@@ -486,7 +496,7 @@ class DataBaseAccess {
  * @method get_values
  * @param array parameters to handle
  */
-    private function get_values($params)
+    protected function get_values($params)
     {
         $fields = array_keys($params);
         $values = array();

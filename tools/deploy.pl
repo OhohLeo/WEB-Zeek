@@ -20,7 +20,7 @@ GetOptions(
     'directory|d=s'  => \$directory,
     'help|h'         => \$help);
 
-if ($help)
+sub display_help
 {
     die <<END;
 usage : deploy.pl -a [see|update|clean]
@@ -31,6 +31,8 @@ usage : deploy.pl -a [see|update|clean]
                   -h this help
 END
 }
+
+display_help() if $help;
 
 # action by default is update
 $action //= 'update';
@@ -96,7 +98,7 @@ unless ($action eq 'update')
 }
 
 unless (defined $login and defined $password and defined $host) {
-    die "login, password & host should be defined for update"
+    display_help();
 }
 
 # we handle specific behavior concerning the host

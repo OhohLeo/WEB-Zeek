@@ -1,6 +1,6 @@
 <?php
 
-$zeek = new ZeekProject();
+$zeek = new Zeek();
 $zeek->config('../config.ini');
 
 if (isset($_POST)) {
@@ -12,16 +12,19 @@ if (isset($_POST)) {
  *
  * @package Zeek
  */
-class ZeekProject {
+class Zeek {
 
-    protected $access;
-    private $project_id = 1;
+    protected $db;
+
+    private $project_id;
 
     private $global_path;
+
     private $db_login;
     private $db_password;
     private $db_host;
     private $db_name;
+    private $db_use_specific;
 
     private $data_structure = array(
         'project'    => array(
@@ -92,6 +95,9 @@ class ZeekProject {
         $this->db_password  = $config['db_password'];
         $this->db_host  = $config['db_host'];
         $this->db_name  = $config['db_name'];
+
+        if (isset($config['db_use_specific']))
+            $this->db_use_specific = $config['db_use_specific'];
     }
 
 /**
@@ -102,31 +108,36 @@ class ZeekProject {
  */
     public function connect_to_database()
     {
-        require_once $this->global_path . "lib/database_access.php";
+        /* we choose the good database to use */
+        if ($this->db_use_specific === 'old_mysql') {
+            require_once $this->global_path . "lib/database_mysql.php";
+            $db = new DataBaseOldMySQL();
+        } else {
+            require_once $this->global_path . "lib/database.php";
+            $db = new DataBase();
+        }
 
-        $access = new DataBaseAccess();
+        $db->set_master($this);
 
-        $access->set_master($this);
-
-        /* we store the database access */
-        $this->access = $access;
+        /* we store the database */
+        $this->db = $db;
 
         /* we try to establish a connection */
-        if ($access->connect($this->db_host,
+        if ($db->connect($this->db_host,
                              $this->db_name,
                              $this->db_login,
                              $this->db_password) == false) {
             return false;
         }
 
-        /* We check if the database already exists */
-        if ($access->database_check($this->db_name) == false) {
-            return $this->environment_setup(
-                $this->db_name, $this->db_login, $this->db_password);
-        }
+        /* /\* We check if the database already exists *\/ */
+        /* if ($db->database_check($this->db_name) == false) { */
+        /*     return $this->environment_setup( */
+        /*         $this->db_name, $this->db_login, $this->db_password); */
+        /* } */
 
-        /* We will use only this database */
-        $access->database_use($this->db_name);
+        /* /\* We will use only this database *\/ */
+        /* $db->database_use($this->db_name); */
 
         return true;
     }
@@ -142,27 +153,27 @@ class ZeekProject {
  */
     public function environment_setup($name, $login, $password)
     {
-        /* we store the database access */
-        $access = $this->access;
+        /* we get the database */
+        $db = $this->db;
 
         /* we create the database */
-        $access->database_create($name);
+        $db->database_create($name);
 
         /* we use this database */
-        $access->database_use($name);
+        $db->database_use($name);
 
         /* we create the user table */
-        $access->table_create('user', array(
+        $db->table_create('user', array(
             'name' => array('VARCHAR', 25),
             'password' => array('CHAR', 32)));
 
         /* we add the actual user */
-        $access->row_insert('user', array(
+        $db->row_insert('user', array(
             'name' => $login,
             'password' => $password));
 
         /* we create the project table */
-        $access->table_create(
+        $db->table_create(
             'project', $this->data_structure['project']);
 
         return true;
@@ -177,7 +188,7 @@ class ZeekProject {
     public function environment_clean($name)
     {
         /* we create the database */
-        $this->access->database_delete($name);
+        $this->db->database_delete($name);
     }
 
     public function user_add($username, $password)
@@ -218,7 +229,7 @@ class ZeekProject {
             return false;
         }
 
-        if ($this->access->row_update(
+        if ($this->db->row_update(
             'user', $user->id,
             array('password' => $new_password))) {
             return true;
@@ -238,7 +249,7 @@ class ZeekProject {
         }
 
         /* we insert the new project */
-        if ($this->access->row_delete(
+        if ($this->db->row_delete(
             'user', array('name' => $username))) {
             return true;
         }
@@ -248,7 +259,7 @@ class ZeekProject {
 
     public function user_get($username)
     {
-        $result = $this->access->table_view(
+        $result = $this->db->table_view(
             'user', '*', NULL, NULL, NULL,
             array('name' => $username));
 
@@ -257,7 +268,7 @@ class ZeekProject {
 
     public function user_check($username, $password)
     {
-        $result = $this->access->table_view(
+        $result = $this->db->table_view(
             'user', 'name', NULL, NULL, NULL,
             array('name'     => $username,
                   'password' => $password));
@@ -284,7 +295,7 @@ class ZeekProject {
  */
     public function project_add($project_name)
     {
-        $access = $this->access;
+        $db = $this->db;
 
         /* We check if the project already exists */
         if ($this->project_check($project_name)) {
@@ -323,11 +334,11 @@ class ZeekProject {
  */
     public function project_delete()
     {
-        $access = $this->access;
+        $db = $this->db;
 
         /* if it exists only one project : we delete the database */
-        if ($access->table_count('project', '*', NULL) < 2) {
-            return $access->database_delete($this->db_name);
+        if ($db->table_count('project', '*', NULL) < 2) {
+            return $db->database_delete($this->db_name);
         }
 
         $params = array('project_id' => $this->project_id);
@@ -336,25 +347,25 @@ class ZeekProject {
         foreach ($this->data_structure as $name => $value) {
 
             /* we check if the table exist, otherwise we continue */
-            if ($access->table_check($name) == false) {
+            if ($db->table_check($name) == false) {
                 continue;
             }
 
             /* for the project : we remove the row with the project_id
              * specified */
             if ($name == 'project') {
-                $access->row_delete('project', $params);
+                $db->row_delete('project', $params);
                 continue;
             }
 
             /* for all other tables : we check if each table contain
              * other reference of project_id */
-            if ($access->table_count($name, 'project_id', NULL) > 1) {
+            if ($db->table_count($name, 'project_id', NULL) > 1) {
                 /* we remove all row with actual project_id */
-                $access->row_delete($name, $params);
+                $db->row_delete($name, $params);
             } else {
                 /* otherwise we delete the table */
-                $access->table_delete($name);
+                $db->table_delete($name);
             }
         }
 
@@ -372,7 +383,7 @@ class ZeekProject {
  */
     public function project_check($project_name)
     {
-        $result = $this->access->table_view(
+        $result = $this->db->table_view(
             'project', 'id', NULL, NULL, NULL,
             array('name' => $project_name));
 
@@ -402,7 +413,7 @@ class ZeekProject {
     protected function table_check_and_create($name)
     {
         /* we check if the table exists */
-        if ($this->access->table_check($name)) {
+        if ($this->db->table_check($name)) {
             return true;
         }
 
@@ -415,7 +426,7 @@ class ZeekProject {
         }
 
         /* we create the table and all attributes */
-        if ($this->access->table_create($name, $structure))
+        if ($this->db->table_create($name, $structure))
         {
             return true;
         }
@@ -442,7 +453,7 @@ class ZeekProject {
         if ($this->table_check_and_create($name)) {
 
             /* we insert the new value */
-            return $this->access->row_insert($name, $values);
+            return $this->db->row_insert($name, $values);
         }
 
         return false;
@@ -464,7 +475,7 @@ class ZeekProject {
     {
         /* we add the project id */
 
-        return $this->access->row_update($name, $id, $values);
+        return $this->db->row_update($name, $id, $values);
     }
 
 /**
@@ -491,7 +502,7 @@ class ZeekProject {
             }
 
             /* we get all the values desired */
-            return $this->access->table_view(
+            return $this->db->table_view(
                 $name, '*', NULL, $size, $offset, $param);
         }
 
@@ -703,7 +714,7 @@ class ZeekProject {
 
         case 'create_type':
             $type = $params['type'];
-            /* $this->access->row_insert($type, $params); */
+            /* $this->db->row_insert($type, $params); */
             return true;
 
         case 'clicked':
