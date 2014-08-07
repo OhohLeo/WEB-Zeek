@@ -7,9 +7,9 @@
  */
 class Zeek extends ZeekOutput {
 
+    public $global_path;
     private $project_id;
     private $zlib;
-    private $global_path;
 
 /**
  * Startup zeek file.
@@ -141,11 +141,8 @@ class Zeek extends ZeekOutput {
         /* we check the validity of the login & password */
         if ($this->check_string_and_size($project_name, 25)
         and $this->check_string_and_size($login, 25)
-        and $this->check_string_and_size($password, 32)
-        and $zlib->user_check($login, $password)) {
-
-            /* we start the session */
-            $this->session_start();
+        and $this->check_string_and_size($password, 32)) {
+        /* and $zlib->user_check($login, $password)) { */
 
             /* we store the session user */
             $_SESSION["username"] = $login;
@@ -174,9 +171,6 @@ class Zeek extends ZeekOutput {
 
     public function disconnect()
     {
-        /* we start the session */
-        $this->session_start();
-
         /* we destroy the session here */
         session_destroy();
 
@@ -187,9 +181,6 @@ class Zeek extends ZeekOutput {
     public function create_new_project($project_name)
     {
         $zlib = $this->zlib;
-
-        /* we start the session */
-        $this->session_start();
 
         /* we check the session id */
         if (isset($_SESSION["username"])
@@ -238,7 +229,8 @@ class Zeek extends ZeekOutput {
                     'click',
                     "disconnect",
                     NULL,
-                    '$(location).attr("href", "index.php");'));
+                    '$(location).attr("href", "index.php");'),
+                NULL);
         }
         /* we handle other cases */
         else if (file_exists($this->global_path . "view/$type.html")) {

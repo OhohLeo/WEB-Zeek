@@ -5,6 +5,9 @@ Simple web site backoffice
 
 07/08/2014 Leo
  * readaptation to old way to establish connection & request for free.fr
+ * add an intermediate zeek_library between visual methods & database methods
+ * finally adapt the code to handle free.fr website
+ * input.php has now internal & external version
 
 04/08/2014 Leo
  * script to deploy website on free.fr services

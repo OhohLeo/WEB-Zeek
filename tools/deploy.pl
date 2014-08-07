@@ -8,7 +8,7 @@ use Cwd;
 
 use feature 'say';
 
-my %AUTHORISED = map { $_ => 1 } qw(lib js css view _partials);
+my %AUTHORISED = map { $_ => 1 } qw(lib js css view _partials sessions);
 
 my($action, $host, $login, $password, $directory, $help);
 
@@ -124,11 +124,20 @@ if ($host eq 'ftpperso.free.fr')
 	# we use /var/config_free.ini file
 	replace_link("$directory/config.ini",
 		     "$directory/var/config_free.ini");
+
+	# we add the sessions directory
+	mkdir("$directory/sessions");
+
+	# we add the sessions to the list
+	$files{"$directory/sessions"} = [];
     };
 
     $action_after = sub {
 	# we remove the file
 	unlink("$directory/$filename");
+
+	# we remove the sessions directory
+	rmdir("$directory/sessions");
 
 	# we use config file again
 	replace_link("$directory/config.ini",
@@ -156,6 +165,9 @@ foreach my $replace (qw(scripts header))
     replace_link("$directory/_partials/$replace.php",
 		 "$directory/_partials/external_$replace.php");
 }
+
+replace_link("$directory/input.php",
+	     "$directory/lib/external_input.php");
 
 if (defined $action_before) {
     $action_before->();
@@ -195,6 +207,9 @@ foreach my $replace (qw(scripts header))
     replace_link("$directory/_partials/$replace.php",
 		 "$directory/_partials/internal_$replace.php");
 }
+
+replace_link("$directory/input.php",
+	     "$directory/lib/internal_input.php");
 
 if (defined $action_after) {
     $action_after->();

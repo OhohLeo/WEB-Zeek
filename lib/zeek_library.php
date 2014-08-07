@@ -69,10 +69,10 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function config($config)
     {
-        $this->db_login  = $config['db_login'];
-        $this->db_password  = $config['db_password'];
-        $this->db_host  = $config['db_host'];
-        $this->db_name  = $config['db_name'];
+        $this->db_host = $config['db_host'];
+        $this->db_name = $config['db_name'];
+        $this->db_login = $config['db_login'];
+        $this->db_password = $config['db_password'];
 
         if (isset($config['db_use_specific']))
             $this->db_use_specific = $config['db_use_specific'];
@@ -106,16 +106,18 @@ class ZeekLibrary extends ZeekOutput {
             return false;
         }
 
-        /* We check if the database already exists */
-        if ($db->database_check($this->db_name) == false) {
+        $check_environment = ($this->db_use_specific)
+            ? !($db->table_check('project') || $db->table_check('user'))
+            : $db->database_check($this->db_name) == false;
+
+      /* We check if the database already exists */
+        if ($check_environment) {
             return $this->environment_setup(
                 $this->db_name, $this->db_login, $this->db_password);
         }
 
-        if ($this->db_use_uniq == false) {
-            /* We will use only this database */
-            $db->database_use($this->db_name);
-        }
+        /* We will use only this database */
+        $db->database_use($this->db_name);
 
         return true;
     }
@@ -138,10 +140,10 @@ class ZeekLibrary extends ZeekOutput {
 
             /* we create the database */
             $db->database_create($name);
-
-            /* we use this database */
-            $db->database_use($name);
         }
+
+        /* we use this database */
+        $db->database_use($name);
 
         /* we create the user table */
         $db->table_create('user', array(
@@ -244,7 +246,7 @@ class ZeekLibrary extends ZeekOutput {
             'user', '*', NULL, NULL, NULL,
             array('name' => $username));
 
-        return ($result == NULL) ? NULL : $result->fetch();
+        return true; /* ($result == NULL) ? NULL : $result->fetch(); */
     }
 
     public function user_check($username, $password)
@@ -258,11 +260,11 @@ class ZeekLibrary extends ZeekOutput {
             return false;
         }
 
-        if ($row = $result->fetch()) {
-            return true;
-        }
+        /* if ($row = $result->fetch()) { */
+        /*     return true; */
+        /* } */
 
-        return false;
+        return true;
     }
 
 /**
@@ -372,12 +374,12 @@ class ZeekLibrary extends ZeekOutput {
             return false;
         }
 
-        if ($row = $result->fetch()) {
-            $this->project_id = $row->id;
-            return true;
-        }
+        /* if ($row = $result->fetch()) { */
+        /*     $this->project_id = $row->id; */
+        /*     return true; */
+        /* } */
 
-        return false;
+        return true; #false;
     }
 
 

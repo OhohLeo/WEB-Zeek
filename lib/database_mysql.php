@@ -52,13 +52,11 @@ class DataBaseOldMySQL extends DataBase {
          $result = $this->send_request(
              "SHOW DATABASES LIKE '$name'", false);
 
-         while ($row = mysql_fetch_assoc($result)) {
-             mysql_free_result($result);
-             return true;
-         }
+         /* while ($row = mysql_fetch_assoc($result)) { */
+         /*     return true; */
+         /* } */
 
-         mysql_free_result($result);
-         return false;
+         return true;
     }
 
 /**
@@ -84,11 +82,9 @@ class DataBaseOldMySQL extends DataBase {
 
         if ($count = mysql_fetch_assoc($result))
         {
-            mysql_free_result($result);
             return $count['COUNT(*)'];
         }
 
-        mysql_free_result($result);
         return 0;
     }
 
@@ -149,7 +145,7 @@ class DataBaseOldMySQL extends DataBase {
  */
      protected function send_query($request, $boolean)
      {
-         $result = $this->send_request($request, NULL);
+         $result = $this->send_request($request, $boolean);
 
          if ($boolean) {
              if (is_bool($result))
@@ -182,7 +178,7 @@ class DataBaseOldMySQL extends DataBase {
 
         $result = mysql_query("$request;");
 
-        if (!$result) {
+        if (!is_bool($params) && $result == false) {
             $this->output(
                 "Impossible to send request : " . mysql_error());
             return false;
