@@ -1,5 +1,6 @@
 <?php
 
+require_once 'lib/output.php';
 require_once 'lib/zeek.php';
 
 class ExtendsZeek extends Zeek
@@ -42,131 +43,8 @@ class TestZeek extends PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->zeek = new ExtendsZeek();
-        $this->zeek->config('t/test.ini');
+        $this->zeek->start('t/test.ini');
     }
-
-    public function test_environment()
-    {
-        $this->assertTrue(
-            $this->zeek->connect_to_database());
-
-        $this->zeek->environment_clean('zeek_test');
-
-        $this->assertTrue(
-            $this->zeek->environment_setup('zeek_test', 'test', 'test'));
-
-        $access = $this->zeek->database();
-
-        $this->assertTrue(
-            $access->database_check('zeek_test'));
-
-        $this->assertTrue(
-            $access->table_check('user'));
-
-        $result = $access->table_view(
-            'user', '*', NULL, NULL, NULL, NULL)->fetch();
-
-        $this->assertEquals($result->id, 1);
-        $this->assertEquals($result->name, "test");
-        $this->assertEquals($result->password, "test");
-
-        $this->assertTrue(
-            $access->table_check('project'));
-
-
-        $this->zeek->environment_clean('zeek_test');
-
-        $this->assertFalse(
-            $access->database_check('zeek_test'));
-    }
-
-
-    public function test_user()
-    {
-        $zeek = $this->zeek;
-
-        $this->assertTrue(
-            $zeek->connect_to_database());
-
-        $zeek->environment_clean('zeek_test');
-
-        $this->assertTrue(
-            $zeek->environment_setup('zeek_test', 'test', 'test'));
-
-        $this->assertTrue($zeek->user_get('test') !== NULL);
-
-        $this->assertTrue($zeek->user_check('test', 'test'));
-
-        $this->assertTrue($zeek->user_get('toto') == NULL);
-
-        $this->assertFalse($zeek->user_check('toto', 'toto'));
-
-        $this->assertTrue($zeek->user_add('toto', 'toto'));
-
-        $this->assertFalse($zeek->user_add('toto', 'toto'));
-
-        $this->assertTrue($zeek->user_get('toto') !== NULL);
-
-        $this->assertTrue($zeek->user_check('toto', 'toto'));
-
-        $this->assertFalse($zeek->user_get('toto') == NULL);
-
-        $this->assertTrue($zeek->user_change_password(
-            'toto', 'toto', 'titi'));
-
-        $this->assertFalse($zeek->user_change_password(
-            'tutu', 'toto', 'titi'));
-
-        $this->assertFalse($zeek->user_change_password(
-            'toto', 'toto', 'titi'));
-
-        $this->assertTrue($zeek->user_change_password(
-            'toto', 'titi', 'toto'));
-
-        $this->assertFalse($zeek->user_change_password(
-            'toto', 'titi', 'toto'));
-
-        $this->assertFalse($zeek->user_change_password(
-            'toto', 'titi', 'toto'));
-
-        $this->assertTrue($zeek->user_remove('toto'));
-        $this->assertFalse($zeek->user_remove('toto'));
-        $this->assertFalse($zeek->user_remove('tutu'));
-
-        $zeek->environment_clean('zeek_test');
-    }
-
-    public function test_project()
-    {
-        $this->assertTrue(
-            $this->zeek->connect_to_database());
-
-        $this->zeek->environment_clean('zeek_test');
-
-        $this->assertTrue(
-            $this->zeek->environment_setup('zeek_test', 'test', 'test'));
-
-        $this->assertFalse(
-            $this->zeek->project_check('test'));
-
-        $this->assertTrue(
-            $this->zeek->project_add('test'));
-
-        $this->assertFalse(
-            $this->zeek->project_add('test'));
-
-        $this->assertTrue(
-            $this->zeek->project_check('test'));
-
-        $this->assertTrue(
-            $this->zeek->connect_to_database());
-
-        $this->assertTrue(
-            $this->zeek->project_delete());
-
-        $this->zeek->environment_clean('zeek_test');
-    }
-
 
     public function test_display_dynamic()
     {

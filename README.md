@@ -3,6 +3,9 @@ WEB-Zeek
 
 Simple web site backoffice
 
+07/08/2014 Leo
+ * readaptation to old way to establish connection & request for free.fr
+
 04/08/2014 Leo
  * script to deploy website on free.fr services
  * some adaptation to accept old php version (json_encode)

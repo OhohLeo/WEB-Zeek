@@ -1,5 +1,6 @@
 <?php
 
+require_once "lib/output.php";
 require_once 'lib/database_mysql.php';
 
 class ExtendsOldMySQL extends DataBaseOldMySQL

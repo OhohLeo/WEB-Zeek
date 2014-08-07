@@ -1,5 +1,6 @@
 <?php
 
+require_once "lib/output.php";
 require_once 'lib/database.php';
 
 class ExtendsDataBase extends DataBase

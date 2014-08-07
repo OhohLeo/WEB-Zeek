@@ -110,7 +110,7 @@ include '_partials/header.php';
 
       $.ajax({
         type: 'POST',
-              url: "lib/zeek.php",
+              url: "input.php",
               data: {
                 'method': 'get_structure'
               },
@@ -136,7 +136,7 @@ include '_partials/header.php';
 
                       $.ajax({
                         type: 'POST',
-                              url: "lib/zeek.php",
+                              url: "input.php",
                               data: {
                                 'method': 'clicked',
                                 'type': $type,

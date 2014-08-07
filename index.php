@@ -108,7 +108,7 @@
 
       $.ajax({
         type: "POST",
-              url: "lib/zeek.php",
+              url: "input.php",
               dataType: "json",
               data: {
                    "method": "connect",
@@ -124,7 +124,7 @@
                   $('button.btn-success').on('click', function() {
                       $.ajax({
                         type: "POST",
-                              url: "lib/zeek.php",
+                              url: "input.php",
                               dataType: "json",
                               data: {
                                   "method": "project_create",

@@ -5,11 +5,10 @@
  *
  * @package DataBase
  */
-class DataBase {
+class DataBase extends ZeekOutput {
 
     private $db;
-    protected $debug = true;
-    private $master;
+    protected $debug = false;
     private $config;
 
     private $valid_type = array(
@@ -41,18 +40,6 @@ class DataBase {
     {
         $this->config = $config;
     }
-
-/**
- * Display output to master
- *
- * @method set_master
- * @param boolean true/false
- */
-    public function set_master($master)
-    {
-        $this->master = $master;
-    }
-
 
 /**
  * Establish a connection with MySQL database
@@ -506,20 +493,6 @@ class DataBase {
         }
 
         return $values;
-    }
-
-/**
- * Echo all input
- *
- * @method output
- * @param string data to display
- */
-    protected function output($input) {
-        if ($this->master == NULL) {
-            echo $input . "\n";
-        } else {
-            $this->master->error($input);
-        }
     }
 }
 
