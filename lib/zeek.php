@@ -141,8 +141,8 @@ class Zeek extends ZeekOutput {
         /* we check the validity of the login & password */
         if ($this->check_string_and_size($project_name, 25)
         and $this->check_string_and_size($login, 25)
-        and $this->check_string_and_size($password, 32)) {
-        /* and $zlib->user_check($login, $password)) { */
+        and $this->check_string_and_size($password, 32)
+        and $zlib->user_check($login, $password)) {
 
             /* we store the session user */
             $_SESSION["username"] = $login;

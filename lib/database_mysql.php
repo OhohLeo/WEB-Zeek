@@ -52,11 +52,13 @@ class DataBaseOldMySQL extends DataBase {
          $result = $this->send_request(
              "SHOW DATABASES LIKE '$name'", false);
 
-         /* while ($row = mysql_fetch_assoc($result)) { */
-         /*     return true; */
-         /* } */
+         while ($row = mysql_fetch_assoc($result)) {
+             mysql_free_result($result);
+             return true;
+         }
 
-         return true;
+         mysql_free_result($result);
+         return false;
     }
 
 /**
@@ -124,13 +126,47 @@ class DataBaseOldMySQL extends DataBase {
         $result =
             $this->table_view($name, 'id', NULL, NULL, NULL, array('id' => $id));
 
-        if ($result == FALSE) {
+        if (is_bool($result)) {
+            return $result;
+        }
+
+        if (mysql_num_rows($result) == 0) {
             return false;
         }
 
         return $this->send_request(
             "UPDATE $name SET " . implode(',', $this->get_values($values))
             . " WHERE id = $id", $values) ? true : false;
+    }
+
+/**
+ * Fetch to get next result
+ *
+ * @method handle_result
+ * @param result containing the value to fetch
+ */
+    public function handle_result($result)
+    {
+        if (is_bool($result)) {
+            return $result;
+        }
+
+        if (mysql_num_rows($result) == 0) {
+            return false;
+        }
+
+        /* sinon on retourne un résultat */
+        $row = mysql_fetch_assoc($result);
+        if (is_bool($row))
+            return $row;
+
+        $object = new stdClass();
+
+        foreach ($row as $property => $value) {
+            $object->{$property} = $value;
+        }
+
+        return $object;
     }
 
 /**
@@ -169,7 +205,7 @@ class DataBaseOldMySQL extends DataBase {
  * @param boolean  if true = return true if there is an answer, false otherwise
  *          if false = return the result of the request
  */
-    public function send_request($request, $params)
+    protected function send_request($request, $params)
     {
         if ($this->debug) {
             print("\n request = $request;\n"

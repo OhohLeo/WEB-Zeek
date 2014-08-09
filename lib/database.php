@@ -385,6 +385,17 @@ class DataBase extends ZeekOutput {
     }
 
 /**
+ * Fetch to get next result
+ *
+ * @method handle_result
+ * @param result containing the value to fetch
+ */
+    public function handle_result($result)
+    {
+        return $result->fetch();
+    }
+
+/**
  * Send a SQL query to MySQL server
  *
  * Automatically add the ';' at the end.
@@ -436,7 +447,7 @@ class DataBase extends ZeekOutput {
  * @param boolean  if true = return true if there is an answer, false otherwise
  *          if false = return the result of the request
  */
-    public function send_request($request, $params)
+    protected function send_request($request, $params)
     {
         $db = $this->db;
         static $last_request;

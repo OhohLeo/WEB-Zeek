@@ -1,40 +1,14 @@
 <?php
 
-require_once "lib/output.php";
-require_once 'lib/database_mysql.php';
-
-class ExtendsOldMySQL extends DataBaseOldMySQL
+class TestDataBaseCommon extends PHPUnit_Framework_TestCase
 {
-    private $output;
-
-    public function checkOutput($input)
-    {
-        if ($this->output == $input) {
-            $this->output = NULL;
-            return true;
-        }
-
-        echo "\n expect : " . $this->output
-            . "\n received : " . $input . "\n";
-
-        return false;
-    }
-
-    public function output($input)
-    {
-        $this->output = $input;
-    }
-}
-
-class TestOldMySQL extends PHPUnit_Framework_TestCase
-{
-    private $db;
-    private $test_dbname = 'zeek_test';
+    protected $db;
+    protected $test_dbname = 'zeek_test';
 
     private function connect()
     {
         $db = $this->db;
-        $db->connect('localhost', NULL, 'test', 'test');
+        $db->connect('localhost', 'zeek_test', 'test', 'test');
         return $db;
     }
 
@@ -43,40 +17,10 @@ class TestOldMySQL extends PHPUnit_Framework_TestCase
         $this->db->database_delete($this->test_dbname);
     }
 
-    public function setUp()
-    {
-        $this->db = new ExtendsOldMySQL();
-    }
-
 
     public function test_db()
     {
         $this->assertNotNull($this->db);
-    }
-
-    public function test_connect()
-    {
-        $db = $this->db;
-
-        $this->assertTrue(
-            $db->connect('localhost', NULL, 'test', 'test'));
-
-        $this->assertTrue(
-            $db->checkOutput(NULL));
-
-        $this->assertFalse(
-            $db->connect('localhost', NULL, 'test', 'tes'));
-
-        $this->assertTrue(
-            $db->checkOutput(
-                "Impossible to connect to 'localhost' with MySQL mysql_connect(): Access denied for user 'test'@'localhost' (using password: YES)"));
-
-        $this->assertFalse(
-            $db->connect('localhost', NULL, 'tes', 'test'));
-
-        $this->assertTrue(
-            $db->checkOutput(
-                "Impossible to connect to 'localhost' with MySQL mysql_connect(): Access denied for user 'tes'@'localhost' (using password: YES)"));
     }
 
     public function test_database()
@@ -154,9 +98,9 @@ class TestOldMySQL extends PHPUnit_Framework_TestCase
             $this->assertTrue(
                 $db->row_insert(
                     'more_attributes',
-                    array('first_element'  => $first_elements[$i],
+                    array('first_element' => $first_elements[$i],
                           'second_element' => $second_elements[$i],
-                          'third_element'  => $third_elements[$i])));
+                          'third_element' => $third_elements[$i])));
         }
 
         $this->assertEquals(
@@ -171,30 +115,30 @@ class TestOldMySQL extends PHPUnit_Framework_TestCase
         $result = $db->table_view('more_attributes', '*',
                                       array('id', 'ASC'), NULL, NULL, NULL);
 
-        while ($row = mysql_fetch_assoc($result)) {
-            $this->assertTrue($row['first_element'] == $first_elements[$id]);
-            $this->assertTrue($row['second_element'] == $second_elements[$id]);
-            $this->assertTrue($row['third_element'] == $third_elements[$id]);
-            $this->assertTrue($row['id'] == ++$id);
+        while ($row = $db->handle_result($result)) {
+            $this->assertTrue($row->first_element == $first_elements[$id]);
+            $this->assertTrue($row->second_element == $second_elements[$id]);
+            $this->assertTrue($row->third_element == $third_elements[$id]);
+            $this->assertTrue($row->id == ++$id);
         }
 
         $result = $db->table_view('more_attributes', '*',
                                       array('id', 'DESC'), NULL, NULL, NULL);
 
-        while ($row = mysql_fetch_assoc($result)) {
-            $this->assertTrue($row['id'] == $id--);
-            $this->assertTrue($row['first_element'] == $first_elements[$id]);
-            $this->assertTrue($row['second_element'] == $second_elements[$id]);
-            $this->assertTrue($row['third_element'] == $third_elements[$id]);
+        while ($row = $db->handle_result($result)) {
+            $this->assertTrue($row->id == $id--);
+            $this->assertTrue($row->first_element == $first_elements[$id]);
+            $this->assertTrue($row->second_element == $second_elements[$id]);
+            $this->assertTrue($row->third_element == $third_elements[$id]);
         }
 
         $result = $db->table_view('more_attributes',
                                       array('id', 'first_element'),
                                       NULL, NULL, NULL, array('id' => 1));
 
-        while ($row = mysql_fetch_assoc($result)) {
-            $this->assertTrue($row['first_element'] == $first_elements[0]);
-            $this->assertTrue($row['id'] == 1);
+        while($row = $db->handle_result($result)) {
+            $this->assertTrue($row->first_element == $first_elements[0]);
+            $this->assertTrue($row->id == 1);
         }
 
         $result = $db->table_view('more_attributes', '*',
@@ -202,11 +146,11 @@ class TestOldMySQL extends PHPUnit_Framework_TestCase
         $id = 0;
 
         while ($id < 2) {
-            $row = mysql_fetch_assoc($result);
-            $this->assertTrue($row['first_element'] == $first_elements[$id]);
-            $this->assertTrue($row['second_element'] == $second_elements[$id]);
-            $this->assertTrue($row['third_element'] == $third_elements[$id]);
-            $this->assertTrue($row['id'] == ++$id);
+            $row = $db->handle_result($result);
+            $this->assertTrue($row->first_element == $first_elements[$id]);
+            $this->assertTrue($row->second_element == $second_elements[$id]);
+            $this->assertTrue($row->third_element == $third_elements[$id]);
+            $this->assertTrue($row->id == ++$id);
         }
 
         $result = $db->table_view('more_attributes', '*',
@@ -214,22 +158,23 @@ class TestOldMySQL extends PHPUnit_Framework_TestCase
         $id = 2;
 
         while ($id < 3) {
-            $row = mysql_fetch_assoc($result);
-            $this->assertTrue($row['first_element'] == $first_elements[$id]);
-            $this->assertTrue($row['second_element'] == $second_elements[$id]);
-            $this->assertTrue($row['third_element'] == $third_elements[$id]);
-            $this->assertTrue($row['id'] == ++$id);
+            $row = $db->handle_result($result);
+            $this->assertTrue($row->first_element == $first_elements[$id]);
+            $this->assertTrue($row->second_element == $second_elements[$id]);
+            $this->assertTrue($row->third_element == $third_elements[$id]);
+            $this->assertTrue($row->id == ++$id);
         }
+
 
         $this->assertTrue(
             $db->row_update('more_attributes', 3,
                                 array('second_element' => 6,
                                       'third_element' => 'juliette')));
 
-        /* $this->assertFalse( */
-        /*     $db->row_update('more_attributes', 118, */
-        /*                         array('second_element' => 33, */
-        /*                               'third_element' => 'failed'))); */
+        $this->assertFalse(
+            $db->row_update('more_attributes', 118,
+                                array('second_element' => 33,
+                                      'third_element' => 'failed')));
 
         $result = $db->table_describe('more_attributes');
 
@@ -238,13 +183,13 @@ class TestOldMySQL extends PHPUnit_Framework_TestCase
         $keys   = array('PRI');
         $extra  = array('auto_increment');
 
-        while ($row = mysql_fetch_assoc($result)) {
-            $this->assertEquals($row['Field'], array_shift($fields));
-            $this->assertEquals($row['Type'], array_shift($types));
-            $this->assertEquals($row['Null'], 'NO');
-            $this->assertEquals($row['Extra'], array_shift($extra));
-            $this->assertEquals($row['Key'], array_shift($keys));
-            $this->assertEquals($row['Default'], NULL);
+        while ($row = $db->handle_result($result)) {
+            $this->assertEquals($row->Field, array_shift($fields));
+            $this->assertEquals($row->Type, array_shift($types));
+            $this->assertEquals($row->Null, 'NO');
+            $this->assertEquals($row->Extra, array_shift($extra));
+            $this->assertEquals($row->Key, array_shift($keys));
+            $this->assertEquals($row->Default, NULL);
         }
 
         $this->assertTrue(
@@ -259,5 +204,5 @@ class TestOldMySQL extends PHPUnit_Framework_TestCase
         $this->assertFalse(
             $db->database_use($this->test_dbname));
     }
-
 }
+?>

@@ -1,85 +1,45 @@
 <?php
 
-require_once "lib/output.php";
-require_once 'lib/zeek_library.php';
-
-class ExtendsZeekLibrary extends ZeekLibrary
+class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 {
-    private $output;
-
-    public function checkOutput($input)
-    {
-        if ($this->output == $input) {
-            $this->output = NULL;
-            return true;
-        }
-
-        echo "\n expect : " . $this->output
-            . "\n received : " . $input . "\n";
-
-        return false;
-    }
-
-    public function database()
-    {
-        return $this->db;
-    }
-
-    public function output($input)
-    {
-        echo "$input \n";
-        $this->output = $input;
-    }
-}
-
-class TestZeekLibrary extends PHPUnit_Framework_TestCase
-{
-    private $zlib;
-
-    public function setUp()
-    {
-        $zlib = new ExtendsZeekLibrary();
-
-        $config = parse_ini_file('t/test.ini');
-        $zlib->config($config);
-        $zlib->global_path = '';
-
-        $this->zlib = $zlib;
-    }
+    protected $zlib;
 
     public function test_environment()
     {
-        $this->assertTrue(
-            $this->zlib->connect_to_database());
-
-        $this->zlib->environment_clean('zeek_test');
+        $zlib = $this->zlib;
 
         $this->assertTrue(
-            $this->zlib->environment_setup('zeek_test', 'test', 'test'));
+            $zlib->connect_to_database());
 
-        $access = $this->zlib->database();
-
-        $this->assertTrue(
-            $access->database_check('zeek_test'));
+        $zlib->environment_clean('zeek_test');
 
         $this->assertTrue(
-            $access->table_check('user'));
+            $zlib->environment_setup('zeek_test', 'test', 'test'));
 
-        $result = $access->table_view(
-            'user', '*', NULL, NULL, NULL, NULL)->fetch();
+        $db = $zlib->database();
+
+        $this->assertTrue(
+            $db->database_check('zeek_test'));
+
+        $this->assertTrue(
+            $db->table_check('user'));
+
+        $result = $db->table_view('user', '*', NULL, NULL, NULL, NULL);
+
+        $result = $db->handle_result($result);
 
         $this->assertEquals($result->id, 1);
         $this->assertEquals($result->name, "test");
         $this->assertEquals($result->password, "test");
 
         $this->assertTrue(
-            $access->table_check('project'));
+            $db->table_check('project'));
 
 
-        $this->zlib->environment_clean('zeek_test');
+        $zlib->environment_clean('zeek_test');
 
         $this->assertFalse(
-            $access->database_check('zeek_test'));
+            $db->database_check('zeek_test'));
     }
 
 
@@ -169,3 +129,5 @@ class TestZeekLibrary extends PHPUnit_Framework_TestCase
         $this->zlib->environment_clean('zeek_test');
     }
 }
+
+?>

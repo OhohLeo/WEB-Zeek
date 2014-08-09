@@ -3,6 +3,9 @@ WEB-Zeek
 
 Simple web site backoffice
 
+09/08/2014 Leo
+ * handle test for both old_mysql & new pdo way
+
 07/08/2014 Leo
  * readaptation to old way to establish connection & request for free.fr
  * add an intermediate zeek_library between visual methods & database methods

@@ -242,29 +242,33 @@ class ZeekLibrary extends ZeekOutput {
 
     public function user_get($username)
     {
-        $result = $this->db->table_view(
+        $db = $this->db;
+
+        $result = $db->table_view(
             'user', '*', NULL, NULL, NULL,
             array('name' => $username));
 
-        return true; /* ($result == NULL) ? NULL : $result->fetch(); */
+        return ($result == NULL) ? NULL : $db->handle_result($result);
     }
 
     public function user_check($username, $password)
     {
-        $result = $this->db->table_view(
+        $db = $this->db;
+
+        $result = $db->table_view(
             'user', 'name', NULL, NULL, NULL,
             array('name'     => $username,
                   'password' => $password));
 
-        if ($result == NULL) {
+        if ($result == false) {
             return false;
         }
 
-        /* if ($row = $result->fetch()) { */
-        /*     return true; */
-        /* } */
+        if ($row = $db->handle_result($result)) {
+            return true;
+        }
 
-        return true;
+        return false;
     }
 
 /**
@@ -366,7 +370,9 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function project_check($project_name)
     {
-        $result = $this->db->table_view(
+        $db = $this->db;
+
+        $result = $db->table_view(
             'project', 'id', NULL, NULL, NULL,
             array('name' => $project_name));
 
@@ -374,12 +380,12 @@ class ZeekLibrary extends ZeekOutput {
             return false;
         }
 
-        /* if ($row = $result->fetch()) { */
-        /*     $this->project_id = $row->id; */
-        /*     return true; */
-        /* } */
+        if ($row = $db->handle_result($result)) {
+            $this->project_id = $row->id;
+            return true;
+        }
 
-        return true; #false;
+        return false;
     }
 
 
