@@ -8,7 +8,7 @@
 class Zeek extends ZeekOutput {
 
     public $global_path;
-    private $project_id;
+    protected $project_id;
     private $zlib;
 
 /**

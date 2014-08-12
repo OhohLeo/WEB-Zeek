@@ -388,7 +388,6 @@ class ZeekLibrary extends ZeekOutput {
         return false;
     }
 
-
 /**
  * Check if a table exists otherwise automatically create if this
  * table is referenced on the static table.
@@ -402,23 +401,22 @@ class ZeekLibrary extends ZeekOutput {
     protected function table_check_and_create($name)
     {
         /* we check if the table exists */
-        if ($this->db->table_check($name)) {
+        if ($this->db->table_check($name))
             return true;
-        }
 
-        /* otherwise we check the existence of the table name in the
-         * static datastructure */
-        $structure = $this->data_structure[$name];
-        if ($structure == NULL) {
+
+	if ($this->type_check($name) == false) {
             $this->error("'$name' not found in static database structure!");
             return false;
         }
 
+        /* otherwise we check the existence of the table name in the
+	 * static datastructure */
+	$structure = $this->data_structure[$name];
+
         /* we create the table and all attributes */
-        if ($this->db->table_create($name, $structure))
-        {
-            return true;
-        }
+	if ($this->db->table_create($name, $structure))
+	    return true;
 
         $this->error("Impossible to create $name table!");
         return false;
@@ -444,7 +442,10 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function type_get($type)
     {
-        return $this->data_structure[$type];
+	if ($this->type_check($type))
+	    return $this->data_structure[$type];
+
+	return false;
     }
 
 /**
@@ -479,6 +480,8 @@ class ZeekLibrary extends ZeekOutput {
         /* we check if the table exists */
         if ($this->table_check_and_create($name)) {
 
+	    /* we check that the values are correct */
+
             /* we insert the new value */
             return $this->db->row_insert($name, $values);
         }
@@ -500,6 +503,8 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function value_update($name, $id, $values)
     {
+	/* we check that the values are correct */
+
         /* we add the project id */
 
         return $this->db->row_update($name, $id, $values);
@@ -522,18 +527,34 @@ class ZeekLibrary extends ZeekOutput {
             $params = NULL;
 
             /* we set up the generic filter */
-            if ($name = 'project') {
+            if ($name == 'project') {
                 $param = array('id' => $this->project_id);
             } else {
                 $param = array('project_id' => $this->project_id);
             }
 
             /* we get all the values desired */
-            return $this->db->table_view(
+	    $result = $this->db->table_view(
                 $name, '*', NULL, $size, $offset, $param);
+
+	    if ($result == NULL)
+		return false;
+
+	    return $result;
         }
 
-        return NULL;
+        return false;
+    }
+
+/**
+ * Get value one by one.
+ *
+ * @method value_fetch
+ * @param object result of 'value_get' method
+ */
+    public function value_fetch($result)
+    {
+	return $this->db->handle_result($result);
     }
 }
 

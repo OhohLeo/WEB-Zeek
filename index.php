@@ -17,7 +17,8 @@
 	<input class="form-control"
 	       type="text"
            maxlength="25"
-	       name="project_name">
+	       name="project_name"
+           required>
       </div>
     </div>
     <div class="form-group">
@@ -26,7 +27,8 @@
 	<input class="form-control"
 	       type="login"
 	       maxlength="25"
-           name="login">
+           name="login"
+           required>
       </div>
     </div>
     <div class="form-group">
@@ -35,7 +37,8 @@
 	<input class="form-control"
 	       type="password"
            maxlength="25"
-	       name="password">
+	       name="password"
+           required>
       </div>
     </div>
 

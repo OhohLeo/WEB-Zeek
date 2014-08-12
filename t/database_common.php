@@ -204,5 +204,75 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
         $this->assertFalse(
             $db->database_use($this->test_dbname));
     }
+
+    public function test_value()
+    {
+        $db = $this->connect();
+
+	$this->assertFalse(
+	    $db->check_integer(0.45, -125, 127, 0, 255));
+	$this->assertFalse(
+	    $db->check_integer(-126, -125, 127, 0, 255));
+	$this->assertFalse(
+	    $db->check_integer(256, -125, 127, 0, 255));
+	$this->assertTrue(
+	    $db->check_integer(123, -125, 127, 0, 255));
+	$this->assertTrue(
+	    $db->check_integer(-125, -125, 127, 0, 255));
+	$this->assertTrue(
+	    $db->check_integer(127, -125, 127, 0, 255));
+	$this->assertTrue(
+	    $db->check_integer(255, -125, 127, 0, 255));
+	$this->assertTrue(
+	    $db->check_integer(0, -125, 127, 0, 255));
+
+	$this->assertTrue(
+	    $db->check_text('ceci est un texte valide'));
+	$this->assertTrue(
+	    $db->check_text('ceci drop est un texte table valide'));
+	$this->assertFalse(
+	    $db->check_text("ceci n'est pas un texte valide drop database"));
+	$this->assertFalse(
+	    $db->check_text("toto est à la plage drop table derrière"));
+	$this->assertFalse(
+	    $db->check_text("toto est à la plage INSERT INTO derrière"));
+
+	$this->assertTrue(
+	    $db->value_check('DATE', '1986-05-13'));
+	$this->assertFalse(
+	    $db->value_check('DATE', 'toto est à la plage'));
+	$this->assertFalse(
+	    $db->value_check('DATE', '1986-13-13'));
+	$this->assertFalse(
+	    $db->value_check('DATE', '1986-05-32'));
+
+	$this->assertTrue(
+	    $db->value_check('TIME', '10:08:30'));
+	$this->assertFalse(
+	    $db->value_check('TIME', 'toto est à la plage'));
+	$this->assertFalse(
+	    $db->value_check('TIME', '25:08:30'));
+	$this->assertFalse(
+	    $db->value_check('TIME', '10:61:30'));
+	$this->assertFalse(
+	    $db->value_check('TIME', '10:08:61'));
+
+	$this->assertTrue(
+	    $db->value_check('DATETIME', '1986-05-13 10:08:30'));
+	$this->assertFalse(
+	    $db->value_check('DATETIME', 'toto est à la plage'));
+	$this->assertFalse(
+	    $db->value_check('DATETIME', '1986-05-13 25:08:30'));
+	$this->assertFalse(
+	    $db->value_check('DATETIME', '1986-05-13 10:61:30'));
+	$this->assertFalse(
+	    $db->value_check('DATETIME', '1986-05-13 10:08:61'));
+	$this->assertFalse(
+	    $db->value_check('DATETIME', '1986-13-13 10:08:21'));
+	$this->assertFalse(
+	    $db->value_check('DATETIME', '10000-05-13 10:08:21'));
+	$this->assertFalse(
+	    $db->value_check('DATETIME', '1986-05-32 10:08:21'));
+    }
 }
 ?>

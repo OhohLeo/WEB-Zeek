@@ -3,23 +3,23 @@
 class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 {
     protected $zlib;
+    private $db_name = 'zeek_test';
 
     public function test_environment()
     {
         $zlib = $this->zlib;
 
-        $this->assertTrue(
-            $zlib->connect_to_database());
+        $this->assertTrue($zlib->connect_to_database());
 
-        $zlib->environment_clean('zeek_test');
+        $zlib->environment_clean($this->db_name);
 
         $this->assertTrue(
-            $zlib->environment_setup('zeek_test', 'test', 'test'));
+            $zlib->environment_setup($this->db_name, 'test', 'test'));
 
         $db = $zlib->database();
 
         $this->assertTrue(
-            $db->database_check('zeek_test'));
+            $db->database_check($this->db_name));
 
         $this->assertTrue(
             $db->table_check('user'));
@@ -36,10 +36,10 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
             $db->table_check('project'));
 
 
-        $zlib->environment_clean('zeek_test');
+        $zlib->environment_clean($this->db_name);
 
         $this->assertFalse(
-            $db->database_check('zeek_test'));
+            $db->database_check($this->db_name));
     }
 
 
@@ -50,10 +50,10 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
         $this->assertTrue(
             $zlib->connect_to_database());
 
-        $zlib->environment_clean('zeek_test');
+        $zlib->environment_clean($this->db_name);
 
         $this->assertTrue(
-            $zlib->environment_setup('zeek_test', 'test', 'test'));
+            $zlib->environment_setup($this->db_name, 'test', 'test'));
 
         $this->assertTrue($zlib->user_get('test') !== NULL);
 
@@ -95,38 +95,166 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
         $this->assertFalse($zlib->user_remove('toto'));
         $this->assertFalse($zlib->user_remove('tutu'));
 
-        $zlib->environment_clean('zeek_test');
+        $zlib->environment_clean($this->db_name);
     }
 
     public function test_project()
     {
-        $this->assertTrue(
-            $this->zlib->connect_to_database());
+        $zlib = $this->zlib;
 
-        $this->zlib->environment_clean('zeek_test');
+        $this->assertTrue($zlib->connect_to_database());
+
+        $zlib->environment_clean($this->db_name);
 
         $this->assertTrue(
-            $this->zlib->environment_setup('zeek_test', 'test', 'test'));
+            $zlib->environment_setup($this->db_name, 'test', 'test'));
 
         $this->assertFalse(
-            $this->zlib->project_check('test'));
+            $zlib->project_check('test'));
 
         $this->assertTrue(
-            $this->zlib->project_add('test'));
+            $zlib->project_add('test'));
 
         $this->assertFalse(
-            $this->zlib->project_add('test'));
+            $zlib->project_add('test'));
 
         $this->assertTrue(
-            $this->zlib->project_check('test'));
+            $zlib->project_check('test'));
 
         $this->assertTrue(
-            $this->zlib->connect_to_database());
+            $zlib->connect_to_database());
 
         $this->assertTrue(
-            $this->zlib->project_delete());
+            $zlib->project_delete());
 
-        $this->zlib->environment_clean('zeek_test');
+        $zlib->environment_clean($this->db_name);
+    }
+
+    public function test_type()
+    {
+        $zlib = $this->zlib;
+
+        $this->assertFalse(
+            $zlib->type_check('failed'));
+
+        $this->assertTrue(
+            $zlib->type_check('project'));
+
+	$this->assertFalse(
+	    $zlib->type_get('failed'));
+
+	$this->assertEquals(
+            $zlib->type_get('project'), array(
+            'name'        => array('VARCHAR', 25),
+            'since'       => 'DATE',
+            'subtitle'    => array('VARCHAR', 300),
+            'biography'   => array('TEXT', 1000)));
+    }
+
+    public function test_value()
+    {
+
+        $zlib = $this->zlib;
+
+        $this->assertTrue($zlib->connect_to_database());
+
+        $zlib->environment_clean($this->db_name);
+
+	$zlib->project_id = 0;
+
+	# we add a new value here
+	$this->assertTrue(
+	    $zlib->value_insert(
+		'artist',
+		array('name'      => 'test_name',
+		      'surname'   => 'test_surname',
+		      'age'       => 27,
+		      'subtitle'  => 'test_subtitle',
+		      'biography' => 'la vie de ce test sera très courte',
+		      'skill'     => 'skill_test')));
+
+	$result = $zlib->value_get('artist', NULL, NULL, NULL);
+
+	$row = $zlib->value_fetch($result);
+
+	$this->assertEquals($row->id, 1);
+	$this->assertEquals($row->name, 'test_name');
+	$this->assertEquals($row->surname, 'test_surname');
+	$this->assertEquals($row->age, 27);
+	$this->assertEquals($row->subtitle, 'test_subtitle');
+	$this->assertEquals($row->biography, 'la vie de ce test sera très courte');
+	$this->assertEquals($row->skill, 'skill_test');
+
+	# we add a new value again
+	$this->assertTrue(
+	    $zlib->value_insert(
+		'artist',
+		array('name'      => 'test_name2',
+		      'surname'   => 'test_surname2',
+		      'age'       => 272,
+		      'subtitle'  => 'test_subtitle2',
+		      'biography' => 'la vie de ce test sera très très courte',
+		      'skill'     => 'skill_test2')));
+
+	# we add a new value again
+	$this->assertTrue(
+	    $zlib->value_insert(
+		'artist',
+		array('name'      => 'test_name3',
+		      'surname'   => 'test_surname3',
+		      'age'       => 273,
+		      'subtitle'  => 'test_subtitle3',
+		      'biography' => 'la vie de ce test sera très très très courte',
+		      'skill'     => 'skill_test3')));
+
+	$result = $zlib->value_get('artist', NULL, 1, 1);
+
+	$row = $zlib->value_fetch($result);
+
+	$this->assertEquals($row->id, 2);
+	$this->assertEquals($row->name, 'test_name2');
+	$this->assertEquals($row->surname, 'test_surname2');
+	$this->assertEquals($row->age, 272);
+	$this->assertEquals($row->subtitle, 'test_subtitle2');
+	$this->assertEquals($row->biography, 'la vie de ce test sera très très courte');
+	$this->assertEquals($row->skill, 'skill_test2');
+
+	# we add a new value again
+	$this->assertTrue(
+	    $zlib->value_update(
+		'artist', 3,
+		array('name'      => 'test_update',
+		      'surname'   => 'test_surname-update')));
+
+	$result = $zlib->value_get('artist', NULL, 1, 2);
+
+	$row = $zlib->value_fetch($result);
+
+	$this->assertEquals($row->id, 3);
+	$this->assertEquals($row->name, 'test_update');
+	$this->assertEquals($row->surname, 'test_surname-update');
+	$this->assertEquals($row->age, 273);
+	$this->assertEquals($row->subtitle, 'test_subtitle3');
+	$this->assertEquals($row->biography, 'la vie de ce test sera très très très courte');
+	$this->assertEquals($row->skill, 'skill_test3');
+
+	$this->assertFalse(
+	    $zlib->value_insert(
+		'failed',
+		array('name'      => 'test_name3',
+		      'surname'   => 'test_surname3',
+		      'age'       => 273,
+		      'subtitle'  => 'test_subtitle3',
+		      'biography' => 'la vie de ce test sera très très très courte',
+		      'skill'     => 'skill_test3')));
+
+	$this->assertFalse(
+	    $zlib->value_update(
+		'failed', 3,
+		array('name'      => 'test_update',
+		      'surname'   => 'test_surname-update')));
+
+        $zlib->environment_clean($this->db_name);
     }
 }
 

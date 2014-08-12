@@ -112,7 +112,20 @@ if ($host eq 'ftpperso.free.fr')
 	# we create the file
 	my $filehandle;
 	open($filehandle, '>', "$directory/$filename");
-	print {$filehandle} "php 1\n";
+	print {$filehandle} <<END;
+<IfDefine Free>
+php 1
+</IfDefine>
+Options -Indexes
+
+<Files ".ht*">
+Order allow,deny
+Deny from all
+Satisfy all
+</Files>
+
+END
+
 	close($filehandle);
 
 	# we add the file to the list

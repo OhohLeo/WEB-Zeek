@@ -8,14 +8,15 @@
 class DataBase extends ZeekOutput {
 
     private $db;
-    protected $debug = false;
+    protected $debug = true;
     private $config;
 
+    # "ENUM" & "SET" are not handled
     private $valid_type = array(
         "TINYINT", "SMALLINT", "MEDIUMINT", "INT", "INTEGER", "BIGINT",
         "FLOAT", "DOUBLEPRECISION", "REAL", "DECIMAL", "CHAR", "VARCHAR",
-        "NYTEXT", "TEXT", "LONGTEXT", "TINYBLOB", "BLOB", "LONGBLOB",
-        "ENUM", "SET", "DATE", "DATETIME", "TIMESTAMP", "TIME", "YEAR");
+        "TINYTEXT", "TEXT", "LONGTEXT", "TINYBLOB", "BLOB", "LONGBLOB",
+        "DATE", "DATETIME", "TIMESTAMP", "TIME", "YEAR");
 
     private $translation = array("(" => "", ")" => "");
 
@@ -295,6 +296,12 @@ class DataBase extends ZeekOutput {
     {
         $options = '';
 
+	# we can't have offset without size
+	if (isset($offset) && !isset($size)) {
+	    $this->output("table_view : size parameters should be defined!");
+	    return false;
+	}
+
         if (is_array($fields)) {
             $fields = implode(',', $fields);
         }
@@ -305,16 +312,16 @@ class DataBase extends ZeekOutput {
             $options .= " ORDER BY " . implode(' ', $sort);
         }
 
+        if (is_array($params)){
+            $options .= " WHERE " . implode(' AND ', $this->get_values($params));
+        }
+
         if (is_numeric($size)) {
             $options .= " LIMIT $size";
         }
 
         if (is_numeric($offset)) {
             $options .= " OFFSET $offset";
-        }
-
-        if (is_array($params)){
-            $options .= " WHERE " . implode(' AND ', $this->get_values($params));
         }
 
         return $this->send_request("SELECT $fields FROM $name $options",
@@ -384,6 +391,94 @@ class DataBase extends ZeekOutput {
             . " WHERE " . implode(' AND ', $this->get_values($params)), $params);
     }
 
+
+/**
+ * Check values before storing in database.
+ *
+ * @method value_check
+ * @param string type expected
+ * @param string value to store
+ */
+    public function value_check($type, $value)
+    {
+	switch ($type) {
+	    case "TINYINT":
+		return $this->check_integer(
+		    $value, -128, 127, 0, 255);
+	    case "SMALLINT":
+		return $this->check_integer(
+		    $value, -32768, 32767, 0, 65535);
+	    case "MEDIUMINT":
+		return $this->check_integer(
+		    $value, -8388608, 8388607, 0, 16777215);
+	    case "INT":
+		return $this->check_integer(
+		    $value, -2147483648, 2147483647, 0, 4294967295);
+	    case "BIGINT":
+		return $this->check_integer(
+		    $value, -9223372036854775808, 9223372036854775807, 0,
+		    18446744073709551615);
+
+	    case "DECIMAL":
+	    case "INTEGER":
+	    case "FLOAT":
+	    case "DOUBLEPRECISION":
+	    case "REAL":
+	        return is_numeric($value);
+
+	    case "CHAR":
+	    case "VARCHAR":
+	    case "NYTEXT":
+	    case "TEXT":
+	    case "LONGTEXT":
+	    case "TINYBLOB":
+	    case "BLOB":
+	    case "LONGBLOB":
+ 	        return $this->check_text($value);
+
+	    case "DATE": # '0000-00-00'
+	        return (date('Y-m-d', strtotime($value)) == $value);
+	    case "TIME": # '00:00:00'
+	        return (date('H:i:s', strtotime($value)) == $value);
+	    case "DATETIME": # '0000-00-00 00:00:00'
+	        return (date('Y-m-d H:i:s', strtotime($value)) == $value);
+
+	    case "TIMESTAMP": # 00000000000000
+ 	        return is_int($value);
+	    case "YEAR": # 0000
+	    	return is_int($value)
+		       && ($value >= 0 && $value <= 9999);
+	}
+
+	return false;
+    }
+
+
+/**
+ * Check integer values before storing in database.
+ *
+ * @method check_integer
+ * @param string integer to check
+ */
+    public function check_integer($value, $min_signed, $max_signed,
+				  $min_unsigned, $max_unsigned)
+    {
+	return is_int($value)
+	    && (($value >= $min_signed && $value <= $max_signed)
+		|| ($value >= $min_unsigned && $value <= $max_unsigned));
+    }
+
+/**
+ * Check text values before storing in database.
+ *
+ * @method check_text
+ * @param string text to check
+ */
+    public function check_text($text)
+    {
+	return (preg_match('/((create|drop) (database|table))|(insert into)/i', $text) == 0);
+    }
+
 /**
  * Fetch to get next result
  *
@@ -425,7 +520,7 @@ class DataBase extends ZeekOutput {
 
            } catch (Exception $e) {
                 $this->output(
-                    "Impossible to send request '$request' : " . $e->getMessage());
+                    "send_query : impossible to send request '$request' " . $e->getMessage());
 
                 return false;
             }
@@ -433,7 +528,7 @@ class DataBase extends ZeekOutput {
             return true;
         }
 
-        $this->output("Need to establish connection with database 1st");
+        $this->output("send_query: need to establish connection with database 1st!");
         return false;
     }
 
@@ -475,7 +570,9 @@ class DataBase extends ZeekOutput {
 
            } catch (Exception $e) {
                 $this->output(
-                    "Impossible to send request : " . $e->getMessage());
+                    "Impossible to send request : " . $e->getMessage()
+		    . "\n request = $request\n"
+		    . " params = " . var_dump($params) . "\n");
 
                 return false;
             }

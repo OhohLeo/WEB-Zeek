@@ -3,6 +3,10 @@ WEB-Zeek
 
 Simple web site backoffice
 
+=======
+12/08/2014 Leo
+ * check sql input values
+
 09/08/2014 Leo
  * handle test for both old_mysql & new pdo way
 
