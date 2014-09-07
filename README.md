@@ -1,7 +1,35 @@
-WEB-Zeek
+## WEB-Zeek 2014
 ========
 
-Simple web site backoffice
+# *Zeek*
+
+## Open Source Back-Office : Simply administrate websites!
+
+## 1st announce :
+This is my 1st steps on internet technologies thanks to this project.
+The project is not yet finished.
+Please correct & optimise as you wish this project.
+
+You can see the actual state of art here : http://zeekadmin.free.fr/
+
+## Main Features :
+ - handle multiple projects
+ - handle multiple users
+ - deployment tools (only on free.fr)
+ - work with PDO & Mysql
+ - lots of unit tests
+ - keep it as simple as possible
+
+## TODO Features :
+ - finish the configuration & get_and_set visual functionnalities
+ - insert data beetween old ones
+ - handle sql project structure dynamically :
+  * writing one structure per projects
+  * add/remove tables functionnalities
+  * add/remove values type functionnalities
+ - save&restore database functionnalities
+ - setup help methods
+ - secure 1st form using http://www.jcryption.org/
 
 =======
 08/09/2014 Leo

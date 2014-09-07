@@ -126,7 +126,9 @@ include '_partials/header.php';
                 $danger.text("unhandled result!").show();
             }
 
-            $next_action();
+            if ($next_action) {
+                $next_action();
+            }
         },
         "error": function($request, $status, $error) {
             $danger.text($status + ' : ' + $error);

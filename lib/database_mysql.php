@@ -31,7 +31,7 @@ class DataBaseOldMySQL extends DataBase {
                     return false;
             }
         } catch (Exception $e) {
-            $this->output(
+            $this->error(
                 "Impossible to connect to '$host' with MySQL "
                 . $e->getMessage());
             return false;
@@ -212,7 +212,7 @@ class DataBaseOldMySQL extends DataBase {
         $result = mysql_query("$request;");
 
         if (!is_bool($params) && $result == false) {
-            $this->output(
+            $this->error(
                 "Impossible to send request : " . mysql_error());
             return false;
         }

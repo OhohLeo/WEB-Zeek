@@ -49,14 +49,14 @@ class TestOldMySQL extends TestDataBaseCommon
 
         $this->assertTrue(
             $db->checkOutput(
-                "Impossible to connect to 'localhost' with MySQL mysql_connect(): Access denied for user 'test'@'localhost' (using password: YES)"));
+                '{"error":"Impossible to connect to \'localhost\' with MySQL mysql_connect(): Access denied for user \'test\'@\'localhost\' (using password: YES)"}'));
 
         $this->assertFalse(
             $db->connect('localhost', NULL, 'tes', 'test'));
 
         $this->assertTrue(
             $db->checkOutput(
-                "Impossible to connect to 'localhost' with MySQL mysql_connect(): Access denied for user 'tes'@'localhost' (using password: YES)"));
+                '{"error":"Impossible to connect to \'localhost\' with MySQL mysql_connect(): Access denied for user \'tes\'@\'localhost\' (using password: YES)"}'));
     }
 }
 
