@@ -8,7 +8,7 @@
 class DataBase extends ZeekOutput {
 
     private $db;
-    protected $debug = true;
+    protected $debug = false;
     private $config;
 
     # "ENUM" & "SET" are not handled
@@ -57,7 +57,7 @@ class DataBase extends ZeekOutput {
                 "mysql:host=$host;dname=$name", $login, $password,
                 array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
          } catch (Exception $e) {
-            $this->output(
+            $this->error(
                 "Impossible to connect to '$host' with MySQL "
                 . $e->getMessage());
             return false;
@@ -170,7 +170,7 @@ class DataBase extends ZeekOutput {
 
                 /* the vartype should be defined */
                 if ($vartype == NULL) {
-                    $this->output(
+                    $this->error(
                         "Unknown attribute type for value '$value'"
                         . " when creating table '$name'");
                     return false;
@@ -180,7 +180,7 @@ class DataBase extends ZeekOutput {
                 if (in_array($vartype, $this->valid_type)) {
                         $request .= $vartype;
                 } else {
-                    $this->output(
+                    $this->error(
                         "Unexpected attribute type '$vartype'"
                         . " when creating table '$name'");
                 }
@@ -190,7 +190,7 @@ class DataBase extends ZeekOutput {
                     if (is_numeric($size)) {
                         $request .= "($size) ";
                     } else {
-                        $this->output(
+                        $this->error(
                             "Unexpected attribute size '$size' on type "
                             . "'$vartype' when creating table '$name'");
                         return false;
@@ -263,9 +263,7 @@ class DataBase extends ZeekOutput {
         }
 
         if ($count = $result->fetch(PDO::FETCH_ASSOC))
-        {
-            return $count['COUNT(*)'];
-        }
+            return $count["COUNT($field)"];
 
         return 0;
     }
@@ -296,11 +294,11 @@ class DataBase extends ZeekOutput {
     {
         $options = '';
 
-	# we can't have offset without size
-	if (isset($offset) && !isset($size)) {
-	    $this->output("table_view : size parameters should be defined!");
-	    return false;
-	}
+        # we can't have offset without size
+        if (isset($offset) && !isset($size)) {
+            $this->error("table_view : size parameters should be defined!");
+            return false;
+        }
 
         if (is_array($fields)) {
             $fields = implode(',', $fields);
@@ -386,9 +384,12 @@ class DataBase extends ZeekOutput {
             $params = array('id' => $params);
         }
 
-        return $this->send_request(
+        if ($this->send_request(
             "DELETE FROM $name "
-            . " WHERE " . implode(' AND ', $this->get_values($params)), $params);
+            . " WHERE " . implode(' AND ', $this->get_values($params)), $params))
+            return true;
+
+        return false;
     }
 
 
@@ -519,7 +520,7 @@ class DataBase extends ZeekOutput {
                     : $result;
 
            } catch (Exception $e) {
-                $this->output(
+                $this->error(
                     "send_query : impossible to send request '$request' " . $e->getMessage());
 
                 return false;
@@ -528,7 +529,7 @@ class DataBase extends ZeekOutput {
             return true;
         }
 
-        $this->output("send_query: need to establish connection with database 1st!");
+        $this->error("send_query: need to establish connection with database 1st!");
         return false;
     }
 
@@ -569,7 +570,7 @@ class DataBase extends ZeekOutput {
                 return $result;
 
            } catch (Exception $e) {
-                $this->output(
+                $this->error(
                     "Impossible to send request : " . $e->getMessage()
 		    . "\n request = $request\n"
 		    . " params = " . var_dump($params) . "\n");
@@ -580,7 +581,7 @@ class DataBase extends ZeekOutput {
             return true;
         }
 
-        $this->output("Need to establish connection with database at first");
+        $this->error("Need to establish connection with database at first");
         return false;
     }
 

@@ -3,14 +3,16 @@
 /* we check the session */
 session_start();
 
-$username     = $_SESSION["username"];
+$login        = $_SESSION["login"];
 $project_name = $_SESSION["project_name"];
+$project_id   = $_SESSION["project_id"];
 $start_ts     = $_SESSION["start_ts"];
 
 /* if one field is not define : do not authorize to display the
  * page */
-if (!(isset($username)
+if (!(isset($login)
       and isset($project_name)
+      and isset($project_id)
       and isset($start_ts))) {
 
     include '_partials/scripts.php';
@@ -60,14 +62,11 @@ include '_partials/header.php';
     </ul>
   </div>
 
-  <div class="col-sm-6 col-sm-offset-1">
-    <div class="alert alert-danger" role="alert"></div>
-    <div class="alert alert-success" role="alert"></div>
-  </div>
-
   <div class="col-sm-2 col-sm-offset-2 col-md-8 col-md-offset-0 main">
+    <div class="alert alert-danger text-center" role="alert"></div>
+    <div class="alert alert-success text-center" role="alert"></div>
     <h2 data-type="data-title" style="text-align:center;">Welcome to Zeek,
-         <b><?php echo $username; ?></b>!</h1>
+         <b><?php echo $login; ?></b>!</h1>
     <hr>
     <div class="dynamic"></div>
     <hr>
@@ -97,78 +96,85 @@ include '_partials/header.php';
 <?php include '_partials/scripts.php'; ?>
 
 <script>
-  $danger = $('div.alert-danger');
+  var $danger = $('div.alert-danger');
   $danger.hide();
 
-  $success = $('div.alert-success');
+  var $success = $('div.alert-success');
   $success.hide();
 
-  (function()
-  {
-      var $title = $('h2').first();
-      var $clickable;
-
+  var $send_request = (function($data, $next_action) {
       $.ajax({
-        type: 'POST',
-              url: "input.php",
-              data: {
-                'method': 'get_structure'
-              },
-              dataType: "html",
-              success: function($input)
-              {
-                  $('ul.nav-sidebar').replaceWith($input);
+        "type": "POST",
+        "url": "input.php",
+        "data": $data,
+        "dataType":"json",
+        "success": function($result) {
+            if ($result["success"]) {
+                $danger.hide();
+                $success.text($result["success"]).show();
+            } else if ($result["error"]) {
+                $("div.modal").modal("hide");
+                $success.hide();
+                $danger.text($result["error"]).show();
+            } else if ($result['replace']) {
+                $('div.dynamic').replaceWith($result['replace']);
+            } else if ($result['append']) {
+                $('div.dynamic').append($result['append']);
+            } else {
+                $('div.modal').modal("hide");
+                $success.hide();
+                $danger.text("unhandled result!").show();
+            }
 
-                  $('a.clickable').on('click', function()
-                  {
-                      $danger.hide();
-                      $success.hide();
-
-                      var $this = $(this);
-                      var $type = $this.data('type');
-                      var $project_id = 1;
-
-                      if ($type == 'Home') {
-                          $title.text('Welcome to Zeek!');
-                      } else if ($type != 'Disconnect') {
-                          $title.text($type);
-                      }
-
-                      $.ajax({
-                        type: 'POST',
-                              url: "input.php",
-                              data: {
-                                'method': 'clicked',
-                                'type': $type,
-                                'project_id': $project_id
-                              },
-                              dataType: 'text',
-                              success: function($input, $toto)
-                              {
-                                  console.log(
-                                      'length:' + $input.length + 'result:' + $input + $toto);
-                                  if ($type == 'Disconnect') {
-                                      $('div.dynamic').append($input);
-                                  } else {
-                                      $('div.dynamic').replaceWith($input);
-                                  }
-                              },
-                              error: function($request, $status, $error)
-                              {
-                                  $('div.dynamic').replaceWith(
-                                      '<div class="dynamic"><h2>'
-                                      + $error + '</h2></div>');
-                                  console.log($status + ' : ' + $error);
-                              }
-                      });
-                  });
-              },
-              error: function($request, $status, $error)
-              {
-                  console.log('error!!' + $status + ' ' + $error);
-              }
+            $next_action();
+        },
+        "error": function($request, $status, $error) {
+            $danger.text($status + ' : ' + $error);
+            $danger.show();
+        },
       });
-  })();
+  });
+
+  $(document).ready(function() {
+    var $title = $('h2').first();
+    var $clickable;
+
+    $.ajax({
+      type: 'POST',
+      url: "input.php",
+      data: {
+        'method': 'get_structure'
+      },
+      dataType: "html",
+      success: function($input)
+      {
+          $('ul.nav-sidebar').replaceWith($input);
+
+          $('a.clickable').on('click', function($e) {
+              $e.preventDefault();
+              $danger.hide();
+              $success.hide();
+
+              var $type = $(this).data('type');
+
+              if ($type == 'Home') {
+                  $title.text('Welcome to Zeek!');
+              } else if ($type != 'Disconnect') {
+                  $title.text($type);
+              }
+
+              $send_request({
+                    "method": 'clicked',
+                    "type": $type });
+          });
+      },
+      error: function($request, $status, $error)
+      {
+          $danger.text($status + ' : ' + $error);
+          $danger.show();
+      }
+    });
+  }());
 </script>
 
 <?php include '_partials/footer.php'; ?>

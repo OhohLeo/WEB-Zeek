@@ -1,6 +1,6 @@
-<div class="set">
+<div class="set" id="<?php echo $type; ?>">
   <h3>Create new <?php echo $type; ?></h3>
-  <form id="create_type">
+  <form id="data_set">
     <?php foreach ($structure as $key => $format) {
 
  if ($key == "project_id") {
@@ -19,9 +19,33 @@
    case "DATE":
      $var_type = "text";
      break;
-   case "INT":
+  case "TINYINT":
+  case "SMALLINT":
+  case "MEDIUMINT":
+  case "INTEGER":
+  case "BIGINT":
+  case "INT":
      $var_type = "text";
      break;
+
+  case "FLOAT":
+  case "DOUBLEPRECISION":
+  case "REAL":
+  case "DECIMAL":
+  case "CHAR":
+  case "VARCHAR":
+  case "TINYTEXT":
+  case "TEXT":
+  case "LONGTEXT":
+  case "TINYBLOB":
+  case "BLOB":
+  case "LONGBLOB":
+  case "DATE":
+  case "DATETIME":
+  case "TIMESTAMP":
+  case "TIME":
+  case "YEAR":
+      break;
   }
 
  if (is_array($format)) {
@@ -65,32 +89,26 @@
 </table>
 </div>
 <script>
-  $form = $("form");
+  var $form = $("form");
   $form.hide();
-  $("div.set").on("mouseenter", function() {
+
+  var $set = $("div.set");
+
+  $set.on("mouseenter", function() {
     $form.slideDown(200);
   }).on("mouseleave", function() {
     $form.slideUp(200);
   });
 
   $(document).ready(function() {
-    $("#create_type").on("submit", function(e) {
-        e.preventDefault();
-        var $this = $(this);
-
-        $.ajax({
-          type: "POST",
-          url: "input.php",
-          data: {
-           "method": "create_type",
-           "project_id": "<?php echo $project_id; ?>",
-           "type": "<?php echo $type; ?>",
-           "params": $this.serialize(),
-          },
-          dataType: "text",
-          success: function($input) {
-            console.log("ok!!" + $this.serialize());
-          }});
+    $("form#data_set").on("submit", function($e) {
+      $e.preventDefault();
+      $send_request({
+          "method": "data_set",
+          "name": "album",
+          "values": $(this).serialize(),
+        });
+      console.log("YES! " + $(this).serialize());
     });
-});
+  });
 </script>

@@ -5,11 +5,11 @@ class ZeekLibrary extends ZeekOutput {
     public $global_path;
 
     protected $db;
+    public $db_name;
 
     private $db_login;
     private $db_password;
     private $db_host;
-    private $db_name;
     private $db_use_specific;
     private $db_use_uniq;
 
@@ -62,9 +62,10 @@ class ZeekLibrary extends ZeekOutput {
             'project_id' => array('INT', 11)));
 
 /**
- * Establish a connection with MySQL database
+ * Setup configuration for establishing a connection with MySQL
+ * database
  *
- * @method connect_to_database
+ * @method config
  * @param array connections parameters
  */
     public function config($config)
@@ -147,13 +148,15 @@ class ZeekLibrary extends ZeekOutput {
 
         /* we create the user table */
         $db->table_create('user', array(
-            'name' => array('VARCHAR', 25),
-            'password' => array('CHAR', 32)));
+            'name'       => array('VARCHAR', 25),
+            'password'   => array('CHAR', 32),
+            'project_id' => array('INT', 11)));
 
         /* we add the actual user */
         $db->row_insert('user', array(
-            'name' => $login,
-            'password' => $password));
+            'name'       => $login,
+            'password'   => $password,
+            'project_id' => 0));
 
         /* we create the project table */
         $db->table_create(
@@ -170,14 +173,14 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function environment_clean($name)
     {
-        /* we create the database */
+        /* we delete the database */
         $this->db->database_delete($name);
     }
 
-    public function user_add($username, $password)
+    public function user_add($project_id, $username, $password)
     {
-        /* We check if the project already exists */
-        if ($this->user_check($username, $password)) {
+        /* We check if the user already exists */
+        if ($this->user_check($project_id, $username, $password)) {
             $this->error("User $username already exist!");
             return false;
         }
@@ -185,8 +188,9 @@ class ZeekLibrary extends ZeekOutput {
         /* we insert the new project */
         if ($this->value_insert(
             'user', array(
-                'name' => $username,
-                'password' => $password ))) {
+                'project_id' => $project_id,
+                'name'       => $username,
+                'password'   => $password ))) {
             return true;
         }
 
@@ -195,10 +199,10 @@ class ZeekLibrary extends ZeekOutput {
     }
 
     public function user_change_password(
-        $username, $old_password, $new_password)
+        $project_id, $username, $old_password, $new_password)
     {
         /* we get the user */
-        $user = $this->user_get($username);
+        $user = $this->user_get($project_id, $username);
         if ($user == NULL) {
             $this->error(
                 "Can't change password : '$username' doesn't exist!");
@@ -221,9 +225,9 @@ class ZeekLibrary extends ZeekOutput {
         return false;
     }
 
-    public function user_remove($username)
+    public function user_remove($project_id, $username)
     {
-        $user = $this->user_get($username);
+        $user = $this->user_get($project_id, $username);
 
         /* We check if the project already exists */
         if ($user == NULL) {
@@ -233,32 +237,35 @@ class ZeekLibrary extends ZeekOutput {
 
         /* we insert the new project */
         if ($this->db->row_delete(
-            'user', array('name' => $username))) {
+            'user', array('project_id' => $project_id,
+                          'name'       => $username))) {
             return true;
         }
 
         return false;
     }
 
-    public function user_get($username)
+    public function user_get($project_id, $username)
     {
         $db = $this->db;
 
         $result = $db->table_view(
             'user', '*', NULL, NULL, NULL,
-            array('name' => $username));
+            array('project_id' => $project_id,
+                  'name'       => $username));
 
         return ($result == NULL) ? NULL : $db->handle_result($result);
     }
 
-    public function user_check($username, $password)
+    public function user_check($project_id, $username, $password)
     {
         $db = $this->db;
 
         $result = $db->table_view(
             'user', 'name', NULL, NULL, NULL,
-            array('name'     => $username,
-                  'password' => $password));
+            array('project_id' => $project_id,
+                  'name'       => $username,
+                  'password'   => $password));
 
         if ($result == false) {
             return false;
@@ -285,7 +292,7 @@ class ZeekLibrary extends ZeekOutput {
         $db = $this->db;
 
         /* We check if the project already exists */
-        if ($this->project_check($project_name)) {
+        if ($this->project_get_id($project_name)) {
             $this->error(
                 "Another project have the same name $project_name!");
             return false;
@@ -299,7 +306,7 @@ class ZeekLibrary extends ZeekOutput {
         }
 
         /* we store the project id */
-        if ($this->project_check($project_name)) {
+        if ($this->project_get_id($project_name)) {
             return true;
         }
 
@@ -319,16 +326,24 @@ class ZeekLibrary extends ZeekOutput {
  * @method project_delete
  * @param string project name
  */
-    public function project_delete()
+    public function project_delete($project_name)
     {
         $db = $this->db;
 
+        /* We check if the project exists */
+        $project_id = $this->project_get_id($project_name);
+        if ($project_id == false) {
+            $this->error(
+                "No existing project '$project_name'!");
+            return false;
+        }
+
         /* if it exists only one project : we delete the database */
-        if ($db->table_count('project', '*', NULL) < 2) {
+        if ($db->table_count('project', '*', NULL) <= 1) {
             return $db->database_delete($this->db_name);
         }
 
-        $params = array('project_id' => $this->project_id);
+        $params = array('project_id' => $project_id);
 
         /* otherwise : all links containing the actual project_id */
         foreach ($this->data_structure as $name => $value) {
@@ -365,10 +380,10 @@ class ZeekLibrary extends ZeekOutput {
  *
  * Return true if the project exists otherwise return false.
  *
- * @method project_check
+ * @method project_get_id
  * @param string project name
  */
-    public function project_check($project_name)
+    public function project_get_id($project_name)
     {
         $db = $this->db;
 
@@ -381,44 +396,9 @@ class ZeekLibrary extends ZeekOutput {
         }
 
         if ($row = $db->handle_result($result)) {
-            $this->project_id = $row->id;
-            return true;
+            return $row->id;
         }
 
-        return false;
-    }
-
-/**
- * Check if a table exists otherwise automatically create if this
- * table is referenced on the static table.
- *
- * Return true if the table exists or is succesfully created otherwise
- * return false.
- *
- * @method table_check_and_create
- * @param string table name
- */
-    protected function table_check_and_create($name)
-    {
-        /* we check if the table exists */
-        if ($this->db->table_check($name))
-            return true;
-
-
-	if ($this->type_check($name) == false) {
-            $this->error("'$name' not found in static database structure!");
-            return false;
-        }
-
-        /* otherwise we check the existence of the table name in the
-	 * static datastructure */
-	$structure = $this->data_structure[$name];
-
-        /* we create the table and all attributes */
-	if ($this->db->table_create($name, $structure))
-	    return true;
-
-        $this->error("Impossible to create $name table!");
         return false;
     }
 
@@ -442,10 +422,10 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function type_get($type)
     {
-	if ($this->type_check($type))
-	    return $this->data_structure[$type];
+        if ($this->type_check($type))
+            return $this->data_structure[$type];
 
-	return false;
+        return false;
     }
 
 /**
@@ -462,6 +442,42 @@ class ZeekLibrary extends ZeekOutput {
         return array_key_exists($type, $this->data_structure);
     }
 
+/**
+ * Check if a table exists otherwise automatically create if this
+ * table is referenced on the static table.
+ *
+ * Return true if the table exists or is succesfully created otherwise
+ * return false.
+ *
+ * @method table_check_and_create
+ * @param string table name
+ */
+    protected function table_check_and_create($name)
+    {
+        /* we check if the table exists */
+        if ($this->db->table_check($name))
+            return true;
+
+        if ($this->type_check($name) == false) {
+            $this->error("'$name' not found in static database structure!");
+            return false;
+        }
+
+        /* otherwise we check the existence of the table name in the
+         * static datastructure */
+        $structure = $this->data_structure[$name];
+        if ($structure == NULL) {
+            $this->error("'$name' not found in static database structure!");
+            return false;
+        }
+
+        /* we create the table and all attributes */
+        if ($this->db->table_create($name, $structure))
+            return true;
+
+        $this->error("Impossible to create $name table!");
+        return false;
+    }
 
 /**
  * Check if a table exists otherwise automatically create it.
@@ -479,8 +495,6 @@ class ZeekLibrary extends ZeekOutput {
     {
         /* we check if the table exists */
         if ($this->table_check_and_create($name)) {
-
-	    /* we check that the values are correct */
 
             /* we insert the new value */
             return $this->db->row_insert($name, $values);
@@ -503,11 +517,22 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function value_update($name, $id, $values)
     {
-	/* we check that the values are correct */
-
-        /* we add the project id */
-
         return $this->db->row_update($name, $id, $values);
+    }
+
+/**
+ * Delete a value already stored.
+ *
+ * Return true if the values are deleted otherwise
+ * return false.
+ *
+ * @method value_delete
+ * @param string table name
+ * @param integer id of the element to delete
+ */
+    public function value_delete($name, $id)
+    {
+        return $this->db->row_delete($name, $id);
     }
 
 /**
@@ -534,16 +559,16 @@ class ZeekLibrary extends ZeekOutput {
             }
 
             /* we get all the values desired */
-	    $result = $this->db->table_view(
+            $result = $this->db->table_view(
                 $name, '*', NULL, $size, $offset, $param);
 
-	    if ($result == NULL)
-		return false;
+            if ($result == NULL)
+                return false;
 
-	    return $result;
+            return $result;
         }
 
-        return false;
+        return NULL;
     }
 
 /**
@@ -555,6 +580,17 @@ class ZeekLibrary extends ZeekOutput {
     public function value_fetch($result)
     {
 	return $this->db->handle_result($result);
+    }
+
+/**
+ * Check values before storing in database.
+ *
+ * @method value_check
+ * @param string value to store
+ * @param string type expected
+ */
+    public function value_check($value, $type)
+    {
     }
 }
 

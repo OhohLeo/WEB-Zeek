@@ -1,39 +1,87 @@
-<div class="boxed-group">
-  <h3>Add new administrator</h3>
-  <form role="form">
-    <label for="admin_name">new admin name</label>
-    <input type="text" class="form-control" id="admin_name"
-	   placeholder="enter new admin name"></input>
-    <label for="admin_name">e-mail</label>
-    <input type="email" class="form-control" id="admin_email"
-	   placeholder="enter e-mail"></input>
-  </form>
-  <input type="submit" class="btn btn-block btn-success">
+<div class="config">
+  <h3>Add new user</h3>
+  <div class="boxed-group">
+    <form id="user_add" role="form">
+      <label>user e-mail address</label>
+      <input type="email" class="form-control" name="email"
+	     placeholder="enter e-mail"></input>
+      <input type="submit" class="btn btn-block btn-success">
+    </form>
+  </div>
 </div>
 <hr>
-<div class="boxed-group">
+<div class="config">
   <h3>Change password</h3>
-  <form role="form">
-    <label for="old_password">old password</label>
-    <input type="password" class="form-control" id="old_password"
-	   placeholder="enter old password"></input>
-    <label for="new_password">new password</label>
-    <input type="password" class="form-control" id="new_password"
-	   placeholder="enter new password"></input>
-    <label for="confirm_new_password">type new password again</label>
-    <input type="password" class="form-control"
-	   id="confirm_new_password"
-	   placeholder="enter new password again"></input>
-    <input type="submit" class="btn btn-block btn-success">
-  </form>
+  <div class="boxed-group">
+    <form id="user_change_password" role="form">
+      <label>old password</label>
+      <input type="password" class="form-control" name="password_old"
+	     placeholder="enter old password"></input>
+      <label>new password</label>
+      <input type="password" class="form-control" name="password_new"
+	     placeholder="enter new password"></input>
+      <label>type new password again</label>
+      <input type="password" class="form-control"
+	     placeholder="retape new password"></input>
+      <input type="submit" class="btn btn-block btn-success">
+    </form>
+  </div>
 </div>
 <hr>
-<div class="boxed-group danger-zone">
-  <h3>Reset all data</h3>
-  <button class="btn btn-block btn-danger" type="button">RESET all stored data</button>
+<div class="config">
+  <h3>Clean all data</h3>
+  <div class="boxed-group danger-zone">
+    <button id="data_clean" class="btn btn-block btn-danger"
+	    type="button">Delete all stored data</button>
+  </div>
 </div>
 <hr>
-<div class="boxed-group danger-zone">
-  <h3>Delete account</h3>
-  <button class="btn btn-block btn-danger" type="button">DELETE this account</button>
+<div class="config">
+  <h3>Delete current project</h3>
+  <div class="boxed-group danger-zone">
+    <button id="project_delete" class="btn btn-block btn-danger"
+	    type="button">DELETE this project</button>
+  </div>
 </div>
+<script>
+  $div = $("div.boxed-group");
+  $div.hide();
+
+  $("div.config").on("click", function($e) {
+    $e.preventDefault();
+    $(this).children("div.boxed-group").slideDown(200);
+  }).on("mouseleave", function() {
+    $(this).children("div.boxed-group").slideUp(200);
+  });
+
+  $(document).ready(function() {
+    $("form#user_add").on("submit", function() {
+        $send_request({
+          "method": "user_add",
+          "params": $(this).serialize(),
+        });
+    });
+
+    $("form#user_change_password").on("submit", function() {
+        $send_request({
+          "method": "user_change_password",
+          "params": $(this).serialize(),
+        });
+    });
+
+    $("button#data_clean").on("click", function($e) {
+        e.preventDefault();
+        $send_request({
+          "method": "data_clean",
+        });
+    });
+
+    $("button#project_delete").on("click", function($e) {
+        e.preventDefault();
+        $send_request({
+          "method": "project_delete_to_confirm",
+        });
+    });
+  });
+
+</script>

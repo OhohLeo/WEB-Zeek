@@ -73,19 +73,16 @@ class DataBaseOldMySQL extends DataBase {
     {
         $request = "SELECT COUNT($field) FROM $name";
 
-        if ($params) {
+        if ($params)
             $request .= " WHERE " . implode(' AND ', $this->get_values($params));
-        }
+
 
         $result = $this->send_request($request, $params);
-        if ($result == NULL) {
+        if ($result == NULL)
             return 0;
-        }
 
         if ($count = mysql_fetch_assoc($result))
-        {
-            return $count['COUNT(*)'];
-        }
+            return $count["COUNT($field)"];
 
         return 0;
     }

@@ -1,6 +1,6 @@
 <?php
 
-require_once "lib/output.php";
+require_once 'lib/output.php';
 require_once 'lib/zeek_library.php';
 require_once 't/zeek_library_common.php';
 
@@ -33,13 +33,14 @@ class ExtendsZeekLibrary extends ZeekLibrary
     }
 }
 
-class TestZeekLibraryOldMySQL extends TestZeekLibraryCommon
+
+class TestZeekLibrary extends TestZeekLibraryCommon
 {
     public function setUp()
     {
         $zlib = new ExtendsZeekLibrary();
 
-        $config = parse_ini_file('t/test_old_mysql.ini');
+        $config = parse_ini_file('t/test.ini');
         $zlib->config($config);
         $zlib->global_path = '';
 

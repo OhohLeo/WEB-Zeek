@@ -1,10 +1,10 @@
 <?php
 
-require_once "lib/output.php";
-require_once 'lib/database.php';
+require_once 'lib/output.php';
+require_once 'lib/database_mysql.php';
 require_once 't/database_common.php';
 
-class ExtendsDataBase extends DataBase
+class ExtendsOldMySQL extends DataBaseOldMySQL
 {
     private $output;
 
@@ -27,12 +27,11 @@ class ExtendsDataBase extends DataBase
     }
 }
 
-class TestDataBase extends TestDataBaseCommon
+class TestOldMySQL extends TestDataBaseCommon
 {
-
     public function setUp()
     {
-        $this->db = new ExtendsDataBase();
+        $this->db = new ExtendsOldMySQL();
     }
 
     public function test_connect()
@@ -40,28 +39,25 @@ class TestDataBase extends TestDataBaseCommon
         $db = $this->db;
 
         $this->assertTrue(
-            $db->connect('localhost', $this->test_dbname, 'test', 'test'));
+            $db->connect('localhost', NULL, 'test', 'test'));
 
         $this->assertTrue(
             $db->checkOutput(NULL));
 
         $this->assertFalse(
-            $db->connect('localhost', $this->test_dbname, 'test', 'tes'));
+            $db->connect('localhost', NULL, 'test', 'tes'));
 
         $this->assertTrue(
             $db->checkOutput(
-                "Impossible to connect to 'localhost' with MySQL SQLSTATE[28000] [1045] "
-                . "Access denied for user 'test'@'localhost'"
-                . " (using password: YES)"));
+                "Impossible to connect to 'localhost' with MySQL mysql_connect(): Access denied for user 'test'@'localhost' (using password: YES)"));
 
         $this->assertFalse(
-            $db->connect('localhost', $this->test_dbname, 'tes', 'test'));
+            $db->connect('localhost', NULL, 'tes', 'test'));
 
         $this->assertTrue(
             $db->checkOutput(
-                "Impossible to connect to 'localhost' with MySQL SQLSTATE[28000] [1045] "
-                . "Access denied for user 'tes'@'localhost'"
-                . " (using password: YES)"));
+                "Impossible to connect to 'localhost' with MySQL mysql_connect(): Access denied for user 'tes'@'localhost' (using password: YES)"));
     }
 }
+
 ?>

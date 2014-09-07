@@ -90,7 +90,6 @@
       $danger.hide();
       $success.hide();
 
-
       $handle_rsp = function($result) {
           if ($result['success']) {
               $danger.hide();
@@ -108,6 +107,9 @@
               $('div.alert').fadeOut(300);
           }
       };
+
+      console.log("ok user add!!!" + $(this).serialize());
+
 
       $.ajax({
         type: "POST",
@@ -133,9 +135,9 @@
                                   "method": "project_create",
                                   "project_name": $("input:text[name=project_name]").val(),
                                   },
-                              success: function ($result) {
-                              $handle_rsp($result);
-                          }
+                              success: function($result) {
+                                return $handle_rsp($result);
+                              }
                       });
                   });
               }

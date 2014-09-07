@@ -42,10 +42,30 @@ class ZeekOutput {
  *
  * @method error
  * @param string data to display
- * @param hash data to add
  */
     public function error($input) {
-        echo $this->json_encode(array('error' => $input));
+        $this->output($this->json_encode(array('error' => $input)));
+    }
+
+
+/**
+ * Echo replace content in JSON format.
+ *
+ * @method error
+ * @param string data to replace
+ */
+    public function replace($input) {
+        $this->output($this->json_encode(array('replace' => $input)));
+    }
+
+/**
+ * Echo append content in JSON format.
+ *
+ * @method error
+ * @param string data to append
+ */
+    public function append($input) {
+        $this->output($this->json_encode(array('append' => $input)));
     }
 
 /**

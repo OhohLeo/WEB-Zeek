@@ -4,6 +4,11 @@ WEB-Zeek
 Simple web site backoffice
 
 =======
+08/09/2014 Leo
+ * set user & project methods & test
+ * optimisations on home.php
+ * 1st link between view files & php
+
 12/08/2014 Leo
  * check sql input values
 
