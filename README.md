@@ -12,6 +12,12 @@ You can see the actual state of art here :
 
 http://zeekadmin.free.fr/
 
+using following
+
+Project Name : test
+Login : test
+Password : test
+
 #### How to use it
 
 The project is not yet finished.
