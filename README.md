@@ -1,18 +1,19 @@
-## WEB-Zeek 2014
-========
+# *Zeek Project*
+#### Open Source Back-Office : Simply administrate websites!
 
-# *Zeek*
+### Introduction :
 
-## Open Source Back-Office : Simply administrate websites!
-
-## 1st announce :
 This is my 1st steps on internet technologies thanks to this project.
+
 The project is not yet finished.
+
 Please correct & optimise as you wish this project.
 
-You can see the actual state of art here : http://zeekadmin.free.fr/
+You can see the actual state of art here :
 
-## Main Features :
+http://zeekadmin.free.fr/
+
+### Main Features :
  - handle multiple projects
  - handle multiple users
  - deployment tools (only on free.fr)
@@ -20,7 +21,7 @@ You can see the actual state of art here : http://zeekadmin.free.fr/
  - lots of unit tests
  - keep it as simple as possible
 
-## TODO Features :
+### TODO Features :
  - finish the configuration & get_and_set visual functionnalities
  - insert data beetween old ones
  - handle sql project structure dynamically :
@@ -31,11 +32,12 @@ You can see the actual state of art here : http://zeekadmin.free.fr/
  - setup help methods
  - secure 1st form using http://www.jcryption.org/
 
-=======
+### Main Log :
 08/09/2014 Leo
  * set user & project methods & test
  * optimisations on home.php
  * 1st link between view files & php
+ * update the README file
 
 12/08/2014 Leo
  * check sql input values
