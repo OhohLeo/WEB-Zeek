@@ -14,9 +14,9 @@ http://zeekadmin.free.fr/
 
 using following
 
-Project Name : test
-Login : test
-Password : test
+ - Project Name : test
+ - Login : test
+ - Password : test
 
 #### How to use it
 
