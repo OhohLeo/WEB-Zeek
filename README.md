@@ -1,11 +1,10 @@
 # *Zeek Project*
-#### Open Source Back-Office : Simply administrate websites!
+### Open Source Back-Office : Simply administrate websites!
 
-### Introduction :
+#### Introduction :
 
-This is my 1st steps on internet technologies thanks to this project.
-
-The project is not yet finished.
+This is my 1st steps on internet technologies (php, jQuery) thanks to
+this project.
 
 Please correct & optimise as you wish this project.
 
@@ -13,15 +12,20 @@ You can see the actual state of art here :
 
 http://zeekadmin.free.fr/
 
-### Main Features :
+#### How to use it
+
+The project is not yet finished.
+
+#### Main Features :
  - handle multiple projects
  - handle multiple users
- - deployment tools (only on free.fr)
+ - deployment tool (only on free.fr for the moment)
+ - set all mysql tools as insible as possible
  - work with PDO & Mysql
- - lots of unit tests
+ - lots of unit tests & error cases
  - keep it as simple as possible
 
-### TODO Features :
+#### TODO Features :
  - finish the configuration & get_and_set visual functionnalities
  - insert data beetween old ones
  - handle sql project structure dynamically :
@@ -30,9 +34,10 @@ http://zeekadmin.free.fr/
   * add/remove values type functionnalities
  - save&restore database functionnalities
  - setup help methods
+ - deployment tool (for 1&1)
  - secure 1st form using http://www.jcryption.org/
 
-### Main Log :
+#### Git Log :
 08/09/2014 Leo
  * set user & project methods & test
  * optimisations on home.php
@@ -79,7 +84,7 @@ http://zeekadmin.free.fr/
  * begin to create tables
 
 09/07/2014 Leo
- * add unit testsx
+ * add unit tests
  * try to check database presence
 
 08/07/2O14 Leo
