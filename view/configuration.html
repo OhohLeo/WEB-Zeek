@@ -47,11 +47,15 @@
   $div = $("div.boxed-group");
   $div.hide();
 
-  $("div.config").on("click", function($e) {
+  $("h3").on("click", function($e) {
     $e.preventDefault();
-    $(this).children("div.boxed-group").slideDown(200);
-  }).on("mouseleave", function() {
-    $(this).children("div.boxed-group").slideUp(200);
+
+    $boxed = $(this).next("div.boxed-group");
+    if ($boxed.is(":hidden")) {
+      $boxed.slideDown(200);
+    } else {
+      $boxed.slideUp(200);
+    }
   });
 
   $(document).ready(function() {

@@ -174,11 +174,11 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	    $zlib->value_insert(
             'artist',
             array('name'      => 'test_name',
-            'surname'   => 'test_surname',
-            'age'       => 27,
-            'subtitle'  => 'test_subtitle',
-            'biography' => 'la vie de ce test sera très courte',
-            'skill'     => 'skill_test')));
+                  'surname'   => 'test_surname',
+                  'age'       => 27,
+                  'subtitle'  => 'test_subtitle',
+                  'biography' => 'la vie de ce test sera très courte',
+                  'skill'     => 'skill_test')));
 
         $result = $zlib->value_get('artist', NULL, NULL, NULL);
 
@@ -231,7 +231,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	    $zlib->value_update(
 		'artist', 3,
 		array('name'      => 'test_update',
-		      'surname'   => 'test_surname-update')));
+              'surname'   => 'test_surname-update')));
 
 	$result = $zlib->value_get('artist', NULL, 1, 2);
 
@@ -244,6 +244,8 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	$this->assertEquals($row->subtitle, 'test_subtitle3');
 	$this->assertEquals($row->biography, 'la vie de ce test sera très très très courte');
 	$this->assertEquals($row->skill, 'skill_test3');
+
+	$this->assertEquals($zlib->table_count('artist'), 3);
 
 	# we delete the last value
 	$this->assertTrue($zlib->value_delete('artist', 3));

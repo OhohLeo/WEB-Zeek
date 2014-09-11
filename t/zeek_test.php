@@ -21,6 +21,11 @@ class ExtendsZeek extends Zeek
         return false;
     }
 
+    public function connect_to_database()
+    {
+        return $this->zlib->connect_to_database();
+    }
+
     public function database()
     {
         return $this->db;
@@ -73,6 +78,9 @@ class TestZeek extends PHPUnit_Framework_TestCase
     {
         $zeek = $this->zeek;
 
+        /* we establish the connection with the database */
+        $this->assertTrue($zeek->connect_to_database());
+
         $this->assertTrue(
             $zeek->connect('project', 'test', 'test'));
 
@@ -94,6 +102,9 @@ class TestZeek extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($zeek->project_delete('project'));
 
+        /* we establish the connection with the database */
+        $this->assertTrue($zeek->connect_to_database());
+
         $this->assertTrue(
             $zeek->connect('project', 'test', 'test'));
 
@@ -104,19 +115,12 @@ class TestZeek extends PHPUnit_Framework_TestCase
         $zeek->environment_clean();
     }
 
-    /* public function test_input() */
-    /* { */
-    /*     $this->assertFalse($this->zeek->input(NULL)); */
-
-    /*     $this->assertTrue($this->zeek->input( */
-    /*         array('method' => 'clicked', */
-    /*         'type' => 'artist', */
-    /*         'project_id' => 1))); */
-    /* } */
-
     public function test_user()
     {
         $zeek = $this->zeek;
+
+        /* we establish the connection with the database */
+        $this->assertTrue($zeek->connect_to_database());
 
         $this->assertTrue(
             $zeek->connect('project', 'test', 'test'));
@@ -176,6 +180,47 @@ class TestZeek extends PHPUnit_Framework_TestCase
         $zeek->environment_clean();
     }
 
+    public function test_data()
+    {
+        $zeek = $this->zeek;
+
+        /* we establish the connection with the database */
+        $this->assertTrue($zeek->connect_to_database());
+
+        $this->assertTrue(
+            $zeek->connect('project', 'test', 'test'));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
+
+        $this->assertTrue($zeek->project_create('project'));
+
+        $this->assertTrue(
+            $zeek->checkOutput('{"redirect":"home.php"}'));
+
+        $this->assertTrue(
+            $zeek->data_set('album', 'name=tutu&duration=10&comments=hey'));
+
+        $this->assertTrue(
+            $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
+
+        $this->assertFalse(
+            $zeek->data_set('albu', 'name=tutu&duration=10&comments=hey'));
+
+        $result = $zeek->data_get('album', 0, 10);
+
+
+        print "\nVALUE $result\n";
+
+
+        /* $this->assertFalse( */
+        /*     $zeek->data_set('album', 'name=tutu&duration=toto&comments=hey')); */
+
+
+        $zeek->environment_clean();
+    }
+
     public function test_password()
     {
         $password = $this->zeek->password_generate(9);
@@ -202,6 +247,11 @@ class TestZeek extends PHPUnit_Framework_TestCase
         $this->assertTrue(
             $this->zeek->checkOutput(
                 json_encode(array('success' => 'toto'))));
+
+        $result = json_decode(json_encode(array('success' => 'toto')));
+        $this->assertEquals($result->success, 'toto');
+        $this->assertEquals(
+            $this->zeek->object_to_array($result), array('success' => 'toto'));
     }
 
 }

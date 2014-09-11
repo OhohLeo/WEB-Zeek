@@ -112,22 +112,33 @@ include '_partials/header.php';
             if ($result["success"]) {
                 $danger.hide();
                 $success.text($result["success"]).show();
-            } else if ($result["error"]) {
+                return true;
+            }
+            if ($result["error"]) {
                 $("div.modal").modal("hide");
                 $success.hide();
                 $danger.text($result["error"]).show();
-            } else if ($result['replace']) {
-                $('div.dynamic').replaceWith($result['replace']);
-            } else if ($result['append']) {
-                $('div.dynamic').append($result['append']);
-            } else {
-                $('div.modal').modal("hide");
-                $success.hide();
-                $danger.text("unhandled result!").show();
+                return true;
             }
 
+            if ($result['replace']) {
+                $('div.dynamic').replaceWith($result['replace']);
+                return true;
+            }
+
+            if ($result['append']) {
+                $('div.dynamic').append($result['append']);
+                return true;
+            }
+
+            $('div.modal').modal("hide");
+            $success.hide();
+            $danger.hide();
+
             if ($next_action) {
-                $next_action();
+                $next_action($result);
+            } else {
+                 $danger.text("unhandled result!").show();
             }
         },
         "error": function($request, $status, $error) {

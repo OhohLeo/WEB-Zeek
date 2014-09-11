@@ -113,7 +113,7 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
         $id = 0;
 
         $result = $db->table_view('more_attributes', '*',
-                                      array('id', 'ASC'), NULL, NULL, NULL);
+                                      array('id', 'ASC'));
 
         while ($row = $db->handle_result($result)) {
             $this->assertTrue($row->first_element == $first_elements[$id]);
@@ -123,7 +123,7 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
         }
 
         $result = $db->table_view('more_attributes', '*',
-                                      array('id', 'DESC'), NULL, NULL, NULL);
+                                      array('id', 'DESC'));
 
         while ($row = $db->handle_result($result)) {
             $this->assertTrue($row->id == $id--);
@@ -142,7 +142,7 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
         }
 
         $result = $db->table_view('more_attributes', '*',
-                                      NULL, 2, NULL, NULL);
+                                      NULL, 2);
         $id = 0;
 
         while ($id < 2) {
@@ -154,7 +154,7 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
         }
 
         $result = $db->table_view('more_attributes', '*',
-                                      NULL, 1, 2, NULL);
+                                      NULL, 1, 2);
         $id = 2;
 
         while ($id < 3) {

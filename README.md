@@ -44,6 +44,11 @@ The project is not yet finished.
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+11/09/2014 Leo
+ * add datatable functionalities
+ * 1st step on get&set
+ * add lots of new application commands
+
 08/09/2014 Leo
  * set user & project methods & test
  * optimisations on home.php

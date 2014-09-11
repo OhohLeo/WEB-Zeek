@@ -24,7 +24,7 @@ class ZeekOutput {
  * @param string data to display
  * @param hash data to add
  */
-    public function success($input, $params) {
+    public function success($input, $params = NULL) {
         $result = array('success' => $input);
 
         if ($params != NULL) {
@@ -85,6 +85,25 @@ class ZeekOutput {
         }
 
         return json_encode($input);
+    }
+
+/**
+ * Decode data in JSON format.
+ *
+ * @method json_decode
+ * @param hash data to decode
+ */
+    protected function json_decode($input)
+    {
+        /* la version php de free est obsolète et ne propose pas le json */
+        if (!defined('PHP_VERSION_ID')) {
+            require_once $this->global_path . "extends/json.php";
+
+            $json = new Services_JSON();
+            return $json->decode($input);
+        }
+
+        return json_decode($input);
     }
 }
 

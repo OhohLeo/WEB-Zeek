@@ -53,6 +53,14 @@ class Zeek extends ZeekOutput {
         if ($params == NULL)
             return false;
 
+        /* we establish the connection with the database */
+        if ($this->zlib->connect_to_database() == false)
+            return false;
+
+        if (isset($params['draw'])) {
+            return $this->data_get_tables($params);
+        }
+
         $method = $params['method'];
 
         /* we check if the method name does exist */
@@ -61,22 +69,22 @@ class Zeek extends ZeekOutput {
             return false;
         }
 
-        /* everybody can get stored data */
-        if ($method == 'data_get')
-            return $this->data_get();
-
-        if ($params['params'] != NULL)
+        if (isset($params['params']))
             parse_str($params['params']);
 
         /* we handle the connection method 1st */
-        if ($method == 'connect') {
+        if ($method == 'connect')
             return $this->connect($project_name, $login, $password);
-        }
+        /* everybody can get the number of stored data */
+        else if ($method == 'data_get_number')
+            return $this->data_get_number($params['name']);
+        /* everybody can get stored data */
+        else if ($method == 'data_get')
+            return $this->data_get(
+                $params['name'], $params['offset'], $params['size']);
 
         /* otherwise we check if the connection is ok */
-        $login = $_SESSION["login"];
-
-        if (isset($login) == false)
+        if ($_SESSION["login"] == false)
             return false;
 
         if ($method == 'project_create')
@@ -148,10 +156,6 @@ class Zeek extends ZeekOutput {
     {
         $zlib = $this->zlib;
 
-        /* we establish the connection with the database */
-        if ($zlib->connect_to_database() == false)
-            return false;
-
         /* we check if the project_name does exist */
         $project_id = $zlib->project_get_id($project_name);
 
@@ -216,10 +220,6 @@ class Zeek extends ZeekOutput {
         /* we check the session id */
         if ($this->check_string_and_size($project_name, 25)) {
 
-            /* we establish the connection with the database */
-            if ($zlib->connect_to_database() == false)
-                return false;
-
             /* we check if the project_name does not exist */
             if ($zlib->project_get_id($project_name) == false) {
 
@@ -264,8 +264,7 @@ class Zeek extends ZeekOutput {
             $this->disconnect();
 
             $this->success(
-                "Project '$project_name' correctly deleted!",
-                NULL);
+                "Project '$project_name' correctly deleted!");
             return true;
         }
 
@@ -311,7 +310,7 @@ class Zeek extends ZeekOutput {
             . "password : $password\n")) {
 
             if ($this->zlib->user_add($project_id, $email, $password)) {
-                $this->success("User '$email' correctly added & informed!", NULL);
+                $this->success("User '$email' correctly added & informed!");
                 return true;
             }
 
@@ -338,7 +337,7 @@ class Zeek extends ZeekOutput {
         }
 
         if ($this->zlib->user_remove($project_id, $email)) {
-            $this->success("User '$email' correctly deleted!", NULL);
+            $this->success("User '$email' correctly deleted!");
             return true;
         }
 
@@ -362,7 +361,7 @@ class Zeek extends ZeekOutput {
 
         if ($this->zlib->user_change_password(
             $project_id, $email, $password_old, $password_new)) {
-            $this->success("User password correctly changed!", NULL);
+            $this->success("User password correctly changed!");
             return true;
         }
 
@@ -436,14 +435,83 @@ class Zeek extends ZeekOutput {
     public function data_get($name, $offset, $size)
     {
         if (!(isset($name) && isset($offset) && isset($size))) {
-            $this->error("Expecting valid name, offset and size field!");
+            $this->error("Expecting valid table name, offset and size field!");
             return false;
         }
 
+        $result = $this->zlib->value_get(
+            $name, array('id' => 'DEC'), $size, $offset);
+
+        $response = array();
+
+        while ($row = $this->zlib->value_fetch($result)) {
+            unset($row->id);
+            unset($row->project_id);
+            array_push($response, $row);
+        }
+
         /* we return an array of values */
-        $this->zlib->value_get($name, "DEC", $size, $offset);
+        return $this->output($this->json_encode($response));
+    }
+
+/**
+ * Return the elements with the format expected.
+ *
+ * @method data_get_tables
+ * @param hash params received
+ */
+    public function data_get_tables($params)
+    {
+        /* we get the name of the table */
+        $name = $params['name'];
+        if (!isset($name)) {
+            $this->error("Expecting valid table name");
+            return false;
+        }
+
+        /* we get the total number of elements */
+        $records_total = $this->zlib->table_count($name);
+
+        /* we get the elements */
+        $result = $this->zlib->value_get(
+            $name, array('id' => 'DEC'), $size, $offset);
+
+        $data = array();
+
+        while ($row = $this->zlib->value_fetch($result)) {
+            array_push($data, $row);
+        }
+
+
+        $records_filtered = 0;
+
+        $this->output($this->json_encode(array(
+            "draw" => intval($params['draw']),
+            "recordsTotal" => intval($records_total),
+            "recordsFiltered" => intval($records_filtered),
+            "data" =>  $data,
+        )));
+
         return true;
     }
+
+/**
+ * Return the number of elements.
+ *
+ * @method data_get_number
+ * @param string name of the data expected
+ */
+    public function data_get_number($name)
+    {
+        if (!(isset($name))) {
+            $this->error("Expecting valid table name!");
+            return false;
+        }
+
+        return $this->output($this->json_encode(
+            array('count' => $this->zlib->table_count($name))));
+    }
+
 
 /**
  * Return success message or error.
@@ -454,16 +522,15 @@ class Zeek extends ZeekOutput {
  */
     public function data_set($name, $values)
     {
-        $this->error("Expecting valid $name and $values field!");
-        return false;
-
-
         if (!(isset($name) && isset($values))) {
             $this->error("Expecting valid name and values field!");
             return false;
         }
 
-        if ($this->zlib->value_insert($name, $values)) {
+        $params = array();
+        parse_str($values, $params);
+
+        if ($this->zlib->value_insert($name, $params)) {
             $this->success("Value correctly inserted!");
             return true;
         }

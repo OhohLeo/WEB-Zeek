@@ -290,7 +290,8 @@ class DataBase extends ZeekOutput {
  * @param integer offset (size attribute above is mandatory
  * @param array specific conditions
  */
-    public function table_view($name, $fields, $sort, $size, $offset, $params)
+    public function table_view($name,
+      $fields=NULL, $sort=NULL, $size=NULL, $offset=NULL, $params=NULL)
     {
         $options = '';
 

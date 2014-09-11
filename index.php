@@ -108,9 +108,6 @@
           }
       };
 
-      console.log("ok user add!!!" + $(this).serialize());
-
-
       $.ajax({
         type: "POST",
               url: "input.php",

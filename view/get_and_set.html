@@ -69,46 +69,63 @@
   </form>
 </div>
 <hr>
-<div class="get">
-<table class="table table-hover">
-<thead>
-  <tr>
-    <th>#</th>
-    <?php foreach ($structure as $key => $format) {
-    if ($key == "project_id") {
-      continue;
-    }
-    ?>
-    <th><?php echo $key; ?></th>
-    <?php } ?>
-    <th></th>
-</thead>
-<tbody>
-  <td></td>
-</tbody>
-</table>
-</div>
+  <table class="get table table-hover">
+    <thead>
+      <tr>
+	<?php foreach ($structure as $key => $format) {	?>
+	<th><?php echo $key; ?></th>
+	<?php } ?>
+    </thead>
+    <tbody>
+      <tr>
+	<?php foreach ($structure as $key => $format) {	?>
+	<th></th>
+	<?php } ?>
+      </tr>
+    </tbody>
+  </table>
+<hr>
 <script>
   var $form = $("form");
   $form.hide();
 
   var $set = $("div.set");
 
-  $set.on("mouseenter", function() {
-    $form.slideDown(200);
-  }).on("mouseleave", function() {
-    $form.slideUp(200);
+  $("h3").on("click", function() {
+    if ($("form").is(":hidden")) {
+      $form.slideDown(200);
+    } else {
+      $form.slideUp(200);
+    }
   });
 
-  $(document).ready(function() {
-    $("form#data_set").on("submit", function($e) {
-      $e.preventDefault();
-      $send_request({
-          "method": "data_set",
-          "name": "album",
-          "values": $(this).serialize(),
-        });
-      console.log("YES! " + $(this).serialize());
-    });
+  $name = $set.attr("id");
+
+  var $table = $("table.get").DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "input.php",
+            "type": "POST",
+            "data": { "name": $name },
+        },
+        "columns": [
+ <?php foreach ($structure as $key => $format) { ?>
+  { "data": "<?php echo $key; ?>" },
+  <?php } ?>
+       ],
   });
+
+  $("form#data_set").on("submit", function($e) {
+    $e.preventDefault();
+    $send_request({
+        "method": "data_set",
+        "name": $set.attr("id"),
+        "values": $(this).serialize(),
+      });
+   });
+
+  function ucfirst($string) {
+    return $string.charAt(0).toUpperCase() + $string.slice(1);
+  }
 </script>

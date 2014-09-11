@@ -25,41 +25,34 @@ class ZeekLibrary extends ZeekOutput {
             'age'        => array('INT', 11),
             'subtitle'   => array('VARCHAR', 300),
             'biography'  => array('TEXT', 1000),
-            'skill'      => array('VARCHAR', 100),
-            'project_id' => array('INT', 11)),
+            'skill'      => array('VARCHAR', 100)),
         'show'        => array(
             'name'       => array('VARCHAR', 100),
             'date'       => 'DATE',
             'hour'       => 'TIME',
-            'location'   => array('VARCHAR', 300),
-            'project_id' => array('INT', 11)),
+            'location'   => array('VARCHAR', 300)),
         'news'        => array(
             'name'       => array('VARCHAR', 100),
             'date'       => 'DATE',
-            'comments'   => array('TEXT', 1000),
-            'project_id' => array('INT', 11)),
+            'comments'   => array('TEXT', 1000)),
         'album'       => array(
             'name'       => array('VARCHAR', 100),
             'duration'   => array('INT', 11),
-            'comments'   => array('TEXT', 1000),
-            'project_id' => array('INT', 11)),
+            'comments'   => array('TEXT', 1000)),
          'music'       => array(
             'name'       => array('VARCHAR', 100),
             'date'       => 'DATE',
             'duration'   => array('INT', 11),
-            'comments'   => array('TEXT', 1000),
-            'project_id' => array('INT', 11)),
-         'video'       => array(
+            'comments'   => array('TEXT', 1000)),
+          'video'       => array(
             'name'       => array('VARCHAR', 100),
             'date'       => 'DATE',
             'duration'   => array('INT', 11),
-            'comments'   => array('TEXT', 1000),
-            'project_id' => array('INT', 11)),
+            'comments'   => array('TEXT', 1000)),
          'media'       => array(
             'name'       => array('VARCHAR', 100),
             'date'       => 'DATE',
-            'comments'   => array('TEXT', 1000),
-            'project_id' => array('INT', 11)));
+            'comments'   => array('TEXT', 1000)));
 
 /**
  * Setup configuration for establishing a connection with MySQL
@@ -194,7 +187,6 @@ class ZeekLibrary extends ZeekOutput {
             return true;
         }
 
-        $this->error("Impossible to add new user!");
         return false;
     }
 
@@ -301,8 +293,7 @@ class ZeekLibrary extends ZeekOutput {
         /* we insert the new project */
         if ($this->value_insert(
             'project', array('name' => $project_name)) == false) {
-            $this->error("Impossible to create new project!");
-            return false;
+               return false;
         }
 
         /* we store the project id */
@@ -343,8 +334,6 @@ class ZeekLibrary extends ZeekOutput {
             return $db->database_delete($this->db_name);
         }
 
-        $params = array('project_id' => $project_id);
-
         /* otherwise : all links containing the actual project_id */
         foreach ($this->data_structure as $name => $value) {
 
@@ -356,19 +345,12 @@ class ZeekLibrary extends ZeekOutput {
             /* for the project : we remove the row with the project_id
              * specified */
             if ($name == 'project') {
-                $db->row_delete('project', $params);
+                $db->row_delete('project', array('id' => $project_id));
                 continue;
             }
 
-            /* for all other tables : we check if each table contain
-             * other reference of project_id */
-            if ($db->table_count($name, 'project_id', NULL) > 1) {
-                /* we remove all row with actual project_id */
-                $db->row_delete($name, $params);
-            } else {
-                /* otherwise we delete the table */
-                $db->table_delete($name);
-            }
+            /* for all other tables : we delete the table */
+            $db->table_delete($name);
         }
 
         return true;
@@ -475,8 +457,27 @@ class ZeekLibrary extends ZeekOutput {
         if ($this->db->table_create($name, $structure))
             return true;
 
-        $this->error("Impossible to create $name table!");
         return false;
+    }
+
+
+/**
+ * Count the number of element in a static table.
+ *
+ * Return the number of elements otherwise return 0.
+ *
+ * @method table_count
+ * @param string table name
+ */
+    public function table_count($name)
+    {
+        $db = $this->db;
+
+        /* we check if the table exists */
+        if ($db->table_check($name))
+            return $db->table_count($name, 'id', NULL);
+
+        return 0;
     }
 
 /**
@@ -551,16 +552,17 @@ class ZeekLibrary extends ZeekOutput {
 
             $params = NULL;
 
+
             /* we set up the generic filter */
             if ($name == 'project') {
-                $param = array('id' => $this->project_id);
-            } else {
-                $param = array('project_id' => $this->project_id);
+                $params = array('id' => $this->project_id);
+            } else if ($name == 'user') {
+                $params = array('project_id' => $this->project_id);
             }
 
             /* we get all the values desired */
             $result = $this->db->table_view(
-                $name, '*', NULL, $size, $offset, $param);
+                $name, '*', $sort, $size, $offset, $params);
 
             if ($result == NULL)
                 return false;
