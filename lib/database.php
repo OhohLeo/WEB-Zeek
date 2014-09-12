@@ -291,7 +291,8 @@ class DataBase extends ZeekOutput {
  * @param array specific conditions
  */
     public function table_view($name,
-      $fields=NULL, $sort=NULL, $size=NULL, $offset=NULL, $params=NULL)
+      $fields=NULL, $sort=NULL, $size=NULL, $offset=NULL,
+      $params=NULL, $regex=NULL)
     {
         $options = '';
 
@@ -313,6 +314,10 @@ class DataBase extends ZeekOutput {
 
         if (is_array($params)){
             $options .= " WHERE " . implode(' AND ', $this->get_values($params));
+        }
+
+        if (isset($regex)) {
+            $options .= " REGEXP '$regex'";
         }
 
         if (is_numeric($size)) {
