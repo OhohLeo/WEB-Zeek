@@ -177,7 +177,7 @@ class DataBase extends ZeekOutput {
                 }
 
                 /* the vartype should be valid */
-                if (in_array($vartype, $this->valid_type)) {
+                if ($this->check_type($vartype)) {
                         $request .= $vartype;
                 } else {
                     $this->error(
@@ -291,8 +291,7 @@ class DataBase extends ZeekOutput {
  * @param array specific conditions
  */
     public function table_view($name,
-      $fields=NULL, $sort=NULL, $size=NULL, $offset=NULL,
-      $params=NULL, $regex=NULL)
+      $fields=NULL, $sort=NULL, $size=NULL, $offset=NULL, $params=NULL)
     {
         $options = '';
 
@@ -314,10 +313,6 @@ class DataBase extends ZeekOutput {
 
         if (is_array($params)){
             $options .= " WHERE " . implode(' AND ', $this->get_values($params));
-        }
-
-        if (isset($regex)) {
-            $options .= " REGEXP '$regex'";
         }
 
         if (is_numeric($size)) {
@@ -400,13 +395,24 @@ class DataBase extends ZeekOutput {
 
 
 /**
+ * Check if the type of a value exist.
+ *
+ * @method check_type
+ * @param string type expected
+ */
+    public function check_type($type)
+    {
+        return in_array($type, $this->valid_type);
+    }
+
+/**
  * Check values before storing in database.
  *
- * @method value_check
+ * @method check_value
  * @param string type expected
  * @param string value to store
  */
-    public function value_check($type, $value)
+    public function check_value($type, $value)
     {
 	switch ($type) {
 	    case "TINYINT":

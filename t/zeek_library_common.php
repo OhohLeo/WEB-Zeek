@@ -134,25 +134,92 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
         $zlib->environment_clean($this->db_name);
     }
 
+
+    public function test_projects()
+    {
+        $zlib = $this->zlib;
+
+        $this->assertTrue($zlib->connect_to_database());
+
+        $structure = $zlib->projects_get('t/projects.ini');
+
+        $this->assertEquals($structure,
+        array(
+            'test' => array(
+                'artist'      => array(
+                    'name'       => array('VARCHAR', 100),
+                    'surname'    => array('VARCHAR', 100),
+                    'age'        => array('INT', 11),
+                    'subtitle'   => array('VARCHAR', 300),
+                    'biography'  => array('TEXT', 1000),
+                    'skill'      => array('VARCHAR', 100)),
+                'show'        => array(
+                    'name'       => array('VARCHAR', 100),
+                    'date'       => 'DATE',
+                    'hour'       => 'TIME',
+                    'location'   => array('VARCHAR', 300)),
+                'news'        => array(
+                    'name'       => array('VARCHAR', 100),
+                    'date'       => 'DATE',
+                    'comments'   => array('TEXT', 1000)),
+                'album'       => array(
+                    'name'       => array('VARCHAR', 100),
+                    'duration'   => array('INT', 11),
+                    'comments'   => array('TEXT', 1000)),
+                'music'       => array(
+                    'name'       => array('VARCHAR', 100),
+                    'date'       => 'DATE',
+                    'duration'   => array('INT', 11),
+                    'comments'   => array('TEXT', 1000)),
+                'video'       => array(
+                    'name'       => array('VARCHAR', 100),
+                    'date'       => 'DATE',
+                    'duration'   => array('INT', 11),
+                    'comments'   => array('TEXT', 1000)),
+                'media'       => array(
+                    'name'       => array('VARCHAR', 100),
+                    'date'       => 'DATE',
+                    'comments'   => array('TEXT', 1000))),
+            'test2'  =>  array(
+                'test1'       => array(
+                    'name'        => array('VARCHAR', 25),
+                    'since'       => 'DATE',
+                    'subtitle'    => array('VARCHAR', 300),
+                    'biography'   => array('TEXT', 1000)),
+            )));
+
+        $wrong_tests = array(
+            't/projects/no_project_name.ini' =>
+            "Can't find project name for this table!",
+            't/projects/wrong_project_name.ini' =>
+            "Can't find project name for this table!",
+            't/projects/wrong_table_name.ini' =>
+            "Can't find table name for this attribute!",
+            't/projects/no_table_name.ini' =>
+            "Can't find table name for this attribute!",
+            't/projects/wrong_attribute_name.ini' =>
+            "Unknown type 'TOTO' for attribute 'name'!",
+            't/projects/ignore_attribute_name.ini' =>
+            "Ignore line 3 in file 't\/projects\/ignore_attribute_name.ini'!",
+            't/projects/unknown.ini' =>
+            "Can't find projects configuration file 't\/projects\/unknown.ini'!"
+        );
+
+        foreach ($wrong_tests as $filename => $error) {
+            $this->assertFalse($zlib->projects_get($filename));
+            $this->assertTrue($zlib->checkOutput('{"error":"' . $error .'"}'));
+        }
+    }
+
     public function test_type()
     {
         $zlib = $this->zlib;
 
         $this->assertFalse(
-            $zlib->type_check('failed'));
-
-        $this->assertTrue(
-            $zlib->type_check('project'));
+            $zlib->type_check('test', 'failed'));
 
         $this->assertFalse(
-            $zlib->type_get('failed'));
-
-        $this->assertEquals(
-            $zlib->type_get('project'), array(
-            'name'        => array('VARCHAR', 25),
-            'since'       => 'DATE',
-            'subtitle'    => array('VARCHAR', 300),
-            'biography'   => array('TEXT', 1000)));
+            $zlib->type_get('test', 'failed'));
 
         $this->assertTrue($zlib->connect_to_database());
 
@@ -167,20 +234,25 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
         $zlib->environment_clean($this->db_name);
 
-        $zlib->project_id = 0;
+        $this->assertTrue(
+            $zlib->project_add('test'));
+
+        $zlib->project_id = $zlib->project_get_id('test');
+        $this->assertEquals($zlib->project_id, 1);
 
         # we add a new value here
         $this->assertTrue(
 	    $zlib->value_insert(
+            'test',
             'artist',
             array('name'      => 'test_name',
                   'surname'   => 'test_surname',
                   'age'       => 27,
                   'subtitle'  => 'test_subtitle',
                   'biography' => 'la vie de ce test sera très courte',
-                  'skill'     => 'skill_test')));
+                   'skill'     => 'skill_test')));
 
-        $result = $zlib->value_get('artist', NULL, NULL, NULL);
+        $result = $zlib->value_get('test', 'artist');
 
         $row = $zlib->value_fetch($result);
 
@@ -195,6 +267,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
         # we add a new value again
         $this->assertTrue(
             $zlib->value_insert(
+                'test',
                 'artist',
                 array('name'      => 'test_name2',
                 'surname'   => 'test_surname2',
@@ -206,6 +279,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	# we add a new value again
 	$this->assertTrue(
 	    $zlib->value_insert(
+            'test',
             'artist',
             array('name'      => 'test_name3',
             'surname'   => 'test_surname3',
@@ -214,7 +288,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
             'biography' => 'la vie de ce test sera très très très courte',
             'skill'     => 'skill_test3')));
 
-	$result = $zlib->value_get('artist', NULL, 1, 1);
+	$result = $zlib->value_get('test', 'artist', NULL, 1, 1);
 
 	$row = $zlib->value_fetch($result);
 
@@ -229,11 +303,11 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	# we add a new value again
 	$this->assertTrue(
 	    $zlib->value_update(
-		'artist', 3,
-		array('name'      => 'test_update',
-              'surname'   => 'test_surname-update')));
+            $zlib->project_id, 'artist', 3,
+            array('name'      => 'test_update',
+                  'surname'   => 'test_surname-update')));
 
-	$result = $zlib->value_get('artist', NULL, 1, 2);
+	$result = $zlib->value_get('test', 'artist', NULL, 1, 2);
 
 	$row = $zlib->value_fetch($result);
 
@@ -245,21 +319,22 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	$this->assertEquals($row->biography, 'la vie de ce test sera très très très courte');
 	$this->assertEquals($row->skill, 'skill_test3');
 
-	$this->assertEquals($zlib->table_count('artist'), 3);
+	$this->assertEquals($zlib->table_count('test', 'artist'), 3);
 
 	# we delete the last value
-	$this->assertTrue($zlib->value_delete('artist', 3));
+	$this->assertTrue($zlib->value_delete(
+        $zlib->project_id, 'artist', 3));
 
 	$this->assertFalse(
 	    $zlib->value_update(
-		'artist', 3,
-		array('name'      => 'test_update',
-		      'surname'   => 'test_surname-update')));
+            $zlib->project_id, 'artist', 3,
+            array('name'      => 'test_update',
+     		      'surname'   => 'test_surname-update')));
 
 	$this->assertFalse(
 	    $zlib->value_insert(
-		'failed',
-		array('name'      => 'test_name3',
+            'test', 'failed',
+            array('name'      => 'test_name3',
 		      'surname'   => 'test_surname3',
 		      'age'       => 273,
 		      'subtitle'  => 'test_subtitle3',
@@ -268,9 +343,9 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
 	$this->assertFalse(
 	    $zlib->value_update(
-		'failed', 3,
-		array('name'      => 'test_update',
-		      'surname'   => 'test_surname-update')));
+            $zlib->project_id, 'failed', 3,
+            array('name'      => 'test_update',
+                  'surname'   => 'test_surname-update')));
 
     $zlib->environment_clean($this->db_name);
     }

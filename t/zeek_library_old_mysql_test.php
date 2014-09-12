@@ -15,8 +15,8 @@ class ExtendsZeekLibraryOld extends ZeekLibrary
             return true;
         }
 
-        echo "\n expect : " . $this->output
-            . "\n received : " . $input . "\n";
+        echo "\n expect : " . $input
+            . "\n received : " . $this->output . "\n";
 
         return false;
     }

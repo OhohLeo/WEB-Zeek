@@ -3,6 +3,7 @@
 class ZeekLibrary extends ZeekOutput {
 
     public $global_path;
+    public $projects_path;
 
     protected $db;
     public $db_name;
@@ -13,46 +14,7 @@ class ZeekLibrary extends ZeekOutput {
     private $db_use_specific;
     private $db_use_uniq;
 
-    private $data_structure = array(
-        'project'    => array(
-            'name'        => array('VARCHAR', 25),
-            'since'       => 'DATE',
-            'subtitle'    => array('VARCHAR', 300),
-            'biography'   => array('TEXT', 1000)),
-        'artist'      => array(
-            'name'       => array('VARCHAR', 100),
-            'surname'    => array('VARCHAR', 100),
-            'age'        => array('INT', 11),
-            'subtitle'   => array('VARCHAR', 300),
-            'biography'  => array('TEXT', 1000),
-            'skill'      => array('VARCHAR', 100)),
-        'show'        => array(
-            'name'       => array('VARCHAR', 100),
-            'date'       => 'DATE',
-            'hour'       => 'TIME',
-            'location'   => array('VARCHAR', 300)),
-        'news'        => array(
-            'name'       => array('VARCHAR', 100),
-            'date'       => 'DATE',
-            'comments'   => array('TEXT', 1000)),
-        'album'       => array(
-            'name'       => array('VARCHAR', 100),
-            'duration'   => array('INT', 11),
-            'comments'   => array('TEXT', 1000)),
-         'music'       => array(
-            'name'       => array('VARCHAR', 100),
-            'date'       => 'DATE',
-            'duration'   => array('INT', 11),
-            'comments'   => array('TEXT', 1000)),
-          'video'       => array(
-            'name'       => array('VARCHAR', 100),
-            'date'       => 'DATE',
-            'duration'   => array('INT', 11),
-            'comments'   => array('TEXT', 1000)),
-         'media'       => array(
-            'name'       => array('VARCHAR', 100),
-            'date'       => 'DATE',
-            'comments'   => array('TEXT', 1000)));
+    public $data_structure = array();
 
 /**
  * Setup configuration for establishing a connection with MySQL
@@ -63,6 +25,8 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function config($config)
     {
+        $this->projects_path = $config['projects_path'];
+
         $this->db_host = $config['db_host'];
         $this->db_name = $config['db_name'];
         $this->db_login = $config['db_login'];
@@ -100,13 +64,21 @@ class ZeekLibrary extends ZeekOutput {
             return false;
         }
 
+
+        /* we get all existing projects from the configuration file */
+        if (isset($this->projects_path)) {
+            $this->data_structure =
+                $this->projects_get($this->projects_path);
+        }
+
+
         $check_environment = ($this->db_use_specific)
             ? !($db->table_check('project') || $db->table_check('user'))
             : $db->database_check($this->db_name) == false;
 
       /* We check if the database already exists */
         if ($check_environment) {
-            return $this->environment_setup(
+               return $this->environment_setup(
                 $this->db_name, $this->db_login, $this->db_password);
         }
 
@@ -139,6 +111,13 @@ class ZeekLibrary extends ZeekOutput {
         /* we use this database */
         $db->database_use($name);
 
+        /* we create the project table */
+        $db->table_create('project', array(
+            'name'        => array('VARCHAR', 25),
+            'since'       => 'DATE',
+            'subtitle'    => array('VARCHAR', 300),
+            'biography'   => array('TEXT', 1000)));
+
         /* we create the user table */
         $db->table_create('user', array(
             'name'       => array('VARCHAR', 25),
@@ -150,10 +129,6 @@ class ZeekLibrary extends ZeekOutput {
             'name'       => $login,
             'password'   => $password,
             'project_id' => 0));
-
-        /* we create the project table */
-        $db->table_create(
-            'project', $this->data_structure['project']);
 
         return true;
     }
@@ -179,7 +154,7 @@ class ZeekLibrary extends ZeekOutput {
         }
 
         /* we insert the new project */
-        if ($this->value_insert(
+        if ($this->db->row_insert(
             'user', array(
                 'project_id' => $project_id,
                 'name'       => $username,
@@ -270,6 +245,104 @@ class ZeekLibrary extends ZeekOutput {
         return false;
     }
 
+
+/**
+ * Parse projects.ini configuration file
+ *
+ * @method get_projects
+ * @param string file containing all projects
+ */
+    public function projects_get($file)
+    {
+        /* we check if the file exists */
+        if (file_exists($file) == false) {
+            $this->error("Can't find projects configuration file '$file'!");
+            return false;
+        }
+
+        $handle = fopen($file, "r");
+        if ($handle == false) {
+            $this->error("file '$file' not handle!");
+            return false;
+        }
+
+        $structure = array();
+
+        $project_name;
+        $table_name;
+        $count_line = 0;
+
+        /* we read the file line by line */
+        while (($line = fgets($handle)) !== false) {
+
+            /* we get the number of line */
+            $count_line++;
+
+            /* we detect a new project */
+            if (preg_match('/^== ([A-Za-z0-9]+) ==$/', $line, $rsp)) {
+
+                /* we get the project name */
+                $project_name = $rsp[1];
+
+                /* we set the structure */
+                $structure[$project_name] = array();
+                continue;
+            }
+
+            /* we check if the project name is defined */
+            if (!isset($project_name)) {
+                $this->error("Can't find project name for this table!");
+                fclose($handle);
+                return false;
+            }
+
+            /* we detect a new table */
+            if (preg_match('/^([A-Za-z0-9]+):$/', $line, $rsp)) {
+
+                /* we get the table name */
+                $table_name = $rsp[1];
+
+                /* we set the structure */
+                $structure[$project_name][$table_name] = array();
+                continue;
+            }
+
+            /* we check if the table name is defined */
+            if (!isset($table_name)) {
+                $this->error("Can't find table name for this attribute!");
+                fclose($handle);
+                return false;
+            }
+
+            /* we detect a new attribute */
+            if (preg_match('/^\s+([A-Za-z0-9]+):\s+([A-Z]+)\s+([0-9]+)?/',
+                           $line, $rsp)) {
+                $attribute = $rsp[1];
+                $type = $rsp[2];
+
+                /* we check if the value is ok */
+                if ($this->db->check_type($type) == false) {
+                    $this->error(
+                        "Unknown type '$type' for attribute '$attribute'!");
+                    fclose($handle);
+                    return false;
+                }
+
+                /* we get the attribute name and values */
+                $structure[$project_name][$table_name][$attribute] =
+                    isset($rsp[3]) ? array($type, $rsp[3]) : $type;
+                continue;
+            }
+
+            $this->error("Ignore line $count_line in file '$file'!");
+            fclose($handle);
+            return false;
+        }
+
+        fclose($handle);
+        return $structure;
+    }
+
 /**
  * Create a new project
  *
@@ -283,7 +356,13 @@ class ZeekLibrary extends ZeekOutput {
     {
         $db = $this->db;
 
-        /* We check if the project already exists */
+        if ($this->project_check($project_name) == false) {
+            $this->error(
+                "No existing project '$project_name' in configuration file!");
+            return false;
+        }
+
+        /* we check if the project already exists */
         if ($this->project_get_id($project_name)) {
             $this->error(
                 "Another project have the same name $project_name!");
@@ -291,7 +370,7 @@ class ZeekLibrary extends ZeekOutput {
         }
 
         /* we insert the new project */
-        if ($this->value_insert(
+        if ($this->db->row_insert(
             'project', array('name' => $project_name)) == false) {
                return false;
         }
@@ -321,11 +400,10 @@ class ZeekLibrary extends ZeekOutput {
     {
         $db = $this->db;
 
-        /* We check if the project exists */
+        /* we get the id of the project in the database */
         $project_id = $this->project_get_id($project_name);
         if ($project_id == false) {
-            $this->error(
-                "No existing project '$project_name'!");
+            $this->error("No existing project '$project_name' in database!");
             return false;
         }
 
@@ -334,20 +412,20 @@ class ZeekLibrary extends ZeekOutput {
             return $db->database_delete($this->db_name);
         }
 
-        /* otherwise : all links containing the actual project_id */
-        foreach ($this->data_structure as $name => $value) {
+        /* we remove the row with this project_id */
+        $db->row_delete('project', $project_id);
+
+        /* we remove all users using this project id */
+        $db->row_delete('user', array('project_id' => $project_id));
+
+        /* we remove all the tables beginning with the project id */
+        foreach ($this->data_structure[$project_name] as $name => $value) {
+
+            $name = "$project_id$name";
 
             /* we check if the table exist, otherwise we continue */
-            if ($db->table_check($name) == false) {
+            if ($db->table_check($name) == false)
                 continue;
-            }
-
-            /* for the project : we remove the row with the project_id
-             * specified */
-            if ($name == 'project') {
-                $db->row_delete('project', array('id' => $project_id));
-                continue;
-            }
 
             /* for all other tables : we delete the table */
             $db->table_delete($name);
@@ -356,6 +434,18 @@ class ZeekLibrary extends ZeekOutput {
         return true;
     }
 
+/**
+ * Check if a project exists in the internal structure.
+ *
+ * Return true if the project exists otherwise return false.
+ *
+ * @method project_check
+ * @param string project name
+ */
+    public function project_check($project_name)
+    {
+        return array_key_exists($project_name, $this->data_structure);
+    }
 
 /**
  * Check if a project exists and get his id.
@@ -378,6 +468,8 @@ class ZeekLibrary extends ZeekOutput {
         }
 
         if ($row = $db->handle_result($result)) {
+
+            /* on retourne l'id du project */
             return $row->id;
         }
 
@@ -389,10 +481,11 @@ class ZeekLibrary extends ZeekOutput {
  * NULL.
  *
  * @method struture_get
+ * @param string project name
  */
-    public function structure_get()
+    public function structure_get($project_name)
     {
-        return $this->data_structure;
+        return $this->data_structure[$project_name];
     }
 
 /**
@@ -400,12 +493,18 @@ class ZeekLibrary extends ZeekOutput {
  * NULL.
  *
  * @method type_get
+ * @param string project name
  * @param string type
  */
-    public function type_get($type)
+    public function type_get($project_name, $type)
     {
-        if ($this->type_check($type))
-            return $this->data_structure[$type];
+        /* we check if the project exists */
+        if ($this->project_check($project_name) == false) {
+            return false;
+        }
+
+        if ($this->type_check($project_name, $type))
+            return $this->data_structure[$project_name][$type];
 
         return false;
     }
@@ -417,45 +516,73 @@ class ZeekLibrary extends ZeekOutput {
  * false.
  *
  * @method type_check
+ * @param string project name
  * @param string type
  */
-    public function type_check($type)
+    public function type_check($project_name, $type)
     {
-        return array_key_exists($type, $this->data_structure);
+        /* we check if the project exists */
+        if ($this->project_check($project_name) == false) {
+            return false;
+        }
+
+        return array_key_exists($type, $this->data_structure[$project_name]);
+    }
+
+/**
+ * Return the name of the table as created in databases
+ *
+ * @method table_get_reel_name
+ * @param string project name
+ * @param string table name
+ */
+    protected function table_get_reel_name($project_name, $table_name)
+    {
+        $project_id = $this->project_get_id($project_name);
+        if ($project_id == false) {
+            $this->error("No existing project '$project_name' in database!");
+            return false;
+        }
+
+        return "$project_id$table_name";
     }
 
 /**
  * Check if a table exists otherwise automatically create if this
  * table is referenced on the static table.
  *
- * Return true if the table exists or is succesfully created otherwise
- * return false.
+ * Return the name of the table if the table exists or is succesfully created
+ * otherwise return false.
  *
  * @method table_check_and_create
  * @param string table name
  */
-    protected function table_check_and_create($name)
+    protected function table_check_and_create($project_name, $table_name)
     {
-        /* we check if the table exists */
-        if ($this->db->table_check($name))
-            return true;
+        $reel_name = $this->table_get_reel_name($project_name, $table_name);
+        if ($reel_name == false)
+            return false;
 
-        if ($this->type_check($name) == false) {
-            $this->error("'$name' not found in static database structure!");
+        /* we check if the table exists */
+        if ($this->db->table_check($reel_name))
+            return $reel_name;
+
+        if ($this->type_check($project_name, $table_name) == false) {
+            $this->error("'$table_name' not found in static database structure!");
             return false;
         }
 
         /* otherwise we check the existence of the table name in the
          * static datastructure */
-        $structure = $this->data_structure[$name];
+        $structure = $this->data_structure[$project_name][$table_name];
         if ($structure == NULL) {
-            $this->error("'$name' not found in static database structure!");
+            $this->error("'$table_name' not found in static database structure!");
             return false;
         }
 
         /* we create the table and all attributes */
-        if ($this->db->table_create($name, $structure))
-            return true;
+        if ($this->db->table_create($reel_name, $structure))
+            return $reel_name;
 
         return false;
     }
@@ -469,13 +596,17 @@ class ZeekLibrary extends ZeekOutput {
  * @method table_count
  * @param string table name
  */
-    public function table_count($name)
+    public function table_count($project_name, $table_name)
     {
         $db = $this->db;
 
+        $reel_name = $this->table_get_reel_name($project_name, $table_name);
+        if ($reel_name == false)
+            return false;
+
         /* we check if the table exists */
-        if ($db->table_check($name))
-            return $db->table_count($name, 'id', NULL);
+        if ($db->table_check($reel_name))
+            return $db->table_count($reel_name, 'id', NULL);
 
         return 0;
     }
@@ -492,14 +623,14 @@ class ZeekLibrary extends ZeekOutput {
  * @param string table name
  * @param hash values to insert
  */
-    public function value_insert($name, $values)
+    public function value_insert($project_name, $table_name, $values)
     {
         /* we check if the table exists */
-        if ($this->table_check_and_create($name)) {
+        $reel_name = $this->table_check_and_create($project_name, $table_name);
 
-            /* we insert the new value */
-            return $this->db->row_insert($name, $values);
-        }
+        /* we insert the new value */
+        if ($reel_name)
+            return $this->db->row_insert($reel_name, $values);
 
         return false;
     }
@@ -516,9 +647,9 @@ class ZeekLibrary extends ZeekOutput {
  * @param integer id of the element to modify
  * @param hash values that will replace old one
  */
-    public function value_update($name, $id, $values)
+    public function value_update($project_id, $table_name, $id, $values)
     {
-        return $this->db->row_update($name, $id, $values);
+        return $this->db->row_update("$project_id$table_name", $id, $values);
     }
 
 /**
@@ -531,9 +662,9 @@ class ZeekLibrary extends ZeekOutput {
  * @param string table name
  * @param integer id of the element to delete
  */
-    public function value_delete($name, $id)
+    public function value_delete($project_id, $table_name, $id)
     {
-        return $this->db->row_delete($name, $id);
+        return $this->db->row_delete("$project_id$table_name", $id);
     }
 
 /**
@@ -545,24 +676,18 @@ class ZeekLibrary extends ZeekOutput {
  * @param integer number of elements
  * @param integer offset
  */
-    public function value_get($name, $sort, $size, $offset)
+    public function value_get($project_name, $table_name,
+                              $sort = NULL, $size = NULL, $offset = NULL)
     {
         /* we check if the table exists */
-        if ($this->table_check_and_create($name)) {
+        $reel_name = $this->table_check_and_create($project_name, $table_name);
 
+        if ($reel_name) {
             $params = NULL;
-
-
-            /* we set up the generic filter */
-            if ($name == 'project') {
-                $params = array('id' => $this->project_id);
-            } else if ($name == 'user') {
-                $params = array('project_id' => $this->project_id);
-            }
 
             /* we get all the values desired */
             $result = $this->db->table_view(
-                $name, '*', $sort, $size, $offset, $params);
+                $reel_name, '*', $sort, $size, $offset, $params);
 
             if ($result == NULL)
                 return false;
@@ -581,18 +706,7 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function value_fetch($result)
     {
-	return $this->db->handle_result($result);
-    }
-
-/**
- * Check values before storing in database.
- *
- * @method value_check
- * @param string value to store
- * @param string type expected
- */
-    public function value_check($value, $type)
-    {
+        return $this->db->handle_result($result);
     }
 }
 

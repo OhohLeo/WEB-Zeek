@@ -9,6 +9,7 @@ class Zeek extends ZeekOutput {
 
     public $global_path;
     protected $project_id;
+    protected $project_name;
     protected $zlib;
 
 /**
@@ -96,6 +97,10 @@ class Zeek extends ZeekOutput {
         if (!(isset($project_name) && isset($project_id)))
             return false;
 
+        /* we store project name and id */
+        $this->project_name = $project_name;
+        $this->project_id   = $project_id;
+
         switch ($method) {
 
         case 'disconnect':
@@ -169,6 +174,11 @@ class Zeek extends ZeekOutput {
              or ($project_id > 0
                  and $zlib->user_check($project_id, $login, $password)))) {
 
+            if ($zlib->project_check($project_name) == false) {
+                $this->error("No existing project '$project_name'!");
+                return false;
+            }
+
             /* we store the session user */
             $_SESSION["login"] = $login;
             $_SESSION["start_ts"] = time();
@@ -176,6 +186,8 @@ class Zeek extends ZeekOutput {
             if ($project_id) {
                 $_SESSION["project_name"] = $project_name;
                 $_SESSION["project_id"]   = $project_id;
+
+                $this->project_name = $project_name;
 
                 /* we redirect to the home */
                 $this->redirect('home.php');
@@ -189,7 +201,7 @@ class Zeek extends ZeekOutput {
             return true;
         }
 
-       $this->error('unexpected login & password!');
+       $this->error('unexpected project name, login & password!');
        return false;
     }
 
@@ -411,7 +423,7 @@ class Zeek extends ZeekOutput {
     {
         $result = "<ul class=\"nav nav-sidebar\">\n";
 
-        $structure = $this->zlib->structure_get();
+        $structure = $this->zlib->structure_get($this->project_name);
 
         foreach ($structure as $key => $value) {
             $key = ucfirst($key);
@@ -440,6 +452,7 @@ class Zeek extends ZeekOutput {
         }
 
         $result = $this->zlib->value_get(
+            $this->project_name,
             $name, array('id' => 'DEC'), $size, $offset);
 
         $response = array();
@@ -474,6 +487,7 @@ class Zeek extends ZeekOutput {
 
         /* we get the elements */
         $result = $this->zlib->value_get(
+            $this->project_name,
             $name, array('id' => 'DEC'), $size, $offset);
 
         $data = array();
@@ -530,7 +544,7 @@ class Zeek extends ZeekOutput {
         $params = array();
         parse_str($values, $params);
 
-        if ($this->zlib->value_insert($name, $params)) {
+        if ($this->zlib->value_insert($this->project_name, $name, $params)) {
             $this->success("Value correctly inserted!");
             return true;
         }
@@ -553,7 +567,8 @@ class Zeek extends ZeekOutput {
             return false;
         }
 
-        if ($this->zlib->value_update($name, $id, $values)) {
+        if ($this->zlib->value_update(
+            $this->project_id, $name, $id, $values)) {
             $this->success("Value correctly updated!");
             return true;
         }
@@ -575,7 +590,7 @@ class Zeek extends ZeekOutput {
             return false;
         }
 
-        if ($this->zlib->value_delete($name, $id)) {
+        if ($this->zlib->value_delete($this->project_id, $name, $id)) {
             $this->success("Value correctly deleted!");
             return true;
         }
@@ -607,7 +622,7 @@ class Zeek extends ZeekOutput {
         $result = '';
 
         /* we check if it is specified type  */
-        if ($zlib->type_check($type)) {
+        if ($zlib->type_check($this->project_name, $type)) {
             $result = $this->display_get_and_set($type);
         }
         /* we handle the disconnect case */
@@ -650,9 +665,9 @@ class Zeek extends ZeekOutput {
  * @param string type to display
  */
     private function display_get_and_set($type) {
-        /* we check the existence of the table name in th}e static
+        /* we check the existence of the table name in the static
          * datastructure */
-        $structure = $this->zlib->type_get($type);
+        $structure = $this->zlib->type_get($this->project_name, $type);
         if ($structure == NULL) {
             $this->error("'$type' not found in static database structure!");
             return false;

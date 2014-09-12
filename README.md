@@ -34,16 +34,15 @@ The project is not yet finished.
 #### TODO Features :
  - finish the configuration & get_and_set visual functionnalities
  - insert data beetween old ones
- - handle sql project structure dynamically :
-  * writing one structure per projects
-  * add/remove tables functionnalities
-  * add/remove values type functionnalities
  - save&restore database functionnalities
  - setup help methods
  - deployment tool (for 1&1)
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+12/09/2014 Leo
+ * handle multiple & dynamic project structure
+
 11/09/2014 Leo
  * add datatable functionalities
  * 1st step on get&set

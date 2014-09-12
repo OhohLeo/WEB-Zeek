@@ -15,8 +15,8 @@ class ExtendsZeek extends Zeek
             return true;
         }
 
-        echo "\n expect : " . $this->output
-            . "\n received : " . $input . "\n";
+        echo "\n expect : " . $input
+            . "\n received : " . $this->output . "\n";
 
         return false;
     }
@@ -61,8 +61,11 @@ class TestZeek extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->zeek = new ExtendsZeek();
-        $this->zeek->start('t/test.ini');
+        $zeek = new ExtendsZeek();
+        $zeek->start('t/test.ini');
+        $zeek->connect_to_database();
+
+        $this->zeek = $zeek;
     }
 
     public function test_display_dynamic()
@@ -78,35 +81,32 @@ class TestZeek extends PHPUnit_Framework_TestCase
     {
         $zeek = $this->zeek;
 
-        /* we establish the connection with the database */
-        $this->assertTrue($zeek->connect_to_database());
-
         $this->assertTrue(
-            $zeek->connect('project', 'test', 'test'));
+            $zeek->connect('test', 'test', 'test'));
 
         $this->assertTrue(
             $zeek->checkOutput(
                 '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
 
-        $this->assertTrue($zeek->project_create('project'));
+        $this->assertTrue($zeek->project_create('test'));
 
         $this->assertTrue(
             $zeek->checkOutput('{"redirect":"home.php"}'));
 
-        $this->assertFalse($zeek->project_create('project'));
+        $this->assertFalse($zeek->project_create('test'));
 
-        $this->assertTrue($zeek->project_delete('project'));
+        $this->assertTrue($zeek->project_delete('test'));
         $this->assertTrue(
             $zeek->checkOutput(
-                '{"success":"Project \'project\' correctly deleted!"}'));
+                '{"success":"Project \'test\' correctly deleted!"}'));
 
-        $this->assertFalse($zeek->project_delete('project'));
+        $this->assertFalse($zeek->project_delete('test'));
 
         /* we establish the connection with the database */
         $this->assertTrue($zeek->connect_to_database());
 
         $this->assertTrue(
-            $zeek->connect('project', 'test', 'test'));
+            $zeek->connect('test', 'test', 'test'));
 
         $this->assertTrue(
             $zeek->checkOutput(
@@ -119,52 +119,49 @@ class TestZeek extends PHPUnit_Framework_TestCase
     {
         $zeek = $this->zeek;
 
-        /* we establish the connection with the database */
-        $this->assertTrue($zeek->connect_to_database());
-
         $this->assertTrue(
-            $zeek->connect('project', 'test', 'test'));
+            $zeek->connect('test', 'test', 'test'));
 
         $this->assertTrue(
             $zeek->checkOutput(
                 '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
 
-        $this->assertTrue($zeek->project_create('project'));
+        $this->assertTrue($zeek->project_create('test'));
 
         $this->assertTrue(
             $zeek->checkOutput('{"redirect":"home.php"}'));
 
-        $this->assertFalse($zeek->user_add(0,'project', NULL));
+        $this->assertFalse($zeek->user_add(0,'test', NULL));
 
         $this->assertTrue(
             $zeek->checkOutput('{"error":"Expecting valid user email!"}'));
 
-        $this->assertFalse($zeek->user_add(0,'project', 'test'));
+        $this->assertFalse($zeek->user_add(0,'test', 'test'));
 
         $this->assertTrue(
             $zeek->checkOutput('{"error":"The user \'test\' already exist!"}'));
 
-        $this->assertFalse($zeek->user_add(1,'project', 'test_zeek.fr'));
+        $this->assertFalse($zeek->user_add(1,'test', 'test_zeek.fr'));
 
         $this->assertTrue(
             $zeek->checkOutput(
                 '{"error":"Expected a valid email adress, received \'test_zeek.fr\'!"}'));
 
         $zeek->send_email_output = false;
-        $this->assertFalse($zeek->user_add(1,'project', 'test@zeek.fr'));
+        $this->assertFalse($zeek->user_add(1,'test', 'test@zeek.fr'));
 
         $this->assertTrue(
             $zeek->checkOutput(
                 '{"error":"Impossible to send email to \'test@zeek.fr\'!"}'));
 
         $zeek->send_email_output = true;
-        $this->assertTrue($zeek->user_add(1,'project', 'test@zeek.fr'));
+        $this->assertTrue($zeek->user_add(1,'test', 'test@zeek.fr'));
 
         $this->assertTrue(
             $zeek->checkOutput(
                 '{"success":"User \'test@zeek.fr\' correctly added & informed!"}'));
 
-        $this->assertFalse($zeek->user_add(1,'project', 'test@zeek.fr'));
+        $this->assertFalse($zeek->user_add(1,'test', 'test@zeek.fr'));
 
         $this->assertTrue(
             $zeek->checkOutput('{"error":"The user \'test@zeek.fr\' already exist!"}'));
@@ -184,34 +181,28 @@ class TestZeek extends PHPUnit_Framework_TestCase
     {
         $zeek = $this->zeek;
 
-        /* we establish the connection with the database */
-        $this->assertTrue($zeek->connect_to_database());
+        /* $this->assertTrue( */
+        /*     $zeek->connect('test', 'test', 'test')); */
 
-        $this->assertTrue(
-            $zeek->connect('project', 'test', 'test'));
+        /* $this->assertTrue( */
+        /*     $zeek->checkOutput( */
+        /*         '{"success":"Connection accepted, now create new project!","action":"project_create"}')); */
 
-        $this->assertTrue(
-            $zeek->checkOutput(
-                '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
+        /* $this->assertTrue($zeek->project_create('test')); */
 
-        $this->assertTrue($zeek->project_create('project'));
+        /* $this->assertTrue( */
+        /*     $zeek->checkOutput('{"redirect":"home.php"}')); */
 
-        $this->assertTrue(
-            $zeek->checkOutput('{"redirect":"home.php"}'));
+        /* /\* this->assertTrue( *\/ */
+        /*  /\*    $zeek->data_set('album', 'name=tutu&duration=10&comments=hey')); *\/ */
 
-        $this->assertTrue(
-            $zeek->data_set('album', 'name=tutu&duration=10&comments=hey'));
+        /* $this->assertTrue( */
+        /*     $zeek->checkOutput('{"success":"Value correctly inserted!"}')); */
 
-        $this->assertTrue(
-            $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
+        /* $this->assertFalse( */
+        /*     $zeek->data_set('albu', 'name=tutu&duration=10&comments=hey')); */
 
-        $this->assertFalse(
-            $zeek->data_set('albu', 'name=tutu&duration=10&comments=hey'));
-
-        $result = $zeek->data_get('album', 0, 10);
-
-
-        print "\nVALUE $result\n";
+        /* $result = $zeek->data_get('album', 0, 10); */
 
 
         /* $this->assertFalse( */
@@ -250,8 +241,6 @@ class TestZeek extends PHPUnit_Framework_TestCase
 
         $result = json_decode(json_encode(array('success' => 'toto')));
         $this->assertEquals($result->success, 'toto');
-        $this->assertEquals(
-            $this->zeek->object_to_array($result), array('success' => 'toto'));
     }
 
 }
