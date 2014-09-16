@@ -40,6 +40,9 @@ The project is not yet finished.
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+16/09/2014 Leo
+ * test with writing values
+
 12/09/2014 Leo
  * handle multiple & dynamic project structure
 

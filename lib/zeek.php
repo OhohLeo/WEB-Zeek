@@ -39,7 +39,12 @@ class Zeek extends ZeekOutput {
        $zlib->global_path = $global_path;
        $zlib->config($config);
 
+       /* we establish the connection with the database */
+       if ($zlib->connect_to_database() == false)
+            return false;
+
        $this->zlib = $zlib;
+       return true;
     }
 
 /**
@@ -148,6 +153,7 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
+
 /**
  * Establish connection with database.
  * Create project name if login and password are valid
@@ -241,7 +247,15 @@ class Zeek extends ZeekOutput {
 
                 /* we store it */
                 $_SESSION["project_name"] = $project_name;
+
+                $project_id = $zlib->project_get_id($project_name);
+                if ($project_id == false)
+                    return false;
+
                 $_SESSION["project_id"]   = $zlib->project_get_id($project_name);
+
+                $this->project_name = $project_name;
+                $this->project_id   = $project_id;
 
                 /* we redirect to the home */
                 $this->redirect('home.php');
@@ -452,7 +466,7 @@ class Zeek extends ZeekOutput {
         }
 
         $result = $this->zlib->value_get(
-            $this->project_name,
+            $this->project_id,
             $name, array('id' => 'DEC'), $size, $offset);
 
         $response = array();
@@ -483,19 +497,19 @@ class Zeek extends ZeekOutput {
         }
 
         /* we get the total number of elements */
-        $records_total = $this->zlib->table_count($name);
+        $records_total = $this->zlib->table_count($this->project_id, $name);
 
         /* we get the elements */
         $result = $this->zlib->value_get(
-            $this->project_name,
-            $name, array('id' => 'DEC'), $size, $offset);
+            $this->project_id, $name, array('id' => 'DEC'), $size, $offset);
 
         $data = array();
 
-        while ($row = $this->zlib->value_fetch($result)) {
-            array_push($data, $row);
+        if ($result) {
+            while ($row = $this->zlib->value_fetch($result)) {
+                array_push($data, $row);
+            }
         }
-
 
         $records_filtered = 0;
 
@@ -523,7 +537,7 @@ class Zeek extends ZeekOutput {
         }
 
         return $this->output($this->json_encode(
-            array('count' => $this->zlib->table_count($name))));
+            array('count' => $this->zlib->table_count($project_id, $name))));
     }
 
 
@@ -544,7 +558,7 @@ class Zeek extends ZeekOutput {
         $params = array();
         parse_str($values, $params);
 
-        if ($this->zlib->value_insert($this->project_name, $name, $params)) {
+        if ($this->zlib->value_insert($this->project_id, $name, $params)) {
             $this->success("Value correctly inserted!");
             return true;
         }
@@ -669,7 +683,7 @@ class Zeek extends ZeekOutput {
          * datastructure */
         $structure = $this->zlib->type_get($this->project_name, $type);
         if ($structure == NULL) {
-            $this->error("'$type' not found in static database structure!");
+            $this->error("table '$type' not found in static database structure!");
             return false;
         }
 

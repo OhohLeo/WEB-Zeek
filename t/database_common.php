@@ -210,21 +210,21 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
         $db = $this->connect();
 
 	$this->assertFalse(
-	    $db->check_integer(0.45, -125, 127, 0, 255));
+	    $db->check_integer(0.45, -125, 127));
 	$this->assertFalse(
-	    $db->check_integer(-126, -125, 127, 0, 255));
+	    $db->check_integer(-126, -125, 127));
 	$this->assertFalse(
-	    $db->check_integer(256, -125, 127, 0, 255));
+	    $db->check_integer(128, -125, 127));
 	$this->assertTrue(
-	    $db->check_integer(123, -125, 127, 0, 255));
+	    $db->check_integer(123, -125, 127));
 	$this->assertTrue(
-	    $db->check_integer(-125, -125, 127, 0, 255));
+	    $db->check_integer(-125, -125, 127));
 	$this->assertTrue(
-	    $db->check_integer(127, -125, 127, 0, 255));
+	    $db->check_integer(127, 0, 255));
 	$this->assertTrue(
-	    $db->check_integer(255, -125, 127, 0, 255));
+	    $db->check_integer(255, 0, 255));
 	$this->assertTrue(
-	    $db->check_integer(0, -125, 127, 0, 255));
+	    $db->check_integer(0, 0, 255));
 
 	$this->assertTrue(
 	    $db->check_text('ceci est un texte valide'));

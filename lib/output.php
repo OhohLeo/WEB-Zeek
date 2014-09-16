@@ -47,6 +47,16 @@ class ZeekOutput {
         $this->output($this->json_encode(array('error' => $input)));
     }
 
+/**
+ * Echo errors.
+ *
+ * @method debug
+ * @param string data to display
+ */
+    public function debug($input) {
+        /* print "DEBUG: $input\n"; */
+    }
+
 
 /**
  * Echo replace content in JSON format.

@@ -237,13 +237,15 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
         $this->assertTrue(
             $zlib->project_add('test'));
 
-        $zlib->project_id = $zlib->project_get_id('test');
+        $project_id = $zlib->project_get_id('test');
+
+        $zlib->project_id = $project_id;
         $this->assertEquals($zlib->project_id, 1);
 
         # we add a new value here
         $this->assertTrue(
 	    $zlib->value_insert(
-            'test',
+            $project_id,
             'artist',
             array('name'      => 'test_name',
                   'surname'   => 'test_surname',
@@ -252,7 +254,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
                   'biography' => 'la vie de ce test sera très courte',
                    'skill'     => 'skill_test')));
 
-        $result = $zlib->value_get('test', 'artist');
+        $result = $zlib->value_get($project_id, 'artist');
 
         $row = $zlib->value_fetch($result);
 
@@ -267,7 +269,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
         # we add a new value again
         $this->assertTrue(
             $zlib->value_insert(
-                'test',
+                $project_id,
                 'artist',
                 array('name'      => 'test_name2',
                 'surname'   => 'test_surname2',
@@ -279,7 +281,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	# we add a new value again
 	$this->assertTrue(
 	    $zlib->value_insert(
-            'test',
+            $project_id,
             'artist',
             array('name'      => 'test_name3',
             'surname'   => 'test_surname3',
@@ -288,7 +290,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
             'biography' => 'la vie de ce test sera très très très courte',
             'skill'     => 'skill_test3')));
 
-	$result = $zlib->value_get('test', 'artist', NULL, 1, 1);
+	$result = $zlib->value_get($project_id, 'artist', NULL, 1, 1);
 
 	$row = $zlib->value_fetch($result);
 
@@ -303,11 +305,11 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	# we add a new value again
 	$this->assertTrue(
 	    $zlib->value_update(
-            $zlib->project_id, 'artist', 3,
+            $project_id, 'artist', 3,
             array('name'      => 'test_update',
                   'surname'   => 'test_surname-update')));
 
-	$result = $zlib->value_get('test', 'artist', NULL, 1, 2);
+	$result = $zlib->value_get($project_id, 'artist', NULL, 1, 2);
 
 	$row = $zlib->value_fetch($result);
 
@@ -319,21 +321,21 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	$this->assertEquals($row->biography, 'la vie de ce test sera très très très courte');
 	$this->assertEquals($row->skill, 'skill_test3');
 
-	$this->assertEquals($zlib->table_count('test', 'artist'), 3);
+	$this->assertEquals($zlib->table_count($project_id, 'artist'), 3);
 
 	# we delete the last value
 	$this->assertTrue($zlib->value_delete(
-        $zlib->project_id, 'artist', 3));
+        $project_id, 'artist', 3));
 
 	$this->assertFalse(
 	    $zlib->value_update(
-            $zlib->project_id, 'artist', 3,
+            $project_id, 'artist', 3,
             array('name'      => 'test_update',
      		      'surname'   => 'test_surname-update')));
 
 	$this->assertFalse(
 	    $zlib->value_insert(
-            'test', 'failed',
+            $project_id, 'failed',
             array('name'      => 'test_name3',
 		      'surname'   => 'test_surname3',
 		      'age'       => 273,
@@ -343,7 +345,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
 	$this->assertFalse(
 	    $zlib->value_update(
-            $zlib->project_id, 'failed', 3,
+            $project_id, 'failed', 3,
             array('name'      => 'test_update',
                   'surname'   => 'test_surname-update')));
 

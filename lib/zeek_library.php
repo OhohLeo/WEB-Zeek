@@ -14,7 +14,7 @@ class ZeekLibrary extends ZeekOutput {
     private $db_use_specific;
     private $db_use_uniq;
 
-    public $data_structure = array();
+    private $data_structure = array();
 
 /**
  * Setup configuration for establishing a connection with MySQL
@@ -315,7 +315,7 @@ class ZeekLibrary extends ZeekOutput {
             }
 
             /* we detect a new attribute */
-            if (preg_match('/^\s+([A-Za-z0-9]+):\s+([A-Z]+)\s+([0-9]+)?/',
+            if (preg_match('/^\s+([A-Za-z0-9]+):\s+([A-Z_]+)\s+([0-9]+)?/',
                            $line, $rsp)) {
                 $attribute = $rsp[1];
                 $type = $rsp[2];
@@ -403,7 +403,7 @@ class ZeekLibrary extends ZeekOutput {
         /* we get the id of the project in the database */
         $project_id = $this->project_get_id($project_name);
         if ($project_id == false) {
-            $this->error("No existing project '$project_name' in database!");
+            $this->error("No existing project delete '$project_name' in database!");
             return false;
         }
 
@@ -421,14 +421,14 @@ class ZeekLibrary extends ZeekOutput {
         /* we remove all the tables beginning with the project id */
         foreach ($this->data_structure[$project_name] as $name => $value) {
 
-            $name = "$project_id$name";
+            $reel_name = "$project_id$name";
 
             /* we check if the table exist, otherwise we continue */
-            if ($db->table_check($name) == false)
+            if ($db->table_check($reel_name) == false)
                 continue;
 
             /* for all other tables : we delete the table */
-            $db->table_delete($name);
+            $db->table_delete($reel_name);
         }
 
         return true;
@@ -448,9 +448,7 @@ class ZeekLibrary extends ZeekOutput {
     }
 
 /**
- * Check if a project exists and get his id.
- *
- * Return true if the project exists otherwise return false.
+ * Check if a project exists and return the id.
  *
  * @method project_get_id
  * @param string project name
@@ -463,15 +461,36 @@ class ZeekLibrary extends ZeekOutput {
             'project', 'id', NULL, NULL, NULL,
             array('name' => $project_name));
 
-        if ($result == NULL) {
+        if ($result == NULL)
             return false;
-        }
 
-        if ($row = $db->handle_result($result)) {
-
-            /* on retourne l'id du project */
+        /* we return the id of the project */
+        if ($row = $db->handle_result($result))
             return $row->id;
-        }
+
+        return false;
+    }
+
+
+/**
+ * Return the name of the project by his id, false otherwise.
+ *
+ * @method project_name_get_by_id
+ * @param integer project id
+ */
+    public function project_name_get_by_id($project_id)
+    {
+        $db = $this->db;
+
+        $result = $db->table_view(
+            'project', 'name', NULL, NULL, NULL, $project_id);
+
+        if ($result == NULL)
+            return false;
+
+        /* we return the name of the project */
+        if ($row = $db->handle_result($result))
+            return $row->name;
 
         return false;
     }
@@ -530,24 +549,6 @@ class ZeekLibrary extends ZeekOutput {
     }
 
 /**
- * Return the name of the table as created in databases
- *
- * @method table_get_reel_name
- * @param string project name
- * @param string table name
- */
-    protected function table_get_reel_name($project_name, $table_name)
-    {
-        $project_id = $this->project_get_id($project_name);
-        if ($project_id == false) {
-            $this->error("No existing project '$project_name' in database!");
-            return false;
-        }
-
-        return "$project_id$table_name";
-    }
-
-/**
  * Check if a table exists otherwise automatically create if this
  * table is referenced on the static table.
  *
@@ -557,18 +558,24 @@ class ZeekLibrary extends ZeekOutput {
  * @method table_check_and_create
  * @param string table name
  */
-    protected function table_check_and_create($project_name, $table_name)
+    protected function table_check_and_create($project_id, $table_name)
     {
-        $reel_name = $this->table_get_reel_name($project_name, $table_name);
-        if ($reel_name == false)
-            return false;
+        $reel_name = "$project_id$table_name";
 
         /* we check if the table exists */
         if ($this->db->table_check($reel_name))
-            return $reel_name;
+            return true;
+
+        /* we get the name of the project using the project id */
+        $project_name = $this->project_name_get_by_id($project_id);
+        if ($project_name == false) {
+            $this->error("'$project_id' not found in database!");
+            return false;
+        }
 
         if ($this->type_check($project_name, $table_name) == false) {
-            $this->error("'$table_name' not found in static database structure!");
+            $this->error(
+                "table '$table_name' not found in static database structure!");
             return false;
         }
 
@@ -576,13 +583,14 @@ class ZeekLibrary extends ZeekOutput {
          * static datastructure */
         $structure = $this->data_structure[$project_name][$table_name];
         if ($structure == NULL) {
-            $this->error("'$table_name' not found in static database structure!");
+            $this->error(
+                "table '$table_name' empty in static database structure!");
             return false;
         }
 
         /* we create the table and all attributes */
         if ($this->db->table_create($reel_name, $structure))
-            return $reel_name;
+            return true;
 
         return false;
     }
@@ -596,13 +604,11 @@ class ZeekLibrary extends ZeekOutput {
  * @method table_count
  * @param string table name
  */
-    public function table_count($project_name, $table_name)
+    public function table_count($project_id, $table_name)
     {
         $db = $this->db;
 
-        $reel_name = $this->table_get_reel_name($project_name, $table_name);
-        if ($reel_name == false)
-            return false;
+        $reel_name = "$project_id$table_name";
 
         /* we check if the table exists */
         if ($db->table_check($reel_name))
@@ -623,15 +629,13 @@ class ZeekLibrary extends ZeekOutput {
  * @param string table name
  * @param hash values to insert
  */
-    public function value_insert($project_name, $table_name, $values)
+    public function value_insert($project_id, $table_name, $values)
     {
-        /* we check if the table exists */
-        $reel_name = $this->table_check_and_create($project_name, $table_name);
-
         /* we insert the new value */
-        if ($reel_name)
-            return $this->db->row_insert($reel_name, $values);
-
+        if ($this->table_check_and_create($project_id, $table_name))
+        {
+            return $this->db->row_insert("$project_id$table_name", $values);
+        }
         return false;
     }
 
@@ -676,13 +680,12 @@ class ZeekLibrary extends ZeekOutput {
  * @param integer number of elements
  * @param integer offset
  */
-    public function value_get($project_name, $table_name,
+    public function value_get($project_id, $table_name,
                               $sort = NULL, $size = NULL, $offset = NULL)
     {
-        /* we check if the table exists */
-        $reel_name = $this->table_check_and_create($project_name, $table_name);
+        $reel_name = "$project_id$table_name";
 
-        if ($reel_name) {
+        if ($this->db->table_check($reel_name)) {
             $params = NULL;
 
             /* we get all the values desired */

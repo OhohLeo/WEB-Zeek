@@ -14,9 +14,17 @@ class DataBase extends ZeekOutput {
     # "ENUM" & "SET" are not handled
     private $valid_type = array(
         "TINYINT", "SMALLINT", "MEDIUMINT", "INT", "INTEGER", "BIGINT",
+        "TINYINT_U", "SMALLINT_U", "MEDIUMINT_U", "INT_U", "INTEGER_U", "BIGINT_U",
         "FLOAT", "DOUBLEPRECISION", "REAL", "DECIMAL", "CHAR", "VARCHAR",
         "TINYTEXT", "TEXT", "LONGTEXT", "TINYBLOB", "BLOB", "LONGBLOB",
         "DATE", "DATETIME", "TIMESTAMP", "TIME", "YEAR");
+
+    /* private $type_size = array( */
+    /*     "TINYINT"   => 1, */
+    /*     "SMALLINT"  => 2, */
+    /*     "MEDIUMINT" => 3, */
+    /*     "INT"       => 4, */
+    /*     "INTEGER", "BIGINT", */
 
     private $translation = array("(" => "", ")" => "");
 
@@ -178,7 +186,16 @@ class DataBase extends ZeekOutput {
 
                 /* the vartype should be valid */
                 if ($this->check_type($vartype)) {
-                        $request .= $vartype;
+
+                    /* we add the unsigned flag */
+                    if (preg_match('/^([A-Z]+)_U$/', $vartype, $result)) {
+                        $vartype = $result[1] . ' UNSIGNED ';
+                    }
+                    /*  else if (preg_match('/INT$/', $vartype)) { */
+
+                    /* } */
+
+                    $request .= "$vartype ";
                 } else {
                     $this->error(
                         "Unexpected attribute type '$vartype'"
@@ -209,6 +226,7 @@ class DataBase extends ZeekOutput {
                     /* by default the value is NOT NULL */
                     $request .= " NOT NULL ";
                 }
+
 
                 $request .= ", ";
             }
@@ -310,6 +328,9 @@ class DataBase extends ZeekOutput {
             and in_array($sort[1], array('ASC', 'DESC'))) {
             $options .= " ORDER BY " . implode(' ', $sort);
         }
+
+        if (is_numeric($params))
+            $params = array('id' => $params);
 
         if (is_array($params)){
             $options .= " WHERE " . implode(' AND ', $this->get_values($params));
@@ -417,20 +438,34 @@ class DataBase extends ZeekOutput {
 	switch ($type) {
 	    case "TINYINT":
 		return $this->check_integer(
-		    $value, -128, 127, 0, 255);
-	    case "SMALLINT":
+		    $value, -128, 127);
+	    case "TINYINT_U":
+            return $this->check_integer(
+		    $value, 0, 255);
+        case "SMALLINT":
 		return $this->check_integer(
-		    $value, -32768, 32767, 0, 65535);
+		    $value, -32768, 32767);
+        case "SMALLINT_U":
+		return $this->check_integer(
+		    $value, 0, 65535);
 	    case "MEDIUMINT":
 		return $this->check_integer(
-		    $value, -8388608, 8388607, 0, 16777215);
+		    $value, -8388608, 8388607);
+        case "MEDIUMINT_U":
+		return $this->check_integer(
+		    $value, 0, 16777215);
 	    case "INT":
 		return $this->check_integer(
-		    $value, -2147483648, 2147483647, 0, 4294967295);
+		    $value, -2147483648, 2147483647);
+        case "INT_U":
+        return $this->check_integer(
+            $value, 0, 4294967295);
 	    case "BIGINT":
 		return $this->check_integer(
-		    $value, -9223372036854775808, 9223372036854775807, 0,
-		    18446744073709551615);
+		    $value, -9223372036854775808, 9223372036854775807);
+        case "BIGINT_U":
+		return $this->check_integer(
+		    $value, 0, 18446744073709551615);
 
 	    case "DECIMAL":
 	    case "INTEGER":
@@ -473,12 +508,9 @@ class DataBase extends ZeekOutput {
  * @method check_integer
  * @param string integer to check
  */
-    public function check_integer($value, $min_signed, $max_signed,
-				  $min_unsigned, $max_unsigned)
+    public function check_integer($value, $min, $max)
     {
-	return is_int($value)
-	    && (($value >= $min_signed && $value <= $max_signed)
-		|| ($value >= $min_unsigned && $value <= $max_unsigned));
+	return is_int($value) && ($value >= $min && $value <= $max);
     }
 
 /**
@@ -489,7 +521,8 @@ class DataBase extends ZeekOutput {
  */
     public function check_text($text)
     {
-	return (preg_match('/((create|drop) (database|table))|(insert into)/i', $text) == 0);
+	return (preg_match('/((create|drop) (database|table))|(insert into)/i', $text)
+        == 0);
     }
 
 /**
@@ -532,7 +565,7 @@ class DataBase extends ZeekOutput {
                     : $result;
 
            } catch (Exception $e) {
-                $this->error(
+                $this->debug(
                     "send_query : impossible to send request '$request' " . $e->getMessage());
 
                 return false;
@@ -582,7 +615,7 @@ class DataBase extends ZeekOutput {
                 return $result;
 
            } catch (Exception $e) {
-                $this->error(
+                $this->debug(
                     "Impossible to send request : " . $e->getMessage()
 		    . "\n request = $request\n"
 		    . " params = " . var_dump($params) . "\n");
