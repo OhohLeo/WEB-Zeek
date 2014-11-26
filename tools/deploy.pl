@@ -8,7 +8,7 @@ use Cwd;
 
 use feature 'say';
 
-my %AUTHORISED = map { $_ => 1 } qw(lib js css view _partials sessions);
+my %AUTHORISED = map { $_ => 1 } qw(lib js css view default sessions);
 
 my($action, $host, $login, $password, $directory, $help);
 
@@ -172,11 +172,11 @@ say("connected to $host!");
 # In this case I'm using ASCII.
 $ftp->ascii() or die  "Can't set ASCII mode: $!";
 
-# we link the _partials script file to external
+# we link the default script file to external
 foreach my $replace (qw(scripts header))
 {
-    replace_link("$directory/_partials/$replace.php",
-		 "$directory/_partials/external_$replace.php");
+    replace_link("$directory/default/$replace.php",
+		 "$directory/default/external_$replace.php");
 }
 
 replace_link("$directory/input.php",
@@ -214,11 +214,11 @@ while (my($cwd, $files) = each %files)
     }
 }
 
-# we link the _partials script file to internal
+# we link the default script file to internal
 foreach my $replace (qw(scripts header))
 {
-    replace_link("$directory/_partials/$replace.php",
-		 "$directory/_partials/internal_$replace.php");
+    replace_link("$directory/default/$replace.php",
+		 "$directory/default/internal_$replace.php");
 }
 
 replace_link("$directory/input.php",

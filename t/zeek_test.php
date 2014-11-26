@@ -33,7 +33,7 @@ class ExtendsZeek extends Zeek
 
     public function output($input)
     {
-        echo "$input \n";
+        /* echo "$input \n"; */
         $this->output = $input;
     }
 

@@ -143,8 +143,8 @@ class Zeek extends ZeekOutput {
         case 'get_structure':
             return $this->get_structure();
 
-        case 'clicked':
-            return $this->clicked(strtolower($params['type']));
+        case 'get_data':
+            return $this->get_data(strtolower($params['type']));
         }
 
         $this->error(
@@ -269,10 +269,6 @@ class Zeek extends ZeekOutput {
 
     public function project_delete_to_confirm($project_name)
     {
-        $this->clean_and_send(
-            $this->display_disconnect(
-                "Are you sure you want to delete '$project_name' ?",
-                "project_delete"));
         return true;
     }
 
@@ -435,14 +431,14 @@ class Zeek extends ZeekOutput {
  */
     public function get_structure()
     {
-        $result = "<ul class=\"nav nav-sidebar\">\n";
+        $result = "<ul class=\"sidebar\">\n";
 
         $structure = $this->zlib->structure_get($this->project_name);
 
         foreach ($structure as $key => $value) {
             $key = ucfirst($key);
-            $result .= "<li><a class=\"clickable\" data-type='$key'>"
-                . "$key</a></li>\n";
+            $result .= "<li class=\"data\" data-type='$key'>"
+                . "$key</li>\n";
         }
 
         $this->output("$result</ul>\n");
@@ -625,10 +621,10 @@ class Zeek extends ZeekOutput {
 /**
  * Return all asked data in JSON format to client side.
  *
- * @method clicked
+ * @method get_data
  * @param string
  */
-    public function clicked($type)
+    public function get_data($type)
     {
         $zlib = $this->zlib;
 
@@ -638,13 +634,6 @@ class Zeek extends ZeekOutput {
         /* we check if it is specified type  */
         if ($zlib->type_check($this->project_name, $type)) {
             $result = $this->display_get_and_set($type);
-        }
-        /* we handle the disconnect case */
-        else if ($type == 'disconnect') {
-            $action = 'append';
-            $result = $this->display_disconnect(
-                "Are you sure you want to disconnect from Zeek ?",
-                "disconnect");
         }
         /* we handle other cases */
         else if (file_exists($this->global_path . "view/$type.html")) {
@@ -723,27 +712,6 @@ class Zeek extends ZeekOutput {
         ob_start();
         include $this->global_path . "view/button.html";
         return ob_get_clean();
-    }
-
-/**
- * Return a modal message before disconnection.
- *
- * @method display_disconnect
- * @param string confirmation message
- * @param string method to call after confirmation
- */
-    public function display_disconnect($message, $method) {
-        return $this->display_modal(
-                $message,
-                true,
-                NULL,
-                $this->display_post(
-                    "button.btn-modal",
-                    'click',
-                    $method,
-                    NULL,
-                    '$(location).attr("href", "index.php");'),
-                NULL);
     }
 
 /**

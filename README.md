@@ -40,6 +40,11 @@ The project is not yet finished.
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+26/11/2014 Leo
+ * ui is going to become independant from controler side
+ * simplify controler
+ * remove bootstrap heavy machine
+
 16/09/2014 Leo
  * test with writing values
 
