@@ -18,7 +18,6 @@ class Zeek extends ZeekOutput {
  * @method start
  * @param string configuration file
  */
-
     public function start($config_file)
     {
         $config = parse_ini_file($config_file);
@@ -63,10 +62,7 @@ class Zeek extends ZeekOutput {
         if ($this->zlib->connect_to_database() == false)
             return false;
 
-        if (isset($params['draw'])) {
-            return $this->data_get_tables($params);
-        }
-
+        // we get the method name
         $method = $params['method'];
 
         /* we check if the method name does exist */
@@ -90,8 +86,8 @@ class Zeek extends ZeekOutput {
                 $params['name'], $params['offset'], $params['size']);
 
         /* otherwise we check if the connection is ok */
-        if ($_SESSION["login"] == false)
-            return false;
+        // if ($_SESSION["login"] == false)
+        //     return false;
 
         if ($method == 'project_create')
             return $this->project_create($params['project_name']);
@@ -166,49 +162,44 @@ class Zeek extends ZeekOutput {
     public function connect($project_name, $login, $password)
     {
         $zlib = $this->zlib;
-
+        
         /* we check if the project_name does exist */
         $project_id = $zlib->project_get_id($project_name);
 
         /* we check the validity of the login & password
-           we check 1st forcing the project id to 0 (master admin)
            then we check using the project id if defined */
         if ($this->check_string_and_size($project_name, 25)
-        and $this->check_string_and_size($login, 25)
-        and $this->check_string_and_size($password, 32)
-        and ($zlib->user_check(0, $login, $password)
-             or ($project_id > 0
-                 and $zlib->user_check($project_id, $login, $password)))) {
-
-            if ($zlib->project_check($project_name) == false) {
-                $this->error("No existing project '$project_name'!");
-                return false;
-            }
-
-            /* we store the session user */
+            and $this->check_string_and_size($login, 25)
+            and $this->check_string_and_size($password, 32)
+            and $zlib->user_check($project_id, $login, $password))
+        {
+            // we store the session user
             $_SESSION["login"] = $login;
             $_SESSION["start_ts"] = time();
 
-            if ($project_id) {
+            // the project already exist : it is ok!
+            if ($project_id)
+            {
                 $_SESSION["project_name"] = $project_name;
                 $_SESSION["project_id"]   = $project_id;
 
                 $this->project_name = $project_name;
 
-                /* we redirect to the home */
+                // we redirect to the home
                 $this->redirect('home.php');
                 return true;
             }
 
+            // otherwise we create a new project from the beginning
             $this->success(
                 'Connection accepted, now create new project!',
                 array('action' => 'project_create'));
 
             return true;
         }
-
-       $this->error('unexpected project name, login & password!');
-       return false;
+        
+        $this->error("unexpected project name, login & password!");
+        return false;
     }
 
 /**
@@ -236,11 +227,11 @@ class Zeek extends ZeekOutput {
         $zlib = $this->zlib;
 
         /* we check the session id */
-        if ($this->check_string_and_size($project_name, 25)) {
-
+        if ($this->check_string_and_size($project_name, 25))
+        {
             /* we check if the project_name does not exist */
-            if ($zlib->project_get_id($project_name) == false) {
-
+            if ($zlib->project_get_id($project_name) == false)
+            {
                 /* we create the project */
                 if ($zlib->project_add($project_name) == false)
                     return false;
@@ -252,7 +243,7 @@ class Zeek extends ZeekOutput {
                 if ($project_id == false)
                     return false;
 
-                $_SESSION["project_id"]   = $zlib->project_get_id($project_name);
+                $_SESSION["project_id"] = $zlib->project_get_id($project_name);
 
                 $this->project_name = $project_name;
                 $this->project_id   = $project_id;
@@ -261,9 +252,14 @@ class Zeek extends ZeekOutput {
                 $this->redirect('home.php');
                 return true;
             }
+            else 
+            {
+                $this->error('Project already existing!');
+                return false;
+            }
         }
 
-        $this->error('Project name unacceptable, try again!');
+        $this->error('Project name too long or unsupported, change the name!');
         return false;
     }
 

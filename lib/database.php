@@ -13,18 +13,38 @@ class DataBase extends ZeekOutput {
 
     # "ENUM" & "SET" are not handled
     private $valid_type = array(
-        "TINYINT", "SMALLINT", "MEDIUMINT", "INT", "INTEGER", "BIGINT",
-        "TINYINT_U", "SMALLINT_U", "MEDIUMINT_U", "INT_U", "INTEGER_U", "BIGINT_U",
-        "FLOAT", "DOUBLEPRECISION", "REAL", "DECIMAL", "CHAR", "VARCHAR",
-        "TINYTEXT", "TEXT", "LONGTEXT", "TINYBLOB", "BLOB", "LONGBLOB",
-        "DATE", "DATETIME", "TIMESTAMP", "TIME", "YEAR");
-
-    /* private $type_size = array( */
-    /*     "TINYINT"   => 1, */
-    /*     "SMALLINT"  => 2, */
-    /*     "MEDIUMINT" => 3, */
-    /*     "INT"       => 4, */
-    /*     "INTEGER", "BIGINT", */
+        "TINYINT",     # -128       => 127
+        "TINYINT_U",   #    0       => 255
+        "SMALLINT",    # -32768     => 32767
+        "SMALLINT_U",  #    0       => 65535
+        "MEDIUMINT",   # -8388608   => 8388607
+        "MEDIUMINT_U", #    0       => 16777215
+        "INT",
+        "INT_U",
+        "INTEGER",
+        "INTEGER_U",
+        "BIGINT",
+        "BIGINT_U",
+        "FLOAT",
+        "DOUBLE",
+        "FLOAT_U",
+        "DOUBLE_U",
+        "DECIMAL",
+        "DATE",      # YYYY-MM-DD
+        "DATETIME",  # YYYY-MM-DD HH:MM:SS
+        "TIMESTAMP", # YYYY-MM-DD HH:MM:SS from '1971-01-01 00:00:01'
+        "TIME",      # HH:MM:SS
+        "YEAR",      # YYYY
+        "CHAR",
+        "VARCHAR",
+        "TINYTEXT",   # 255 chars max
+        "TINYBLOB",
+        "TEXT",       # 65535 chars max
+        "BLOB",
+        "MEDIUMTEXT", # 16777215 chars max
+        "MEDIUMBLOB",
+        "LONGTEXT",   # 4294967295 chars max
+        "LONGBLOB");
 
     private $translation = array("(" => "", ")" => "");
 
@@ -191,11 +211,8 @@ class DataBase extends ZeekOutput {
                     if (preg_match('/^([A-Z]+)_U$/', $vartype, $result)) {
                         $vartype = $result[1] . ' UNSIGNED ';
                     }
-                    /*  else if (preg_match('/INT$/', $vartype)) { */
 
-                    /* } */
-
-                    $request .= "$vartype ";
+                    $request .= "$vartype";
                 } else {
                     $this->error(
                         "Unexpected attribute type '$vartype'"
@@ -218,9 +235,9 @@ class DataBase extends ZeekOutput {
                  * 'NOT NULL' */
                 if (isset($default)) {
                     if ($default == "NOT NULL" or $default == "NULL") {
-                        $request .= "$default ";
+                        $request .= " $default ";
                     } else {
-                        $request .= "NOT NULL DEFAULT '$default' ";
+                        $request .= " NOT NULL DEFAULT '$default' ";
                     }
                 } else {
                     /* by default the value is NOT NULL */
@@ -476,11 +493,12 @@ class DataBase extends ZeekOutput {
 
 	    case "CHAR":
 	    case "VARCHAR":
-	    case "NYTEXT":
 	    case "TEXT":
+	    case "MEDIUMTEXT":
 	    case "LONGTEXT":
 	    case "TINYBLOB":
 	    case "BLOB":
+	    case "MEDIUMBLOB":
 	    case "LONGBLOB":
  	        return $this->check_text($value);
 
@@ -488,14 +506,12 @@ class DataBase extends ZeekOutput {
 	        return (date('Y-m-d', strtotime($value)) == $value);
 	    case "TIME": # '00:00:00'
 	        return (date('H:i:s', strtotime($value)) == $value);
+        case "TIMESTAMP":
 	    case "DATETIME": # '0000-00-00 00:00:00'
 	        return (date('Y-m-d H:i:s', strtotime($value)) == $value);
-
-	    case "TIMESTAMP": # 00000000000000
- 	        return is_int($value);
 	    case "YEAR": # 0000
 	    	return is_int($value)
-		       && ($value >= 0 && $value <= 9999);
+		       && ($value >= 1901 && $value <= 9999);
 	}
 
 	return false;

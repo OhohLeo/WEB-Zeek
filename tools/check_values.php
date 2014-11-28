@@ -1,7 +1,7 @@
 <?php
 
-require_once '/home/leo/zeek/lib/output.php';
-require_once '/home/leo/zeek/lib/zeek_library.php';
+require_once '/home/leo/perso/WEB-Zeek/lib/output.php';
+require_once '/home/leo/perso/WEB-Zeek/lib/zeek_library.php';
 
 $zlib = new ZeekLibrary();
 $zlib->config(parse_ini_file('tools/check_values.ini'));
@@ -28,26 +28,33 @@ $id = $zlib->project_get_id($project_name);
 
 print "project created\n";
 
+foreach ($to_check as $table => $params) {
 
-$table_name = 'test';
+    if ($table == 'all') {
 
-foreach ($to_check as $name => $params) {
-    if ($name == 'all')
+        foreach ($params as $attribute => $type) {
+            launch_test($zlib, $id, $table, $attribute, $type);
+        }
+
         continue;
+    }
 
-    $result = $params[$name];
+    launch_test($zlib, $id, $table, $table, $params[$table]);
+}
 
-    print "check '$name' ";
+function launch_test($zlib, $id, $table, $attribute, $input)
+{
+    print "check '$table $attribute' ";
 
     $var_type;
     $opt_size;
 
-    if (is_array($result)) {
-        $var_type = $result[0];
-        $opt_size = $result[1];
+    if (is_array($input)) {
+        $var_type = $input[0];
+        $opt_size = $input[1];
         print "($var_type, $opt_size)\n";
     } else {
-        $var_type = $result;
+        $var_type = $input;
         print "($var_type)\n";
     }
 
@@ -56,7 +63,7 @@ foreach ($to_check as $name => $params) {
     if (is_array($values)) {
         $size = count($values);
         for ($i=0; $i < $size; $i++) {
-            check_value($zlib, $id, $name, $name, $values[$i]);
+            check_value($zlib, $id, $table, $attribute, $values[$i]);
         }
     }
 }
@@ -85,7 +92,6 @@ function check_value($zlib, $project_id, $table, $attribute, $value)
 
     if ($row->$attribute != $value) {
         print "error insert '$value', get '". $row->$attribute . "'!\n";
-        return false;
     }
 
     if ($zlib->value_delete($project_id, $table, $row->id) == false) {
@@ -101,49 +107,64 @@ function get_value_from_format($format, $opt_size=NULL)
   switch ($format) {
   case "TINYINT":
       return array(-128, 127);
+  case "TINYINT_U":
+      return array(0, 255);
   case "SMALLINT":
       return array(-32768, 32767);
+  case "SMALLINT_U":
+      return array(0,  65535);
   case "MEDIUMINT":
       return array(-8388608, 8388607);
+  case "MEDIUMINT_U":
+      return array(0,  16777215);
+  case "INT":
   case "INTEGER":
       return array(-2147483648,  2147483647);
+  case "INT_U":
+  case "INTEGER_U":
+      return array(0, 4294967295);
   case "BIGINT":
       return array(-9223372036854775808,  9223372036854775807);
-  /* case "TINYINT_U": */
-  /*     return array(0, 255); */
-  /* case "SMALLINT_U": */
-  /*     return array(0,  65535); */
-  /* case "MEDIUMINT_U": */
-  /*     return array(0,  16777215); */
-  /* case "INTEGER_U": */
-  /*     return array(0, 4294967295); */
-  /* case "BIGINT_U": */
-  /*     return array(0, 18446744073709551615); */
+  case "BIGINT_U":
+      return array(0, 18446744073709551615);
+    case "FLOAT":
+        return array(-3.40282E+38, -1.5, 0, 1.5,
+                     1.17549E-38, 3.40282E+38);
+    case "FLOAT_U":
+        return array(0, 1.5, 1.175494351E-38, 3.402823466E+38);
+    case "DOUBLE":
+        return array(
+            -1.7976931348623e308,  -1.5, -2.2250738585072E-308,
+            0, 2.2250738585072E-308, 1.5, 1.7976931348623e308);
+   case "DOUBLE_U":
+       return array(0, 2.2250738585072E-308, 1.5, 1.7976931348623e308);
+    case "DECIMAL":
+        return array(-9999999999, -555, 0, 1231, 9999999999);
 
-    /* case "FLOAT": */
-    /* case "DOUBLEPRECISION": */
-    /* case "REAL": */
 
-    /* case "DECIMAL": */
-    /* case "CHAR": */
+    case "DATE":
+        return array('1000-01-01', '2014-09-16', '9999-12-31');
+    case "DATETIME":
+        return array('1000-01-01 00:00:00', '2014-09-16 11:25:15', '9999-12-31 23:59:59');
+    case "TIMESTAMP":
+        return array('1971-01-01 00:00:01',  '2014-09-16 11:25:15');
+    case "TIME":
+        return array('-838:59:59', '12:21:22', '838:59:59');
+    case "YEAR":
+        return array(1901, 2014, 2155);
 
-    /* case "VARCHAR": */
-    /* case "TINYTEXT": */
-    /* case "TEXT": */
-    /* case "LONGTEXT": */
-    /* case "TINYBLOB": */
-    /* case "BLOB": */
-    /* case "LONGBLOB": */
-
-    /* case "DATE": */
-    /* case "DATETIME": */
-
-    /* case "TIMESTAMP": */
-    /*     return 1410560558; */
-    /* case "TIME": */
-    /*     return '12:21:22'; */
-    /* case "YEAR": */
-    /*     return 2014; */
+    case "CHAR":
+    case "VARCHAR":
+        return array('toto', '', 'titi est malade');
+    case "TINYTEXT":
+    case "TEXT":
+    case "MEDIUMTEXT":
+    case "LONGTEXT":
+    case "TINYBLOB":
+    case "BLOB":
+    case "MEDIUMBLOB":
+    case "LONGBLOB":
+        return array("turlututu \n chapeau poitu!!");
   }
 }
 ?>

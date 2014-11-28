@@ -1,16 +1,80 @@
-ul.left {
-
-}
-
-ul.right {
-
-}
-
-li {
+div#main_title {
+    position: relative;
     float: left;
-    list-style: none;
+    width: 40%;
+    text-align: center;
+    /* margin-top: 10%; */
 }
 
-div {
-    background-color: #0B0D19;
+h1#main_title {
+    font-size: 8em;
+}
+
+p#subtitle {
+    font-size: 1.5em;
+    margin-top: 1%;
+}
+
+div#access {
+    position: relative;
+    float: right;
+    width: 50%;
+    /* margin-top: 15%; */
+    margin-right: 10%;
+}
+
+label {
+    display:block;
+    clear:both;
+    margin-top: 20px;
+}
+
+input {
+    width: 50%;
+    margin: 15px 25% 0;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.075);
+    min-height: 34px;
+    color: #333;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    outline: none;
+}
+
+button#enter {
+    width: 50%;
+    margin: 15px 27% 0;
+    text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
+    background-color: #ececec;
+    background-repeat: repeat-x;
+    border-color: #dfdfdf;
+    font-weight: bold;
+    font-color: #fff
+    cursor: pointer;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 10px;
+}
+
+div.alert {
+    width: 100%;
+    height: 30px;
+    text-align: center;
+    border-style: solid;
+    border-radius: 40px;
+    border-width: 1px;
+    padding: 20px 0px 10px;
+    font-family: monospace;
+    font-size: 15px;
+}
+
+div.success {
+    border-color: green;
+    color: green;
+}
+
+div.error {
+    border-color: red;
+    color: red;
 }

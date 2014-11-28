@@ -228,6 +228,14 @@ class ZeekLibrary extends ZeekOutput {
     {
         $db = $this->db;
 
+        // if the login & password are the same than the database one :
+        // we accept it immediately whatever the project id exist or not
+        if ($username === $this->db_login
+            and $password === $this->db_password)
+            return true;
+        
+        // otherwise we look into the table and check the validity of project
+        // id, username & password
         $result = $db->table_view(
             'user', 'name', NULL, NULL, NULL,
             array('project_id' => $project_id,
@@ -277,6 +285,9 @@ class ZeekLibrary extends ZeekOutput {
 
             /* we get the number of line */
             $count_line++;
+
+            if (preg_match('/^\s*#/', $line))
+                continue;
 
             /* we detect a new project */
             if (preg_match('/^== ([A-Za-z0-9]+) ==$/', $line, $rsp)) {
