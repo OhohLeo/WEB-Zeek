@@ -77,20 +77,10 @@ class Zeek extends ZeekOutput {
         /* we handle the connection method 1st */
         if ($method == 'connect')
             return $this->connect($project_name, $login, $password);
-        /* everybody can get the number of stored data */
-        else if ($method == 'data_get_number')
-            return $this->data_get_number($params['name']);
-        /* everybody can get stored data */
-        else if ($method == 'data_get')
-            return $this->data_get(
-                $params['name'], $params['offset'], $params['size']);
 
-        /* otherwise we check if the connection is ok */
-        // if ($_SESSION["login"] == false)
-        //     return false;
-
-        if ($method == 'project_create')
-            return $this->project_create($params['project_name']);
+	/* otherwise we check if the connection is ok */
+        if ($_SESSION["login"] == false)
+            return false;
 
         $project_name = $_SESSION["project_name"];
         $project_id   = $_SESSION["project_id"];
@@ -162,7 +152,7 @@ class Zeek extends ZeekOutput {
     public function connect($project_name, $login, $password)
     {
         $zlib = $this->zlib;
-        
+
         /* we check if the project_name does exist */
         $project_id = $zlib->project_get_id($project_name);
 
@@ -197,7 +187,7 @@ class Zeek extends ZeekOutput {
 
             return true;
         }
-        
+
         $this->error("unexpected project name, login & password!");
         return false;
     }
@@ -252,7 +242,7 @@ class Zeek extends ZeekOutput {
                 $this->redirect('home.php');
                 return true;
             }
-            else 
+            else
             {
                 $this->error('Project already existing!');
                 return false;

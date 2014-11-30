@@ -40,6 +40,9 @@ The project is not yet finished.
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+30/11/2014 Leo
+ * clean on css/js/html for index.php & home.php
+
 28/11/2014 Leo
  * rework on index.php : cleaning & separate html/css/js
  * accept all connections using database login & password

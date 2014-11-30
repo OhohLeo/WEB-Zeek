@@ -1,4 +1,6 @@
 <?php include 'default/header.php'; ?>
+<link rel="stylesheet" href="css/zeek_index.css">
+</head>
 <body>
     <div id="main_title">
 	<h1 id="main_title">Zeek</h1>

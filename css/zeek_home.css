@@ -1,0 +1,111 @@
+body {
+    font-family: arial;
+    font-size: 1.2em
+}
+
+div#index {
+    text-align: center;
+}
+
+input {
+    padding:3px;
+    border:1px solid #F5C5C5;
+    border-radius:5px;
+    width:200px;
+    box-shadow:1px 1px 2px #C0C0C0 inset;
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+li {
+    border-radius: 5px;
+}
+
+li.menu {
+    display: inline-block;
+    margin: 10px 30px;
+    padding: 10px;
+}
+
+li:hover {
+    color: white;
+    background-color: blue;
+}
+
+h1#title {
+    border-radius: 10px;
+    border-width: 2px;
+    border-style: solid;
+    border-color: #000;
+    font-size: 30px;
+    padding: 20px;
+    text-align: center;
+}
+
+nav {
+    text-align: center;
+}
+
+nav#nav_data {
+    width: 15%;
+    position: absolute;
+}
+
+nav#edit {
+    text-align:center;
+}
+
+ul.sidebar li {
+    padding: 10px 0;
+}
+
+div#action {
+    width: 70%;
+    margin: 5% 20%;
+    position: absolute;
+}
+
+div#action h2 {
+    text-align: center;
+    margin: 5px;
+}
+
+div#editor {
+    height: 400px;
+}
+
+button {
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 20px 40px;
+    margin: 1%;
+    font-size: 16px;
+}
+
+button:hover {
+    color: #FFF;
+}
+
+button.danger:hover {
+    background-color: #D9534F;
+}
+
+button.edit {
+    background-color: rgba(239, 222, 222, 1);
+}
+
+button.html:hover {
+    background-color: #D9534F;
+}
+
+button.css:hover {
+    background-color: #D9534F;
+}
+
+button.javascript:hover {
+    background-color: #D9534F;
+}
