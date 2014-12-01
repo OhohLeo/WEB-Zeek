@@ -11,6 +11,18 @@ $session.setTabSize(4);
 $session.setUseWrapMode(true)
 $session.setMode("ace/mode/html");
 
+$send_request(
+    { "method": "get_structure" },
+    function ($result) {
+	if ($result["structure"]) {
+	    console.log($result);
+	    return true;
+	}
+    }
+);
+
+
+
 $("li.menu").on("click", function() {
     $div_menus.hide();
     $("div#dynamic").hide();
@@ -68,37 +80,6 @@ $("button#project_delete").on("click", function($e) {
 
 var $title = $("h2").first();
 var $data;
-
-$.ajax({
-    type: "POST",
-    url: "input.php",
-    data: {
-        "method": "get_structure"
-    },
-    dataType: "html",
-    success: function($input)
-    {
-        $("ul.sidebar").replaceWith($input);
-
-        $("li.data").on("click", function($e) {
-    	    $e.preventDefault();
-    	    $danger.hide();
-    	    $success.hide();
-    	    $div_menus.hide();
-    	    $("div#dynamic").show();
-    	    $send_request({
-                "method": "get_data",
-                "type": $(this).data("type") });
-
-
-        });
-    },
-    error: function($request, $status, $error)
-    {
-        $danger.text($status + " : " + $error);
-        $danger.show();
-    }
-});
 
 $("button#disconnect").on("click", $send_request(
     {

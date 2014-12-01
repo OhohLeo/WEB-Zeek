@@ -417,19 +417,12 @@ class Zeek extends ZeekOutput {
  */
     public function get_structure()
     {
-        $result = "<ul class=\"sidebar\">\n";
+	$this->output_json(
+	    array(
+		'structure' =>
+		$this->zlib->structure_get($this->project_name)));
 
-        $structure = $this->zlib->structure_get($this->project_name);
-
-        foreach ($structure as $key => $value) {
-            $key = ucfirst($key);
-            $result .= "<li class=\"data\" data-type='$key'>"
-                . "$key</li>\n";
-        }
-
-        $this->output("$result</ul>\n");
-
-        return true;
+	return true;
     }
 
 /**

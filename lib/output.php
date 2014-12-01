@@ -18,6 +18,16 @@ class ZeekOutput {
     }
 
 /**
+ * Echo all data to send to the client side.
+ *
+ * @method output_json
+ * @param structured data to display into json
+ */
+    public function output_json($input) {
+       echo $this->json_encode($input);
+    }
+
+/**
  * Echo success in JSON format.
  *
  * @method success
@@ -34,7 +44,7 @@ class ZeekOutput {
         }
 
         /* we display it */
-        $this->output($this->json_encode($result));
+        $this->output_json($result);
     }
 
 /**
@@ -44,7 +54,7 @@ class ZeekOutput {
  * @param string data to display
  */
     public function error($input) {
-        $this->output($this->json_encode(array('error' => $input)));
+        $this->output_json(array('error' => $input));
     }
 
 /**
@@ -65,7 +75,7 @@ class ZeekOutput {
  * @param string data to replace
  */
     public function replace($input) {
-        $this->output($this->json_encode(array('replace' => $input)));
+        $this->output_json(array('replace' => $input));
     }
 
 /**
@@ -75,7 +85,7 @@ class ZeekOutput {
  * @param string data to append
  */
     public function append($input) {
-        $this->output($this->json_encode(array('append' => $input)));
+        $this->output_json(array('append' => $input));
     }
 
 /**

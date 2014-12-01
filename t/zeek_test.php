@@ -111,6 +111,13 @@ class TestZeek extends PHPUnit_Framework_TestCase
         $zeek->environment_clean();
     }
 
+    public function test_structure()
+    {
+        $zeek = $this->zeek;
+
+	$zeek->get_structure();
+    }
+
     // public function test_user()
     // {
     //     $zeek = $this->zeek;
