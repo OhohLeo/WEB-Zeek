@@ -7,10 +7,13 @@
 	<p id="subtitle">"Simply administrate websites."</p>
     </div>
     <div id="access">
-	<div class="alert success"></div>
-	<div class="alert error"></div>
+	<div class="alert">
+    	    <div class="success"></div>
+	    <div class="error"></div>
+	</div>
 	<div id="connect" disabled="disabled">
-	    <input name="project_name"
+	    <input id="connect"
+	           name="project_name"
 		   placeholder="Project name"
 		   type="text" required>
 	    <input name="login"
@@ -19,16 +22,17 @@
 	    <input name="password"
 		   placeholder="Password"
 		   type="password" required>
-	    <button id="connect">Connect</button>
+	    <button id="connect" class="success">Connect</button>
 	</div>
 	<div id="create" disabled="disabled">
-	    <p>Confirm the name of the project, please!</p>
-	    <input id="create"
-		   name="project_name"
-		   placeholder="Project name"
-		   type="text" required>
-	    <button id="cancel">Cancel</button>
-	    <button id="create">Create</button>
+	    <p class="message">Confirm the project name:
+		<input id="create"
+		       name="project_name"
+		       placeholder="Project name"
+		       type="text" required>
+	    </p>
+	    <button id="cancel" class="warning small">Cancel</button>
+	    <button id="create" class="success">Create</button>
 	</div>
     </div>
 </body>

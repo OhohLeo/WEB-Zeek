@@ -55,8 +55,10 @@ include 'default/header.php';
     </nav>
 
     <div id="action">
-	<div id="alert-success"></div>
-	<div id="alert-error"></div>
+	<div class="alert">
+    	    <div class="success"></div>
+	    <div class="error"></div>
+	</div>
 	<hr>
 	<div id="home" class="menu">
 	    <label>Project name

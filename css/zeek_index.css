@@ -1,13 +1,14 @@
 div#main_title {
-    position: relative;
-    float: left;
-    width: 40%;
+    width: 45%;
     text-align: center;
-    /* margin-top: 10%; */
+    vertical-align: middle;
+    display: inline-block;
+    line-height: normal;
 }
 
 h1#main_title {
     font-size: 8em;
+    margin: 10% 0 0;
 }
 
 p#subtitle {
@@ -16,11 +17,12 @@ p#subtitle {
 }
 
 div#access {
-    position: relative;
+    display: inline-block;
     float: right;
-    width: 50%;
-    /* margin-top: 15%; */
+    width: 45%;
     margin-right: 10%;
+    vertical-align: middle;
+    text-align: center;
 }
 
 label {
@@ -40,41 +42,4 @@ input {
     font-size: 16px;
     border-radius: 5px;
     outline: none;
-}
-
-button#enter {
-    width: 50%;
-    margin: 15px 27% 0;
-    text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
-    background-color: #ececec;
-    background-repeat: repeat-x;
-    border-color: #dfdfdf;
-    font-weight: bold;
-    font-color: #fff
-    cursor: pointer;
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 10px;
-}
-
-div.alert {
-    width: 100%;
-    height: 30px;
-    text-align: center;
-    border-style: solid;
-    border-radius: 40px;
-    border-width: 1px;
-    padding: 20px 0px 10px;
-    font-family: monospace;
-    font-size: 15px;
-}
-
-div.success {
-    border-color: green;
-    color: green;
-}
-
-div.error {
-    border-color: red;
-    color: red;
 }
