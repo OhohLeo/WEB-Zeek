@@ -103,6 +103,7 @@ class Zeek extends ZeekOutput {
 
             case 'disconnect':
 		$this->disconnect();
+		$this->success("disconnect now!");
 		return true;
 
             case 'project_delete_to_confirm':
@@ -431,11 +432,10 @@ class Zeek extends ZeekOutput {
  */
     public function get_structure()
     {
-      $this->error('TEST!');
-	/* $this->output_json(
-	   array(
-	   'structure' =>
-	   $this->zlib->structure_get($this->project_name))); */
+	$this->output_json(
+	    array(
+		'structure' =>
+		$this->zlib->structure_get($this->project_name)));
 
 	return true;
     }

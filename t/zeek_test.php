@@ -33,6 +33,8 @@ class ExtendsZeek extends Zeek
 
     public function output($input)
     {
+        //echo "expect : " . $input . "\n";
+
         $this->output = $input;
     }
 
@@ -69,34 +71,51 @@ class TestZeek extends PHPUnit_Framework_TestCase
     {
         $zeek = $this->zeek;
 
+	// we connect with bad login & password
         $this->assertFalse(
             $zeek->connect('no_test', 'no_test', 'no_test'));
             $zeek->checkOutput(
                 '{"error":"unexpected project name, login & password!"}');
 
+	// we connect with good login & password
         $this->assertTrue(
             $zeek->connect('test', 'test', 'test'));
-
         $this->assertTrue(
             $zeek->checkOutput(
                 '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
 
+	// we create a project
         $this->assertTrue($zeek->project_create('test'));
-
         $this->assertTrue(
             $zeek->checkOutput('{"redirect":"home.php"}'));
 
+	// we create the project again
         $this->assertFalse($zeek->project_create('test'));
+	$this->assertTrue(
+           $zeek->checkOutput('{"error":"Project already existing!"}'));
 
+        $this->assertTrue(
+            $zeek->connect('test', 'test', 'test'));
 
+	// we check the structure
+	$zeek->get_structure();
+	$this->assertTrue(
+           $zeek->checkOutput(
+		'{"structure":{"artist":{"name":["VARCHAR","100"],"surname":["VARCHAR","100"],"age":["INT","11"],"subtitle":["VARCHAR","300"],"biography":["TEXT","1000"],"skill":["VARCHAR","100"]},"show":{"name":["VARCHAR","100"],"date":"DATE","hour":"TIME","location":["VARCHAR","300"]},"news":{"name":["VARCHAR","100"],"date":"DATE","comments":["TEXT","1000"]},"album":{"name":["VARCHAR","100"],"duration":["INT","11"],"comments":["TEXT","1000"]},"music":{"name":["VARCHAR","100"],"date":"DATE","duration":["INT","11"],"comments":["TEXT","1000"]},"video":{"name":["VARCHAR","100"],"date":"DATE","duration":["INT","11"],"comments":["TEXT","1000"]},"media":{"name":["VARCHAR","100"],"date":"DATE","comments":["TEXT","1000"]}}}'));
+
+	// we delete the project
         $this->assertTrue($zeek->project_delete('test'));
         $this->assertTrue(
             $zeek->checkOutput(
                 '{"success":"Project \'test\' correctly deleted!"}'));
 
+	// we delete again the project
         $this->assertFalse($zeek->project_delete('test'));
+        $this->assertTrue(
+            $zeek->checkOutput(
+		'{"error":"No existing project delete \'test\' in database!"}'));
 
-        /* we establish the connection with the database */
+        // we establish the connection with the database
         $this->assertTrue($zeek->connect_to_database());
 
         $this->assertTrue(
@@ -108,11 +127,6 @@ class TestZeek extends PHPUnit_Framework_TestCase
 
         $zeek->environment_clean();
     }
-    /* public function test_structure()
-       {
-       $zeek = $this->zeek;
-       $zeek->get_structure();
-} */
 
     // public function test_user()
     // {
