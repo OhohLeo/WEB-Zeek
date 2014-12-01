@@ -24,7 +24,7 @@ class ZeekOutput {
  * @param structured data to display into json
  */
     public function output_json($input) {
-       echo $this->json_encode($input);
+       $this->output($this->json_encode($input));
     }
 
 /**

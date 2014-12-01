@@ -12,10 +12,10 @@ $("button#connect").on("click", function(e) {
 
     $send_request(
 	{
-	    "method": "connect",
-	    "params": $div_connect.children("input").serialize(),
+	    method: "connect",
+	    params: $div_connect.children("input").serialize(),
 	},
-	function($result) {
+	function ($result) {
 	    if ($result["action"] == "project_create") {
 		$div_connect.hide();
 		$project_name_dst.val($project_name_src.val());
@@ -27,10 +27,11 @@ $("button#connect").on("click", function(e) {
 });
 
 $("button#create").on("click", function(e) {
+    console.log("CREATE!");
     $send_request(
 	{
-	    "method": "project_create",
-	    "project_name": $("input#create").val(),
+	    method: "project_create",
+	    project_name: $project_name_dst.val(),
 	});
 });
 

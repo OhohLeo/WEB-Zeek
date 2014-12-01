@@ -74,63 +74,70 @@ class Zeek extends ZeekOutput {
         if (isset($params['params']))
             parse_str($params['params']);
 
-        /* we handle the connection method 1st */
+	// we handle the connection method 1st
         if ($method == 'connect')
-            return $this->connect($project_name, $login, $password);
+           return $this->connect($project_name, $login, $password);
 
-	/* otherwise we check if the connection is ok */
-        if ($_SESSION["login"] == false)
+	// otherwise we check if the connection is ok
+        if ($_SESSION["login"] == false) {
+	    $this->error("unexpected login error!");
             return false;
+	}
+
+	// we create the project
+	if ($method == 'project_create')
+	    return $this->project_create($params['project_name']);
 
         $project_name = $_SESSION["project_name"];
         $project_id   = $_SESSION["project_id"];
-
-        if (!(isset($project_name) && isset($project_id)))
+        if (!(isset($project_name) && isset($project_id))) {
+	    $this->error("unexpected project error!");
             return false;
+	}
 
-        /* we store project name and id */
-        $this->project_name = $project_name;
+        // we store project name and id
+	$this->project_name = $project_name;
         $this->project_id   = $project_id;
 
         switch ($method) {
 
-        case 'disconnect':
-             $this->disconnect();
-             return true;
+            case 'disconnect':
+		$this->disconnect();
+		return true;
 
-        case 'project_delete_to_confirm':
-            return $this->project_delete_to_confirm($project_name);
+            case 'project_delete_to_confirm':
+		return $this->project_delete_to_confirm($project_name);
 
-        case 'project_delete':
-            return $this->project_delete($project_name);
+            case 'project_delete':
+		return $this->project_delete($project_name);
 
-        case 'user_add':
-            return $this->user_add($project_id, $project_name, $email);
+            case 'user_add':
+		return $this->user_add($project_id, $project_name, $email);
 
-        case 'user_delete':
-            return $this->user_delete($project_id, $email);
+            case 'user_delete':
+		return $this->user_delete($project_id, $email);
 
-        case 'user_change_password':
-            return $this->user_change_password(
-                $project_id, $email, $password_old, $password_new);
+            case 'user_change_password':
+		return $this->user_change_password(
+		    $project_id, $email, $password_old, $password_new);
 
-        case 'data_set':
-            return $this->data_set($params['name'], $params['values']);
+            case 'data_set':
+		return $this->data_set($params['name'], $params['values']);
 
-        case 'data_update':
-            return $this->data_update($name, $id, $values);
+            case 'data_update':
+		return $this->data_update($name, $id, $values);
 
-        case 'data_delete':
-            return $this->data_delete($name, $id);
+            case 'data_delete':
+		return $this->data_delete($name, $id);
 
-        case 'data_clean_all':
-            return $this->data_clean_all();
+            case 'data_clean_all':
+		return $this->data_clean_all();
 
-        case 'get_structure':
-            return $this->get_structure();
+            case 'get_structure':
+		return $this->get_structure();
 
-        case 'get_data':
-            return $this->get_data(strtolower($params['type']));
+            case 'get_data':
+		return $this->get_data(strtolower($params['type']));
         }
 
         $this->error(
@@ -216,40 +223,47 @@ class Zeek extends ZeekOutput {
     {
         $zlib = $this->zlib;
 
-        /* we check the session id */
+	// we check the session id
         if ($this->check_string_and_size($project_name, 25))
         {
-            /* we check if the project_name does not exist */
+            // we check if the project_name does not exist
             if ($zlib->project_get_id($project_name) == false)
             {
-                /* we create the project */
-                if ($zlib->project_add($project_name) == false)
-                    return false;
+		// we create the project
+		if ($zlib->project_add($project_name) == false)
+		{
+		    $this->error('Impossible to add project!');
+		    return false;
+		}
 
-                /* we store it */
-                $_SESSION["project_name"] = $project_name;
+		// we store it
+		$_SESSION["project_name"] = $project_name;
 
-                $project_id = $zlib->project_get_id($project_name);
-                if ($project_id == false)
-                    return false;
+		$project_id = $zlib->project_get_id($project_name);
+		if ($project_id == false)
+		{
+		    $this->error('Impossible to get project id!');
+		    return false;
+		}
 
-                $_SESSION["project_id"] = $zlib->project_get_id($project_name);
+		$_SESSION["project_id"] = $zlib->project_get_id($project_name);
 
-                $this->project_name = $project_name;
-                $this->project_id   = $project_id;
+		$this->project_name = $project_name;
+		$this->project_id   = $project_id;
 
-                /* we redirect to the home */
-                $this->redirect('home.php');
-                return true;
+		// we redirect to the home
+		$this->redirect('home.php');
+		return true;
             }
             else
             {
-                $this->error('Project already existing!');
-                return false;
+		$this->error('Project already existing!');
+		return false;
             }
         }
 
-        $this->error('Project name too long or unsupported, change the name!');
+        $this->error("Project name '" . $project_name
+		    . "'  too long or unsupported, change the name!");
         return false;
     }
 
@@ -417,10 +431,11 @@ class Zeek extends ZeekOutput {
  */
     public function get_structure()
     {
-	$this->output_json(
-	    array(
-		'structure' =>
-		$this->zlib->structure_get($this->project_name)));
+      $this->error('TEST!');
+	/* $this->output_json(
+	   array(
+	   'structure' =>
+	   $this->zlib->structure_get($this->project_name))); */
 
 	return true;
     }
@@ -453,7 +468,7 @@ class Zeek extends ZeekOutput {
         }
 
         /* we return an array of values */
-        return $this->output($this->json_encode($response));
+        return $this->output_json($response);
     }
 
 /**
@@ -488,12 +503,12 @@ class Zeek extends ZeekOutput {
 
         $records_filtered = 0;
 
-        $this->output($this->json_encode(array(
+        $this->output_json(array(
             "draw" => intval($params['draw']),
             "recordsTotal" => intval($records_total),
             "recordsFiltered" => intval($records_filtered),
             "data" =>  $data,
-        )));
+        ));
 
         return true;
     }
@@ -511,8 +526,8 @@ class Zeek extends ZeekOutput {
             return false;
         }
 
-        return $this->output($this->json_encode(
-            array('count' => $this->zlib->table_count($project_id, $name))));
+        return $this->output_json(
+            array('count' => $this->zlib->table_count($project_id, $name)));
     }
 
 
@@ -748,7 +763,7 @@ class Zeek extends ZeekOutput {
  * @param string where to redirect
  */
     public function redirect($url) {
-        $this->output($this->json_encode(array('redirect' => $url)));
+        $this->output_json(array("redirect" => $url));
     }
 
 /**

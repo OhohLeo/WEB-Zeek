@@ -16,7 +16,7 @@ class ExtendsZeek extends Zeek
         }
 
         echo "\n expect : " . $input
-            . "\n received : " . $this->output . "\n";
+	   . "\n received : " . $this->output . "\n";
 
         return false;
     }
@@ -33,10 +33,8 @@ class ExtendsZeek extends Zeek
 
     public function output($input)
     {
-        /* echo "$input \n"; */
         $this->output = $input;
     }
-
 
     public function disconnect()
     {
@@ -110,13 +108,11 @@ class TestZeek extends PHPUnit_Framework_TestCase
 
         $zeek->environment_clean();
     }
-
-    public function test_structure()
-    {
-        $zeek = $this->zeek;
-
-	$zeek->get_structure();
-    }
+    /* public function test_structure()
+       {
+       $zeek = $this->zeek;
+       $zeek->get_structure();
+} */
 
     // public function test_user()
     // {

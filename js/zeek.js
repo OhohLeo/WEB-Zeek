@@ -4,20 +4,19 @@ $danger.hide();
 $success = $("div.success");
 $success.hide();
 
-$alert = $("div.alert");
-
 $generic_rsp = function($result) {
+    $success.hide();
+    $danger.hide();
+
     if ($result["success"]) {
-	$danger.hide();
 	$success.text($result["success"]).show();
     } else if ($result["error"]) {
-	$success.hide();
+	console.log($result["error"]);
 	$danger.text($result["error"]).show();
     } else if ($result["redirect"]) {
 	$(location).attr("href", $result["redirect"]);
     } else {
 	console.log($result);
-	$alert.fadeOut(300);
     }
 };
 
@@ -29,7 +28,8 @@ $send_request = (function($data, $handle_rsp) {
     	"dataType":"json",
     	"success": function($result) {
     	    if ($handle_rsp && $handle_rsp($result)) {
-    		$alert.fadeOut(300);
+		$success.hide();
+		$danger.hide();
 		return;
     	    }
 
