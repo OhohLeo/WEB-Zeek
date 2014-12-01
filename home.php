@@ -148,6 +148,6 @@ include 'default/header.php';
     </div>
 </body>
 <?php include 'default/scripts.php'; ?>
-<script src="js/ace-builds/src-min-noconflict/ace.js"></script>
+<script src="js/ace/ace.js"></script>
 <script src="js/zeek_home.js"></script>
 <?php include 'default/footer.php'; ?>

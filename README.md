@@ -42,6 +42,9 @@ The project is not yet finished.
 #### Git Log :
 1/12/2014 Leo
  * set up new design for index.php
+ * create output_json & simplify code
+ * add some error cases
+ * add js/ace functionalities
 
 30/11/2014 Leo
  * clean on css/js/html for index.php & home.php
