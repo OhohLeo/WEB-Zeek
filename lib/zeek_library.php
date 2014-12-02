@@ -233,7 +233,7 @@ class ZeekLibrary extends ZeekOutput {
         if ($username === $this->db_login
             and $password === $this->db_password)
             return true;
-        
+
         // otherwise we look into the table and check the validity of project
         // id, username & password
         $result = $db->table_view(

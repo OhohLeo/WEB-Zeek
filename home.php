@@ -36,7 +36,7 @@ include 'default/header.php';
 <link rel="stylesheet" href="css/zeek_home.css">
 </head>
 <body>
-    <nav id="nav_bar">
+    <nav id="action">
 	<h1 id="title"><?php echo "$project_name";?></h1>
 	<ul>
 	    <li id="home" class="menu">Home</li>
@@ -49,7 +49,7 @@ include 'default/header.php';
 	</ul>
     </nav>
 
-    <nav id="nav_structure">
+    <nav id="data">
 	<ul class="structure">
 	</ul>
     </nav>

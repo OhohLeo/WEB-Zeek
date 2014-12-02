@@ -1,8 +1,3 @@
-body {
-    font-family: arial;
-    font-size: 1.2em
-}
-
 div#index {
     text-align: center;
 }
@@ -19,40 +14,64 @@ ul {
     margin: 0;
     padding: 0;
     list-style: none;
+    width: 100%;
 }
 
 li {
     border-radius: 5px;
+    cursor: pointer;
 }
 
 li.menu {
     display: inline-block;
-    margin: 10px 30px;
+    white-space: nowrap;
+    margin: 20px 30px;
     padding: 10px;
+    color: #337ab7;
 }
 
 li:hover {
-    color: white;
-    background-color: blue;
+    color: #fff;
+    background-color: #dbdbdb;
+}
+
+li.menu_clicked {
+    color: #fff;
+    background-color: #337ab7;
+}
+
+nav#data {
+    display: block;
+    width: 10%;
+    margin: 0 2%;
+    float: left;
+    white-space: nowrap;
+}
+
+li.data {
+    margin-top: 10%;
+    padding: 10px;
+    text-align: center;
+    font-size: 18px;
+    color: #6f5499;
+}
+
+li.data_clicked {
+    color: #fff;
+    background-color: #6f5499;
 }
 
 h1#title {
+    color: #fff;
+    background-color: #6f5499;
     border-radius: 10px;
-    border-width: 2px;
     border-style: solid;
-    border-color: #000;
-    font-size: 30px;
-    padding: 20px;
+    font-size: 25px;
+    padding: 10px 0px;
+    margin: 10px;
     text-align: center;
-}
-
-nav {
-    text-align: center;
-}
-
-nav#nav_data {
     width: 15%;
-    position: absolute;
+    float: left;
 }
 
 nav#edit {
@@ -64,9 +83,10 @@ ul.sidebar li {
 }
 
 div#action {
-    width: 70%;
-    margin: 5% 20%;
-    position: absolute;
+    width: 75%;
+    text-align: center;
+    vertical-align: middle;
+    margin: 0 15%;
 }
 
 div#action h2 {
@@ -76,36 +96,4 @@ div#action h2 {
 
 div#editor {
     height: 400px;
-}
-
-button {
-    border: 1px solid transparent;
-    border-radius: 4px;
-    padding: 20px 40px;
-    margin: 1%;
-    font-size: 16px;
-}
-
-button:hover {
-    color: #FFF;
-}
-
-button.danger:hover {
-    background-color: #D9534F;
-}
-
-button.edit {
-    background-color: rgba(239, 222, 222, 1);
-}
-
-button.html:hover {
-    background-color: #D9534F;
-}
-
-button.css:hover {
-    background-color: #D9534F;
-}
-
-button.javascript:hover {
-    background-color: #D9534F;
 }

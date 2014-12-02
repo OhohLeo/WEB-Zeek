@@ -21,29 +21,30 @@ class DataBase extends ZeekOutput {
         "MEDIUMINT_U", #    0       => 16777215
         "INT",
         "INT_U",
-        "INTEGER",
-        "INTEGER_U",
         "BIGINT",
         "BIGINT_U",
-        "FLOAT",
-        "DOUBLE",
-        "FLOAT_U",
-        "DOUBLE_U",
+
         "DECIMAL",
+        "INTEGER",
+        "FLOAT",
+	"DOUBLEPRECISION",
+	"REAL",
+
         "DATE",      # YYYY-MM-DD
         "DATETIME",  # YYYY-MM-DD HH:MM:SS
         "TIMESTAMP", # YYYY-MM-DD HH:MM:SS from '1971-01-01 00:00:01'
         "TIME",      # HH:MM:SS
         "YEAR",      # YYYY
+
         "CHAR",
         "VARCHAR",
         "TINYTEXT",   # 255 chars max
-        "TINYBLOB",
         "TEXT",       # 65535 chars max
-        "BLOB",
         "MEDIUMTEXT", # 16777215 chars max
-        "MEDIUMBLOB",
         "LONGTEXT",   # 4294967295 chars max
+        "TINYBLOB",
+        "BLOB",
+        "MEDIUMBLOB",
         "LONGBLOB");
 
     private $translation = array("(" => "", ")" => "");
@@ -457,30 +458,29 @@ class DataBase extends ZeekOutput {
 		return $this->check_integer(
 		    $value, -128, 127);
 	    case "TINYINT_U":
-            return $this->check_integer(
+		return $this->check_integer(
 		    $value, 0, 255);
-        case "SMALLINT":
+            case "SMALLINT":
 		return $this->check_integer(
 		    $value, -32768, 32767);
-        case "SMALLINT_U":
+            case "SMALLINT_U":
 		return $this->check_integer(
 		    $value, 0, 65535);
 	    case "MEDIUMINT":
 		return $this->check_integer(
 		    $value, -8388608, 8388607);
-        case "MEDIUMINT_U":
+            case "MEDIUMINT_U":
 		return $this->check_integer(
 		    $value, 0, 16777215);
 	    case "INT":
 		return $this->check_integer(
 		    $value, -2147483648, 2147483647);
-        case "INT_U":
-        return $this->check_integer(
-            $value, 0, 4294967295);
+            case "INT_U":
+		return $this->check_integer($value, 0, 4294967295);
 	    case "BIGINT":
 		return $this->check_integer(
 		    $value, -9223372036854775808, 9223372036854775807);
-        case "BIGINT_U":
+            case "BIGINT_U":
 		return $this->check_integer(
 		    $value, 0, 18446744073709551615);
 
@@ -506,21 +506,21 @@ class DataBase extends ZeekOutput {
 	        return (date('Y-m-d', strtotime($value)) == $value);
 	    case "TIME": # '00:00:00'
 	        return (date('H:i:s', strtotime($value)) == $value);
-        case "TIMESTAMP":
+            case "TIMESTAMP":
 	    case "DATETIME": # '0000-00-00 00:00:00'
 	        return (date('Y-m-d H:i:s', strtotime($value)) == $value);
 	    case "YEAR": # 0000
 	    	return is_int($value)
-		       && ($value >= 1901 && $value <= 9999);
+		    && ($value >= 1901 && $value <= 9999);
 	}
 
 	return false;
     }
 
 
-/**
- * Check integer values before storing in database.
- *
+    /**
+     * Check integer values before storing in database.
+     *
  * @method check_integer
  * @param string integer to check
  */

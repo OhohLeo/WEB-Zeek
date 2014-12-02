@@ -12,6 +12,110 @@ class Zeek extends ZeekOutput {
     protected $project_name;
     protected $zlib;
 
+    private $datatype_to_css = array(
+        "TINYINT" => array(
+	    "type" => "number",
+	    "min"  => -128,
+	    "max"  => 127,
+	    "step" => 1),
+        "TINYINT_U" => array(
+	    "type" => "number",
+	    "min"  => 0,
+	    "max"  => 255,
+	    "step" => 1),
+        "SMALLINT" => array(
+	    "type" => "number",
+	    "min"  => -32768,
+	    "max"  => 32767,
+	    "step" => 1),
+        "SMALLINT_U" => array(
+	    "type" => "number",
+	    "min"  => 0,
+	    "max"  => 65535,
+	    "step" => 1),
+        "MEDIUMINT" => array(
+	    "type" => "number",
+	    "min"  => -8388608,
+	    "max"  => 8388607,
+	    "step" => 1),
+        "MEDIUMINT_U" => array(
+	    "type" => "number",
+	    "min"  => 0,
+	    "max"  => 16777215,
+	    "step" => 1),
+        "INT" => array(
+	    "type" => "number",
+	    "min"  => -2147483648,
+	    "max"  => 2147483647,
+	    "step" => 1),
+        "INT_U" => array(
+	    "type" => "number",
+	    "min"  => 0,
+	    "max"  => 4294967295,
+	    "step" => 1),
+        "BIGINT" => array(
+	    "type" => "number",
+	    "min"  => -9223372036854775808,
+	    "max"  => 9223372036854775807,
+	    "step" => 1),
+        "BIGINT_U" => array(
+	    "type" => "number",
+	    "min"  => 0,
+	    "max"  => 18446744073709551615,
+	    "step" => 1),
+
+        "DECIMAL" => array(
+	    "type" => "number",
+	    "step" => 1),
+        "INTEGER" => array(
+	    "type" => "number",
+	    "step" => 1),
+        "FLOAT"   => array("type" => "number"),
+        "DOUBLE"  => array("type" => "number"),
+        "REAL"    => array("type" => "number"),
+
+        "DATE"      => array("type" => "date"),
+        "TIME"      => array("type" => "time"),
+        "TIMESTAMP" => array("type" => "datetime"),
+        "DATETIME"  => array("type" => "datetime"),
+        "YEAR"      => array(
+	    "type" => "number",
+	    "min"  => 0,
+	    "max"  => 9999,
+	    "step" => 1),
+
+	"CHAR" => array(
+	    "type" => "text",
+	    "size" => 1),
+        "VARCHAR" => array(
+	    "type" => "text",
+	    "size" => 1),
+        "TINYTEXT" => array(
+	    "type" => "text",
+	    "size" => 255),
+        "TEXT" => array(
+	    "type" => "text",
+	    "size" => 65535),
+        "MEDIUMTEXT" => array(
+	    "type" => "text",
+	    "size" => 16777215),
+        "LONGTEXT" => array(
+	    "type" => "text",
+	    "size" => 4294967295),
+        "TINYBLOB" => array(
+	    "type" => "text",
+	    "size" => 255),
+        "BLOB" => array(
+	    "type" => "text",
+	    "size" => 65535),
+        "MEDIUMBLOB" => array(
+	    "type" => "text",
+	    "size" => 16777215),
+        "LONGBLOB" => array(
+	    "type" => "text",
+	    "size" => 4294967295));
+
+
 /**
  * Startup zeek file.
  *
@@ -134,8 +238,8 @@ class Zeek extends ZeekOutput {
             case 'data_clean_all':
 		return $this->data_clean_all();
 
-            case 'get_structure':
-		return $this->get_structure();
+            case 'structure_get':
+		return $this->structure_get();
 
             case 'get_data':
 		return $this->get_data(strtolower($params['type']));
@@ -426,16 +530,18 @@ class Zeek extends ZeekOutput {
     }
 
 /**
- * Display all navigation bar.
+ * Display data navigation bar.
  *
- * @method get_structure
+ * @method structure_get
  */
-    public function get_structure()
+    public function structure_get()
     {
-	$this->output_json(
-	    array(
-		'structure' =>
-		$this->zlib->structure_get($this->project_name)));
+	$structure = $this->zlib->structure_get($this->project_name);
+
+	/* $this->output_json(
+	   array(
+	   'structure' =>
+	   )); */
 
 	return true;
     }
