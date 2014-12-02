@@ -14,17 +14,32 @@ $session.setUseWrapMode(true)
 // once the document is ready
 $(document).ready(function() {
 
+    // we get the position to set the structure
+    $ul_structure = $("ul.structure");
+
+    // we store here the structure
+    var $structure;
+
     // we get the database structure
     $send_request(
 	{ "method": "get_structure" },
 	function ($result) {
-	    if ($result["structure"]) {
-		console.log($result);
+	    $structure = $result["structure"];
+	    if ($structure)
+	    {
+		// we implode the structure
+		for (var $key in $structure)
+		    $ul_structure.append("<li class=\"data\">" + $key + "</li>");
+
+		// we set clikable element
+		$("li.data").on("click", function(e) {
+		    console.log("HERE!" + $(this).text());
+		});
+
 		return true;
 	    }
 	}
     );
-
 });
 
 
@@ -34,57 +49,57 @@ $("li.menu").on("click", function() {
     $("div#" + $(this).attr("id")).show();
 });
 
-   $div = $("div.boxed-group");
-   $div.hide();
+$div = $("div.boxed-group");
+$div.hide();
 
-   $("h3").on("click", function($e) {
-   $e.preventDefault();
+$("h3").on("click", function($e) {
+    $e.preventDefault();
 
-   $boxed = $(this).next("div.boxed-group");
-   if ($boxed.is(":hidden")) {
-   $boxed.slideDown(200);
-   } else {
-   $boxed.slideUp(200);
-   }
-   });
+    $boxed = $(this).next("div.boxed-group");
+    if ($boxed.is(":hidden")) {
+	$boxed.slideDown(200);
+    } else {
+	$boxed.slideUp(200);
+    }
+});
 
 
-   $("button.edit").on("click", function() {
-   var $type = $(this).text();
-   $session.setMode("ace/mode/" + $type);
-   console.log($type);
-   });
+$("button.edit").on("click", function() {
+    var $type = $(this).text();
+    $session.setMode("ace/mode/" + $type);
+    console.log($type);
+});
 
-   $("form#user_add").on("submit", function() {
-   $send_request({
-   "method": "user_add",
-   "params": $(this).serialize(),
-   });
-   });
+$("form#user_add").on("submit", function() {
+    $send_request({
+	"method": "user_add",
+	"params": $(this).serialize(),
+    });
+});
 
-   $("form#user_change_password").on("submit", function() {
-   $send_request({
-   "method": "user_change_password",
-   "params": $(this).serialize(),
-   });
-   });
+$("form#user_change_password").on("submit", function() {
+    $send_request({
+	"method": "user_change_password",
+	"params": $(this).serialize(),
+    });
+});
 
-   $("button#data_clean").on("click", function($e) {
-   e.preventDefault();
-   $send_request({
-   "method": "data_clean",
-   });
-   });
+$("button#data_clean").on("click", function($e) {
+    e.preventDefault();
+    $send_request({
+	"method": "data_clean",
+    });
+});
 
-   $("button#project_delete").on("click", function($e) {
-   e.preventDefault();
-   $send_request({
-   "method": "project_delete_to_confirm",
-   });
-   });
+$("button#project_delete").on("click", function($e) {
+    e.preventDefault();
+    $send_request({
+	"method": "project_delete_to_confirm",
+    });
+});
 
-   var $title = $("h2").first();
-   var $data;
+var $title = $("h2").first();
+var $data;
 
 $("button#disconnect").on("click", function($e) {
     console.log("button disconnect!");

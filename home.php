@@ -49,8 +49,8 @@ include 'default/header.php';
 	</ul>
     </nav>
 
-    <nav id="nav_data">
-	<ul class="sidebar">
+    <nav id="nav_structure">
+	<ul class="structure">
 	</ul>
     </nav>
 
