@@ -40,6 +40,9 @@ The project is not yet finished.
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+9/12/2014 Leo
+ * projects structure handled with json format
+
 1/12/2014 Leo
  * set up new design for index.php
  * create output_json & simplify code

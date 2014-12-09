@@ -27,7 +27,6 @@ $("button#connect").on("click", function(e) {
 });
 
 $("button#create").on("click", function(e) {
-    console.log("CREATE!");
     $send_request(
 	{
 	    method: "project_create",

@@ -22,17 +22,17 @@ li {
     cursor: pointer;
 }
 
+li:hover {
+    color: #fff;
+    background-color: #dbdbdb;
+}
+
 li.menu {
     display: inline-block;
     white-space: nowrap;
     margin: 20px 30px;
     padding: 10px;
     color: #337ab7;
-}
-
-li:hover {
-    color: #fff;
-    background-color: #dbdbdb;
 }
 
 li.menu_clicked {

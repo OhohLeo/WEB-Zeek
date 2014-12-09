@@ -144,49 +144,48 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
         $structure = $zlib->projects_get('t/projects.ini');
 
         $this->assertEquals($structure,
-        array(
-            'test' => array(
-                'artist'      => array(
-                    'name'       => array('VARCHAR', 100),
-                    'surname'    => array('VARCHAR', 100),
-                    'age'        => array('INT', 11),
-                    'subtitle'   => array('VARCHAR', 300),
-                    'biography'  => array('TEXT', 1000),
-                    'skill'      => array('VARCHAR', 100)),
-                'show'        => array(
-                    'name'       => array('VARCHAR', 100),
-                    'date'       => 'DATE',
-                    'hour'       => 'TIME',
-                    'location'   => array('VARCHAR', 300)),
-                'news'        => array(
-                    'name'       => array('VARCHAR', 100),
-                    'date'       => 'DATE',
-                    'comments'   => array('TEXT', 1000)),
-                'album'       => array(
-                    'name'       => array('VARCHAR', 100),
-                    'duration'   => array('INT', 11),
-                    'comments'   => array('TEXT', 1000)),
-                'music'       => array(
-                    'name'       => array('VARCHAR', 100),
-                    'date'       => 'DATE',
-                    'duration'   => array('INT', 11),
-                    'comments'   => array('TEXT', 1000)),
-                'video'       => array(
-                    'name'       => array('VARCHAR', 100),
-                    'date'       => 'DATE',
-                    'duration'   => array('INT', 11),
-                    'comments'   => array('TEXT', 1000)),
-                'media'       => array(
-                    'name'       => array('VARCHAR', 100),
-                    'date'       => 'DATE',
-                    'comments'   => array('TEXT', 1000))),
-            'test2'  =>  array(
-                'test1'       => array(
-                    'name'        => array('VARCHAR', 25),
-                    'since'       => 'DATE',
-                    'subtitle'    => array('VARCHAR', 300),
-                    'biography'   => array('TEXT', 1000)),
-            )));
+			    array(
+            "test" => array(
+		"artist" => array(
+		    "name"      => array("type" => "VARCHAR", "size" => 100),
+		    "surname"   => array("type" => "VARCHAR", "size" => 100),
+		    "age"       => array("type" => "INT", "size" => 11),
+		    "subtitle"  => array("type" => "VARCHAR", "size" => 300),
+		    "biography" => array("type" => "TEXT", "size" => 1000),
+		    "skill"     => array("type" => "VARCHAR", "size" => 100)),
+		"show"   => array(
+		    "name"      => array("type" => "VARCHAR", "size" => 100),
+		    "date"      => array("type" => "DATE"),
+		    "hour"      => array("type" => "TIME"),
+		    "location"  => array("type" => "VARCHAR", "size" => 300)),
+		"news"   => array(
+		    "name"      => array("type" => "VARCHAR", "size" => 100),
+		    "date"      => array("type" => "DATE"),
+		    "comments"  => array("type" => "VARCHAR", "size" => 100)),
+		"album"  => array(
+		    "name"      => array("type" => "VARCHAR", "size" => 100),
+		    "duration"  => array("type" => "INT", "size" => 11),
+		    "comments"  => array("type" => "TEXT", "size" => 1000)),
+		"music"  => array(
+		    "name"      => array("type" => "VARCHAR", "size" => 100),
+		    "date"      => array("type" => "DATE"),
+		    "duration"  => array("type" => "INT", "size" => 11),
+		    "comments"  => array("type" => "TEXT", "size" => 1000)),
+		"video"  => array(
+		    "name"      => array("type" => "VARCHAR", "size" => 100),
+		    "date"      => array("type" => "DATE"),
+		    "duration"  => array("type" => "INT", "size" => 11),
+		    "comments"  => array("type" => "TEXT", "size" => 1000)),
+		"media"  => array(
+		    "name"      => array("type" => "VARCHAR", "size" => 100),
+		    "date"      => array("type" => "DATE"),
+		    "comments"  => array("type" => "TEXT", "size" => 1000))),
+	    "test2" => array(
+		"test1" => array(
+		    "name"      => array("type" => "VARCHAR", "size" => 25),
+		    "since"     => array("type" => "DATE"),
+		    "subtitle"  => array("type" => "VARCHAR", "size" => 300),
+		    "biography" => array("type" => "TEXT", "size" => 1000)))));
 
         $wrong_tests = array(
             't/projects/no_project_name.ini' =>

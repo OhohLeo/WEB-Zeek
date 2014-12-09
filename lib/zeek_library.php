@@ -274,78 +274,11 @@ class ZeekLibrary extends ZeekOutput {
             return false;
         }
 
-        $structure = array();
+        $structure = json_decode(fgets($handle));
 
-        $project_name;
-        $table_name;
-        $count_line = 0;
-
-        /* we read the file line by line */
-        while (($line = fgets($handle)) !== false) {
-
-            /* we get the number of line */
-            $count_line++;
-
-            if (preg_match('/^\s*#/', $line))
-                continue;
-
-            /* we detect a new project */
-            if (preg_match('/^== ([A-Za-z0-9]+) ==$/', $line, $rsp)) {
-
-                /* we get the project name */
-                $project_name = $rsp[1];
-
-                /* we set the structure */
-                $structure[$project_name] = array();
-                continue;
-            }
-
-            /* we check if the project name is defined */
-            if (!isset($project_name)) {
-                $this->error("Can't find project name for this table!");
-                fclose($handle);
-                return false;
-            }
-
-            /* we detect a new table */
-            if (preg_match('/^([A-Za-z0-9]+):$/', $line, $rsp)) {
-
-                /* we get the table name */
-                $table_name = $rsp[1];
-
-                /* we set the structure */
-                $structure[$project_name][$table_name] = array();
-                continue;
-            }
-
-            /* we check if the table name is defined */
-            if (!isset($table_name)) {
-                $this->error("Can't find table name for this attribute!");
-                fclose($handle);
-                return false;
-            }
-
-            /* we detect a new attribute */
-            if (preg_match('/^\s+([A-Za-z0-9]+):\s+([A-Z_]+)\s+([0-9]+)?/',
-                           $line, $rsp)) {
-                $attribute = $rsp[1];
-                $type = $rsp[2];
-
-                /* we check if the value is ok */
-                if ($this->db->check_type($type) == false) {
-                    $this->error(
-                        "Unknown type '$type' for attribute '$attribute'!");
-                    fclose($handle);
-                    return false;
-                }
-
-                /* we get the attribute name and values */
-                $structure[$project_name][$table_name][$attribute] =
-                    isset($rsp[3]) ? array($type, $rsp[3]) : $type;
-                continue;
-            }
-
-            $this->error("Ignore line $count_line in file '$file'!");
+        /* we check if the structure is defined */
+        if (!isset($structure)) {
+            $this->error("Structure not defined!");
             fclose($handle);
             return false;
         }
@@ -430,7 +363,7 @@ class ZeekLibrary extends ZeekOutput {
         $db->row_delete('user', array('project_id' => $project_id));
 
         /* we remove all the tables beginning with the project id */
-        foreach ($this->data_structure[$project_name] as $name => $value) {
+        foreach ($this->data_structure->$project_name as $name => $value) {
 
             $reel_name = "$project_id$name";
 
@@ -515,7 +448,10 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function structure_get($project_name)
     {
-        return $this->data_structure[$project_name];
+	if (isset($this->data_structure->$project_name))
+	    return $this->data_structure->$project_name;
+
+	return false;
     }
 
 /**
@@ -534,7 +470,7 @@ class ZeekLibrary extends ZeekOutput {
         }
 
         if ($this->type_check($project_name, $type))
-            return $this->data_structure[$project_name][$type];
+            return $this->data_structure->$project_name[$type];
 
         return false;
     }
@@ -556,7 +492,7 @@ class ZeekLibrary extends ZeekOutput {
             return false;
         }
 
-        return array_key_exists($type, $this->data_structure[$project_name]);
+        return array_key_exists($type, $this->data_structure->$project_name);
     }
 
 /**
@@ -592,7 +528,7 @@ class ZeekLibrary extends ZeekOutput {
 
         /* otherwise we check the existence of the table name in the
          * static datastructure */
-        $structure = $this->data_structure[$project_name][$table_name];
+        $structure = $this->data_structure->$project_name->$table_name;
         if ($structure == NULL) {
             $this->error(
                 "table '$table_name' empty in static database structure!");

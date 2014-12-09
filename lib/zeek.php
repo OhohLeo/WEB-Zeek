@@ -538,10 +538,15 @@ class Zeek extends ZeekOutput {
     {
 	$structure = $this->zlib->structure_get($this->project_name);
 
-	/* $this->output_json(
-	   array(
-	   'structure' =>
-	   )); */
+	foreach ($structure as $attribute => $value) {
+	    echo $attribute . "\n";
+	    foreach ($value as $data => $options) {
+		$options_str = $this->datatype_to_css[$options->type];
+		echo $data . " " . $options->type  . " " . $options_str["type"] . "\n";
+	    }
+	}
+
+	$this->output_json(array('structure' => $structure));
 
 	return true;
     }
