@@ -8,7 +8,7 @@
 class DataBase extends ZeekOutput {
 
     private $db;
-    protected $debug = false;
+    protected $debug = true;
     private $config;
 
     # "ENUM" & "SET" are not handled
@@ -31,10 +31,10 @@ class DataBase extends ZeekOutput {
 	"REAL",
 
         "DATE",      # YYYY-MM-DD
-        "DATETIME",  # YYYY-MM-DD HH:MM:SS
-        "TIMESTAMP", # YYYY-MM-DD HH:MM:SS from '1971-01-01 00:00:01'
         "TIME",      # HH:MM:SS
-        "YEAR",      # YYYY
+        "TIMESTAMP", # YYYY-MM-DD HH:MM:SS from '1971-01-01 00:00:01'
+        "DATETIME",  # YYYY-MM-DD HH:MM:SS
+	"YEAR",      # YYYY
 
         "CHAR",
         "VARCHAR",
@@ -180,18 +180,14 @@ class DataBase extends ZeekOutput {
                 /* we validate the type at first */
                 if (is_array($type)) {
 
-                    $type_size = count($type);
-
                     /* 1st element is the vartype */
-                    $vartype = $type[0];
+                    $vartype = $type["type"];
 
-                    if ($type_size > 1) {
-                        $size = $type[1];
-                    }
+		    if (array_key_exists("size", $type))
+			$size = $type["size"];
 
-                    if ($type_size > 2) {
-                        $default = $type[2];
-                    }
+		    if (array_key_exists("default", $type))
+			$default = $type["default"];
 
                 } else {
                     $vartype = $type;

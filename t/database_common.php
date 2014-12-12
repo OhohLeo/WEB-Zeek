@@ -71,17 +71,20 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
 
         $this->assertFalse(
             $db->row_update('more_attributes', 3,
-                                array('second_element' => 6,
-                                'third_element' => 'juliette')));
+                            array('second_element' => 6,
+                                  'third_element' => 'juliette')));
 
         $this->assertEquals(
             $db->table_count('more_attributes', '*', NULL), 0);
 
         $this->assertTrue(
             $db->table_create('more_attributes', array(
-                'first_element'  => array('VARCHAR', 30),
-                'second_element' => array('INT', 11, 'NOT NULL'),
-                'third_element'  => 'TEXT')));
+                'first_element'  => array('type' => 'VARCHAR',
+					  'size' => 30),
+                'second_element' => array('type' => 'INT',
+					  'size' =>  11,
+					  'default' => 'NOT NULL'),
+                'third_element'  => array('type' => 'TEXT'))));
 
         $this->assertTrue(
             $db->table_check('more_attributes'));

@@ -120,7 +120,7 @@ class ZeekOutput {
             require_once $this->global_path . "extends/json.php";
 
             $json = new Services_JSON();
-            return $json->decode($input);
+            return $json->decode($input, true);
         }
 
         return json_decode($input);

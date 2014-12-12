@@ -68,7 +68,7 @@ class ZeekLibrary extends ZeekOutput {
         /* we get all existing projects from the configuration file */
         if (isset($this->projects_path)) {
             $this->data_structure =
-                $this->projects_get($this->projects_path);
+		$this->projects_get($this->projects_path);
         }
 
 
@@ -113,16 +113,22 @@ class ZeekLibrary extends ZeekOutput {
 
         /* we create the project table */
         $db->table_create('project', array(
-            'name'        => array('VARCHAR', 25),
-            'since'       => 'DATE',
-            'subtitle'    => array('VARCHAR', 300),
-            'biography'   => array('TEXT', 1000)));
+            'name'        => array('type' => 'VARCHAR',
+				   'size' => 25),
+            'since'       => array('type' => 'DATE'),
+            'subtitle'    => array('type' => 'VARCHAR',
+				   'size' => 300),
+            'biography'   => array('type' => 'TEXT',
+				   'size' => 1000)));
 
         /* we create the user table */
         $db->table_create('user', array(
-            'name'       => array('VARCHAR', 25),
-            'password'   => array('CHAR', 32),
-            'project_id' => array('INT', 11)));
+            'name'       => array('type' => 'VARCHAR',
+				  'size' => 25),
+            'password'   => array('type' => 'CHAR',
+				  'size' =>  32),
+            'project_id' => array('type' => 'INT',
+				  'size' =>  11)));
 
         /* we add the actual user */
         $db->row_insert('user', array(
@@ -284,7 +290,8 @@ class ZeekLibrary extends ZeekOutput {
         }
 
         fclose($handle);
-        return $structure;
+
+        return $this->object_to_array($structure);
     }
 
 /**
@@ -363,7 +370,7 @@ class ZeekLibrary extends ZeekOutput {
         $db->row_delete('user', array('project_id' => $project_id));
 
         /* we remove all the tables beginning with the project id */
-        foreach ($this->data_structure->$project_name as $name => $value) {
+        foreach ($this->data_structure[$project_name] as $name => $value) {
 
             $reel_name = "$project_id$name";
 
@@ -448,8 +455,8 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function structure_get($project_name)
     {
-	if (isset($this->data_structure->$project_name))
-	    return $this->data_structure->$project_name;
+	if (isset($this->data_structure[$project_name]))
+	    return $this->data_structure[$project_name];
 
 	return false;
     }
@@ -464,13 +471,8 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function type_get($project_name, $type)
     {
-        /* we check if the project exists */
-        if ($this->project_check($project_name) == false) {
-            return false;
-        }
-
         if ($this->type_check($project_name, $type))
-            return $this->data_structure->$project_name[$type];
+            return $this->data_structure[$project_name][$type];
 
         return false;
     }
@@ -492,7 +494,7 @@ class ZeekLibrary extends ZeekOutput {
             return false;
         }
 
-        return array_key_exists($type, $this->data_structure->$project_name);
+        return array_key_exists($type, $this->data_structure[$project_name]);
     }
 
 /**
@@ -528,12 +530,14 @@ class ZeekLibrary extends ZeekOutput {
 
         /* otherwise we check the existence of the table name in the
          * static datastructure */
-        $structure = $this->data_structure->$project_name->$table_name;
+        $structure = $this->data_structure[$project_name][$table_name];
         if ($structure == NULL) {
             $this->error(
                 "table '$table_name' empty in static database structure!");
             return false;
         }
+
+	echo var_dump($structure);
 
         /* we create the table and all attributes */
         if ($this->db->table_create($reel_name, $structure))
@@ -581,10 +585,13 @@ class ZeekLibrary extends ZeekOutput {
 	/* we insert the new value */
         if ($this->table_check_and_create($project_id, $table_name))
         {
+	    echo "HERE!";
 	    return $this->db->row_insert("$project_id$table_name", $values);
 
 	    return true;
         }
+
+	echo "FALSE!";
 
         return false;
     }
@@ -631,8 +638,13 @@ class ZeekLibrary extends ZeekOutput {
     private function value_check($table_name, $values)
     {
 
-	// we check that the
+	// we check that all the expected values exists
 
+	// we check that the mandatory values are defined
+
+	// we check that the defined values have expected type
+
+	return false;
     }
 
 /**
@@ -674,6 +686,33 @@ class ZeekLibrary extends ZeekOutput {
     public function value_fetch($result)
     {
         return $this->db->handle_result($result);
+    }
+
+/**
+ * Convert object structure to array structure.
+ *
+ * @method object_to_array
+ * @param array structure
+ */
+    private function object_to_array($obj)
+    {
+	if (is_object($obj))
+	    $obj = (array) $obj;
+
+	if (is_array($obj))
+	{
+            $new = array();
+            foreach($obj as $key => $val)
+	    {
+		$new[$key] = $this->object_to_array($val);
+            }
+	}
+	else
+	{
+	    $new = $obj;
+	}
+
+	return $new;
     }
 }
 

@@ -117,7 +117,7 @@ include 'default/header.php';
 			       class="form-control"
 			       name="password_new"
 			       placeholder="enter new password"></input>
-			<label>type new password again</label>
+			<label>confirm new password</label>
 			<input type="password"
 			       class="form-control"
 			       placeholder="retape new password"></input>

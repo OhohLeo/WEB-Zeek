@@ -43,6 +43,7 @@ The project is not yet finished.
 12/12/2014 Leo
  * add mustache.js for easy displaying html element
  * php sends now json structure to javascript client
+ * correct format change when creating new tables
 
 9/12/2014 Leo
  * projects structure handled with json format
