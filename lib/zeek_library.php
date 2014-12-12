@@ -537,8 +537,6 @@ class ZeekLibrary extends ZeekOutput {
             return false;
         }
 
-	echo var_dump($structure);
-
         /* we create the table and all attributes */
         if ($this->db->table_create($reel_name, $structure))
             return true;
@@ -585,13 +583,10 @@ class ZeekLibrary extends ZeekOutput {
 	/* we insert the new value */
         if ($this->table_check_and_create($project_id, $table_name))
         {
-	    echo "HERE!";
 	    return $this->db->row_insert("$project_id$table_name", $values);
 
 	    return true;
         }
-
-	echo "FALSE!";
 
         return false;
     }

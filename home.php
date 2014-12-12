@@ -162,6 +162,7 @@ include 'default/header.php';
 		{{/set}}
 		<button id="data_set">CREATE</button>
 	    </div>
+	    <hr>
 	    <div id="data_get">
 		<table>
 		    <thead>

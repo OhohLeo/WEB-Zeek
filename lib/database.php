@@ -8,7 +8,7 @@
 class DataBase extends ZeekOutput {
 
     private $db;
-    protected $debug = true;
+    protected $debug = false;
     private $config;
 
     # "ENUM" & "SET" are not handled
