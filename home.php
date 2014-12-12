@@ -51,6 +51,10 @@ include 'default/header.php';
 
     <nav id="data">
 	<ul class="structure">
+	    <li class="data" id="structure_loading">Loading...</li>
+	    <!-- {{#structure}} -->
+	    <li class="data" style="display:none">{{.}}</li>
+	    <!-- {{/structure}} -->
 	</ul>
     </nav>
 
@@ -124,9 +128,16 @@ include 'default/header.php';
 	    </div>
 	    <hr>
 	    <div class="config">
+		<h3>Modify project structure</h3>
+		<div class="boxed-group danger-zone">
+		    <button id="structure_set" class="danger">MODIFY</button>
+		</div>
+	    </div>
+	    <hr>
+	    <div class="config">
 		<h3>Clean all data</h3>
 		<div class="boxed-group danger-zone">
-		    <button id="data_clean" class="danger">DELETE all stored data</button>
+		    <button id="data_clean" class="danger">DELETE all data</button>
 		</div>
 	    </div>
 	    <hr>
@@ -142,12 +153,33 @@ include 'default/header.php';
 	    <h2>Are you sure you want to disconnect from Zeek ?</h2>
 	    <button id="disconnect" class="danger">Disconnect</button>
 	</div>
-	<div id="dynamic" class="menu"></div>
+	<div id="dynamic" class="menu">
+	    <h2 id="data_set">create new {{name}}</h2>
+	    <div id="data_set">
+		{{#set}}
+		<p>{{name}}</p>
+		{{{input}}}
+		{{/set}}
+		<button id="data_set">CREATE</button>
+	    </div>
+	    <div id="data_get">
+		<table>
+		    <thead>
+			<tr>
+			    <!-- {{#get_head}} -->
+			    <th>{{.}}</th>
+			    <!-- {{/get_head}} -->
+			</tr>
+		    </thead>
+		</table>
+	    </div>
+	</div>
 	<hr>
     </div>
     </div>
 </body>
 <?php include 'default/scripts.php'; ?>
 <script src="js/ace/ace.js"></script>
+<script src="js/mustache.js"></script>
 <script src="js/zeek_home.js"></script>
 <?php include 'default/footer.php'; ?>

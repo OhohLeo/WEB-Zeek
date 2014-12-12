@@ -40,6 +40,10 @@ The project is not yet finished.
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+12/12/2014 Leo
+ * add mustache.js for easy displaying html element
+ * php sends now json structure to javascript client
+
 9/12/2014 Leo
  * projects structure handled with json format
 

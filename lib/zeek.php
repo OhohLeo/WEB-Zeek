@@ -12,7 +12,7 @@ class Zeek extends ZeekOutput {
     protected $project_name;
     protected $zlib;
 
-    private $datatype_to_css = array(
+    private $db_to_css = array(
         "TINYINT" => array(
 	    "type" => "number",
 	    "min"  => -128,
@@ -126,7 +126,7 @@ class Zeek extends ZeekOutput {
     {
         $config = parse_ini_file($config_file);
 
-        /* we get the global_path */
+        // we get the global_path
         if (isset($config['global_path'])) {
             $global_path = $config['global_path'] . "/";
         } else {
@@ -135,19 +135,19 @@ class Zeek extends ZeekOutput {
 
        $this->global_path = $global_path;
 
-       /* we create de zeek_library object */
-       require_once $global_path . "lib/zeek_library.php";
+	// we create de zeek_library object
+	require_once $global_path . "lib/zeek_library.php";
 
-       $zlib = new ZeekLibrary();
-       $zlib->global_path = $global_path;
-       $zlib->config($config);
+	$zlib = new ZeekLibrary();
+	$zlib->global_path = $global_path;
+	$zlib->config($config);
 
-       /* we establish the connection with the database */
-       if ($zlib->connect_to_database() == false)
+	// we establish the connection with the database
+	if ($zlib->connect_to_database() == false)
             return false;
 
-       $this->zlib = $zlib;
-       return true;
+	$this->zlib = $zlib;
+	return true;
     }
 
 /**
@@ -158,18 +158,18 @@ class Zeek extends ZeekOutput {
  */
     public function input($params)
     {
-        /* we check if the params is defined */
+        // we check if the params is defined
         if ($params == NULL)
             return false;
 
-        /* we establish the connection with the database */
+        // we establish the connection with the database
         if ($this->zlib->connect_to_database() == false)
             return false;
 
         // we get the method name
         $method = $params['method'];
 
-        /* we check if the method name does exist */
+        // we check if the method name does exist
         if ($this->check_string($method) == false) {
             $this->error("method not defined!");
             return false;
@@ -183,7 +183,8 @@ class Zeek extends ZeekOutput {
            return $this->connect($project_name, $login, $password);
 
 	// otherwise we check if the connection is ok
-        if ($_SESSION["login"] == false) {
+        if ($_SESSION["login"] == false)
+	{
 	    $this->error("unexpected login error!");
             return false;
 	}
@@ -192,9 +193,12 @@ class Zeek extends ZeekOutput {
 	if ($method == 'project_create')
 	    return $this->project_create($params['project_name']);
 
+	// all other commands need that the project name & id need to be used
         $project_name = $_SESSION["project_name"];
         $project_id   = $_SESSION["project_id"];
-        if (!(isset($project_name) && isset($project_id))) {
+
+        if (!(isset($project_name) && isset($project_id)))
+	{
 	    $this->error("unexpected project error!");
             return false;
 	}
@@ -203,15 +207,12 @@ class Zeek extends ZeekOutput {
 	$this->project_name = $project_name;
         $this->project_id   = $project_id;
 
-        switch ($method) {
-
+        switch ($method)
+	{
             case 'disconnect':
 		$this->disconnect();
 		$this->success("disconnect now!");
 		return true;
-
-            case 'project_delete_to_confirm':
-		return $this->project_delete_to_confirm($project_name);
 
             case 'project_delete':
 		return $this->project_delete($project_name);
@@ -226,8 +227,18 @@ class Zeek extends ZeekOutput {
 		return $this->user_change_password(
 		    $project_id, $email, $password_old, $password_new);
 
+            case 'structure_get':
+		return $this->structure_get();
+
+            case 'structure_set':
+		return $this->structure_set($new_structure);
+
+            case 'data_get':
+		return $this->data_get(strtolower($params['type']));
+
             case 'data_set':
-		return $this->data_set($params['name'], $params['values']);
+		return $this->data_set(strtolower($params['type']),
+				       $params['values']);
 
             case 'data_update':
 		return $this->data_update($name, $id, $values);
@@ -237,12 +248,6 @@ class Zeek extends ZeekOutput {
 
             case 'data_clean_all':
 		return $this->data_clean_all();
-
-            case 'structure_get':
-		return $this->structure_get();
-
-            case 'get_data':
-		return $this->get_data(strtolower($params['type']));
         }
 
         $this->error(
@@ -265,15 +270,14 @@ class Zeek extends ZeekOutput {
     {
         $zlib = $this->zlib;
 
-        /* we check if the project_name does exist */
+        // we check if the project_name does exist
         $project_id = $zlib->project_get_id($project_name);
 
-        /* we check the validity of the login & password
-           then we check using the project id if defined */
+        // we check the validity of the login & password
         if ($this->check_string_and_size($project_name, 25)
             and $this->check_string_and_size($login, 25)
-            and $this->check_string_and_size($password, 32)
-            and $zlib->user_check($project_id, $login, $password))
+	    and $this->check_string_and_size($password, 32)
+	    and $zlib->user_check($project_id, $login, $password))
         {
             // we store the session user
             $_SESSION["login"] = $login;
@@ -311,10 +315,10 @@ class Zeek extends ZeekOutput {
  */
     public function disconnect()
     {
-        /* we destroy the session here */
+        // we destroy the session here
         session_destroy();
 
-        /* we destroy all the data here */
+        // we destroy all the data here
         session_unset();
     }
 
@@ -372,11 +376,6 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-    public function project_delete_to_confirm($project_name)
-    {
-        return true;
-    }
-
 /**
  * Remove current project.
  *
@@ -387,7 +386,7 @@ class Zeek extends ZeekOutput {
     {
         if ($this->zlib->project_delete($project_name)) {
 
-            /* we proceed the disconnection */
+            // we proceed the disconnection
             $this->disconnect();
 
             $this->success(
@@ -530,19 +529,37 @@ class Zeek extends ZeekOutput {
     }
 
 /**
- * Display data navigation bar.
+ * Send the project structure.
  *
  * @method structure_get
  */
     public function structure_get()
     {
+	// we get the structure project
 	$structure = $this->zlib->structure_get($this->project_name);
 
-	foreach ($structure as $attribute => $value) {
-	    echo $attribute . "\n";
-	    foreach ($value as $data => $options) {
-		$options_str = $this->datatype_to_css[$options->type];
-		echo $data . " " . $options->type  . " " . $options_str["type"] . "\n";
+	// we go through all domains
+	foreach ($structure as $domain => $attribute)
+	{
+	    // we go through all attribute of each domain
+	    foreach ($attribute as $name => $options)
+	    {
+		// we get the css options
+		$css_options = $this->db_to_css[$options->type];
+
+		// we check that it doesn't exist a specific value
+		foreach ($options as $type => $value)
+		{
+		    // we avoid the option type
+		    if ($type === "type")
+			continue;
+
+		    // we set the options with the specific value
+		    $css_options[$type] = $value;
+		}
+
+		// we set the css options before sending the data
+		$structure->$domain->$name= $css_options;
 	    }
 	}
 
@@ -649,17 +666,17 @@ class Zeek extends ZeekOutput {
  * @param string name of the data expected
  * @param hash values of the data
  */
-    public function data_set($name, $values)
+    public function data_set($type, $values_str)
     {
-        if (!(isset($name) && isset($values))) {
-            $this->error("Expecting valid name and values field!");
-            return false;
+        if (!(isset($type) && isset($values_str))) {
+            $this->error("Expecting valid name and values fields!");
+            return true;
         }
 
-        $params = array();
-        parse_str($values, $params);
+	$params = array();
+	parse_str($values_str, $params);
 
-        if ($this->zlib->value_insert($this->project_id, $name, $params)) {
+        if ($this->zlib->value_insert($this->project_id, $type, $params)) {
             $this->success("Value correctly inserted!");
             return true;
         }
@@ -675,15 +692,15 @@ class Zeek extends ZeekOutput {
  * @param integer id of the data to update
  * @param hash values of the data to update
  */
-    public function data_update($name, $id, $values)
+    public function data_update($name, $id, $values_str)
     {
-        if (!(isset($name) && isset($id) && isset($values))) {
+        if (!(isset($name) && isset($id) && isset($values_str))) {
             $this->error("Expecting valid name, id and values field!");
             return false;
         }
 
         if ($this->zlib->value_update(
-            $this->project_id, $name, $id, $values)) {
+            $this->project_id, $name, $id, $values_str)) {
             $this->success("Value correctly updated!");
             return true;
         }

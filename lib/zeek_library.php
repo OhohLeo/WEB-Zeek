@@ -578,11 +578,14 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function value_insert($project_id, $table_name, $values)
     {
-        /* we insert the new value */
+	/* we insert the new value */
         if ($this->table_check_and_create($project_id, $table_name))
         {
-            return $this->db->row_insert("$project_id$table_name", $values);
+	    return $this->db->row_insert("$project_id$table_name", $values);
+
+	    return true;
         }
+
         return false;
     }
 
@@ -616,6 +619,20 @@ class ZeekLibrary extends ZeekOutput {
     public function value_delete($project_id, $table_name, $id)
     {
         return $this->db->row_delete("$project_id$table_name", $id);
+    }
+
+/**
+ * Check if the value received is matching what is expected.
+ *
+ * @method value_check
+ * @param string table name
+ * @param hash values to check
+ */
+    private function value_check($table_name, $values)
+    {
+
+	// we check that the
+
     }
 
 /**

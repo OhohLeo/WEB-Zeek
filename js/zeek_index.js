@@ -1,40 +1,44 @@
-$div_connect = $("div#connect");
-$div_create = $("div#create");
-$div_create.hide();
+// once the document is ready
+$(document).ready(function() {
 
-$project_name_src = $("input#connect");
-$project_name_dst = $("input#create");
-
-$("button#connect").on("click", function(e) {
-    $danger.hide();
-    $success.hide();
+    var $div_connect = $("div#connect");
+    var $div_create = $("div#create");
     $div_create.hide();
 
-    $send_request(
-	{
-	    method: "connect",
-	    params: $div_connect.children("input").serialize(),
-	},
-	function ($result) {
-	    if ($result["action"] == "project_create") {
-		$div_connect.hide();
-		$project_name_dst.val($project_name_src.val());
-		$div_create.show();
-	    }
-	});
+    var $project_name_src = $("input#connect");
+    var $project_name_dst = $("input#create");
 
-    e.preventDefault();
-});
+    $("button#connect").on("click", function(e) {
+	$danger.hide();
+	$success.hide();
+	$div_create.hide();
 
-$("button#create").on("click", function(e) {
-    $send_request(
-	{
-	    method: "project_create",
-	    project_name: $project_name_dst.val(),
-	});
-});
+	$send_request(
+	    {
+		method: "connect",
+		params: $div_connect.children("input").serialize(),
+	    },
+	    function ($result) {
+		if ($result["action"] == "project_create") {
+		    $div_connect.hide();
+		    $project_name_dst.val($project_name_src.val());
+		    $div_create.show();
+		}
+	    });
 
-$("button#cancel").on("click", function(e) {
-    $div_create.hide();
-    $div_connect.show();
+	e.preventDefault();
+    });
+
+    $("button#create").on("click", function(e) {
+	$send_request(
+	    {
+		method: "project_create",
+		project_name: $project_name_dst.val(),
+	    });
+    });
+
+    $("button#cancel").on("click", function(e) {
+	$div_create.hide();
+	$div_connect.show();
+    });
 });

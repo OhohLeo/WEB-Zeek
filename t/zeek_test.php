@@ -33,7 +33,7 @@ class ExtendsZeek extends Zeek
 
     public function output($input)
     {
-        //echo "expect : " . $input . "\n";
+        /* echo "expect : " . $input . "\n"; */
 
         $this->output = $input;
     }
@@ -99,9 +99,8 @@ class TestZeek extends PHPUnit_Framework_TestCase
 
 	// we check the structure
 	$zeek->structure_get();
-	/* $this->assertTrue(
-           $zeek->checkOutput(
-	   '{"structure":{"artist":{"name":["VARCHAR","100"],"surname":["VARCHAR","100"],"age":["INT","11"],"subtitle":["VARCHAR","300"],"biography":["TEXT","1000"],"skill":["VARCHAR","100"]},"show":{"name":["VARCHAR","100"],"date":"DATE","hour":"TIME","location":["VARCHAR","300"]},"news":{"name":["VARCHAR","100"],"date":"DATE","comments":["TEXT","1000"]},"album":{"name":["VARCHAR","100"],"duration":["INT","11"],"comments":["TEXT","1000"]},"music":{"name":["VARCHAR","100"],"date":"DATE","duration":["INT","11"],"comments":["TEXT","1000"]},"video":{"name":["VARCHAR","100"],"date":"DATE","duration":["INT","11"],"comments":["TEXT","1000"]},"media":{"name":["VARCHAR","100"],"date":"DATE","comments":["TEXT","1000"]}}}')); */
+	$this->assertTrue(
+            $zeek->checkOutput('{"structure":{"artist":{"name":{"type":"text","size":100},"surname":{"type":"text","size":100},"age":{"type":"number","min":0,"max":4294967295,"step":1},"subtitle":{"type":"text","size":300},"biography":{"type":"text","size":1000},"skill":{"type":"text","size":100}},"show":{"name":{"type":"text","size":100},"date":{"type":"date"},"hour":{"type":"time"},"location":{"type":"text","size":300}},"news":{"name":{"type":"text","size":100},"date":{"type":"date"},"comments":{"type":"text","size":100}},"album":{"name":{"type":"text","size":100},"duration":{"type":"number","min":0,"max":4294967295,"step":1},"comments":{"type":"text","size":1000}},"music":{"name":{"type":"text","size":100},"date":{"type":"date"},"duration":{"type":"number","min":0,"max":4294967295,"step":1},"comments":{"type":"text","size":1000}},"video":{"name":{"type":"text","size":100},"date":{"type":"date"},"duration":{"type":"number","min":0,"max":4294967295,"step":1},"comments":{"type":"text","size":1000}},"media":{"name":{"type":"text","size":100},"date":{"type":"date"},"comments":{"type":"text","size":1000}}}}'));
 
 	// we delete the project
         $this->assertTrue($zeek->project_delete('test'));

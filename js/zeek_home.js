@@ -4,6 +4,9 @@ $(document).ready(function() {
     var $div_menus = $("div.menu");
     var $div_dynamic = $("div#dynamic");
 
+    // we store the dynamic html
+    var $html_dynamic = $("div#dynamic").html();
+
     // we show only home menu
     $div_menus.hide();
     $("div#home").show();
@@ -28,43 +31,90 @@ $(document).ready(function() {
     // we store the structure
     var $structure;
 
-    var $handle_data = function ($name) {
-	$div_dynamic.empty();
+    // we handle the data process
+    var $handle_data = function ($name)
+    {
 	$div_menus.hide();
 	var $data = $structure[$name];
-	var $result = "<h2>create new " + $name + "</h2>";
-	for (var $attribute in $data) {
+
+	var $set = new Array();
+	for (var $attribute in $data)
+	{
 	    var $options = $data[$attribute];
-	    var $options;
+
+	    // we get all options for the css input
+	    var $input = "<input name=" + $attribute;
 
 	    for (var $type in $options) {
-		$options = $options.concat(
+		$input = $input.concat(
 		    " " + $type + "=" + $options[$type]);
 	    }
 
-	    $result = $result.concat(
-		"<p>" + $attribute + "</p>"
-		+ "<input" + $options + "></input>");
+	    $input = $input.concat("></input>");
+
+	    console.log($input);
+
+	    $set.push({ name: $attribute,
+			     input: $input });
 	}
 
-	console.log($result);
-	$div_dynamic.append($result);
+	$div_dynamic.html(Mustache.render(
+	    $html_dynamic, {
+		name: $name,
+		set: $set,
+		get_head: Object.keys($data)
+	    }));
+
 	$div_dynamic.show();
+
+	var $div_data_set = $("div#data_set");
+	$div_data_set.hide();
+
+	$("h2#data_set").on("click", function() {
+	    $div_data_set.toggle();
+	});
+
+	$("button#data_set").on("click", function() {
+
+	    $send_request(
+		{
+		    method: "data_set",
+		    type: $name,
+		    values: $div_data_set.children().serialize(),
+		},
+		function ($result) {
+		    console.log($result);
+		});
+	});
     };
 
     // we get the database structure
     $send_request(
-	{ "method": "structure_get" },
-	function ($result) {
+	{
+	    "method": "structure_get"
+	},
+	function ($result)
+	{
+	    var $li_loading = $("li#structure_loading");
+
+	    // we store the structure
 	    $structure = $result["structure"];
+
 	    if ($structure)
 	    {
-		// we implode the structure
-		for (var $key in $structure)
-		    $ul_structure.append("<li class=\"data\">"
-					 + $key + "</li>");
+		var $ul_structure = $("ul.structure");
+
+		$li_loading.remove();
+
+		$ul_structure.html(Mustache.render(
+		    $ul_structure.html(),
+		    {
+			structure: Object.keys($structure)
+		    }));
 
 		$li_data = $("li.data");
+
+		$li_data.show();
 
 		// we set clikable element
 		$li_data.on("click", function() {
@@ -75,17 +125,16 @@ $(document).ready(function() {
 		    $this.addClass("data_clicked");
 
 		    $handle_data($this.text());
-		    console.log("HERE!" + $(this).text());
 		});
 
 		return true;
 	    }
+
+	    $li_loading.text('Error!');
 	}
     );
 
-
-
-    // we activate the disconnect button
+    // we configure the disconnect button
     $("button#disconnect").on("click", function() {
 	$send_request(
 	    {
