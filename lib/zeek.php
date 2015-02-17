@@ -545,7 +545,7 @@ class Zeek extends ZeekOutput {
 	    foreach ($attribute as $name => $options)
 	    {
 		// we get the css options
-		$css_options = $this->db_to_css[$options->type];
+		$css_options = $this->db_to_css[$options["type"]];
 
 		// we check that it doesn't exist a specific value
 		foreach ($options as $type => $value)
@@ -559,7 +559,7 @@ class Zeek extends ZeekOutput {
 		}
 
 		// we set the css options before sending the data
-		$structure->$domain->$name= $css_options;
+		$structure[$domain][$name] = $css_options;
 	    }
 	}
 
@@ -587,16 +587,18 @@ class Zeek extends ZeekOutput {
             $this->project_id,
             $name, array('id' => 'DEC'), $size, $offset);
 
-        $response = array();
+        $rsp = array();
 
-        while ($row = $this->zlib->value_fetch($result)) {
-            unset($row->id);
-            unset($row->project_id);
-            array_push($response, $row);
-        }
+	while ($row = $this->zlib->value_fetch($result))
+	{
+            unset($row['id']);
+            unset($row['project_id']);
+
+	    array_push($rsp, $row);
+	}
 
         /* we return an array of values */
-        return $this->output_json($response);
+        return $this->output_json($rsp);
     }
 
 /**

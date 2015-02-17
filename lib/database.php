@@ -506,7 +506,7 @@ class DataBase extends ZeekOutput {
 	    case "DATETIME": # '0000-00-00 00:00:00'
 	        return (date('Y-m-d H:i:s', strtotime($value)) == $value);
 	    case "YEAR": # 0000
-	    	return is_int($value)
+	    	return is_int(0+$value)
 		    && ($value >= 1901 && $value <= 9999);
 	}
 
@@ -522,7 +522,7 @@ class DataBase extends ZeekOutput {
  */
     public function check_integer($value, $min, $max)
     {
-	return is_int($value) && ($value >= $min && $value <= $max);
+	return is_int(0+$value) && $value >= $min && $value <= $max;
     }
 
 /**

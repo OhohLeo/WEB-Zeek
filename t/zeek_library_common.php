@@ -251,19 +251,18 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 		      'age'       => 27,
 		      'subtitle'  => 'test_subtitle',
 		      'biography' => 'la vie de ce test sera très courte',
-		      'skill'    => 'skill_test')));
-
+		      'skill'     => 'skill_test')));
 	$result = $zlib->value_get($project_id, 'artist');
 
 	$row = $zlib->value_fetch($result);
 
-	$this->assertEquals($row->id, 1);
-	$this->assertEquals($row->name, 'test_name');
-	$this->assertEquals($row->surname, 'test_surname');
-	$this->assertEquals($row->age, 27);
-	$this->assertEquals($row->subtitle, 'test_subtitle');
-	$this->assertEquals($row->biography, 'la vie de ce test sera très courte');
-	$this->assertEquals($row->skill, 'skill_test');
+	$this->assertEquals($row["id"], 1);
+	$this->assertEquals($row["name"], 'test_name');
+	$this->assertEquals($row["surname"], 'test_surname');
+	$this->assertEquals($row["age"], 27);
+	$this->assertEquals($row["subtitle"], 'test_subtitle');
+	$this->assertEquals($row["biography"], 'la vie de ce test sera très courte');
+	$this->assertEquals($row["skill"], 'skill_test');
 
 	# we add a new value again
 	$this->assertTrue(
@@ -293,13 +292,13 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
 	$row = $zlib->value_fetch($result);
 
-	$this->assertEquals($row->id, 2);
-	$this->assertEquals($row->name, 'test_name2');
-	$this->assertEquals($row->surname, 'test_surname2');
-	$this->assertEquals($row->age, 272);
-	$this->assertEquals($row->subtitle, 'test_subtitle2');
-	$this->assertEquals($row->biography, 'la vie de ce test sera très très courte');
-	$this->assertEquals($row->skill, 'skill_test2');
+	$this->assertEquals($row["id"], 2);
+	$this->assertEquals($row["name"], 'test_name2');
+	$this->assertEquals($row["surname"], 'test_surname2');
+	$this->assertEquals($row["age"], 272);
+	$this->assertEquals($row["subtitle"], 'test_subtitle2');
+	$this->assertEquals($row["biography"], 'la vie de ce test sera très très courte');
+	$this->assertEquals($row["skill"], 'skill_test2');
 
 	# we add a new value again
 	$this->assertTrue(
@@ -312,13 +311,13 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
 	$row = $zlib->value_fetch($result);
 
-	$this->assertEquals($row->id, 3);
-	$this->assertEquals($row->name, 'test_update');
-	$this->assertEquals($row->surname, 'test_surname-update');
-	$this->assertEquals($row->age, 273);
-	$this->assertEquals($row->subtitle, 'test_subtitle3');
-	$this->assertEquals($row->biography, 'la vie de ce test sera très très très courte');
-	$this->assertEquals($row->skill, 'skill_test3');
+	$this->assertEquals($row["id"], 3);
+	$this->assertEquals($row["name"], 'test_update');
+	$this->assertEquals($row["surname"], 'test_surname-update');
+	$this->assertEquals($row["age"], 273);
+	$this->assertEquals($row["subtitle"], 'test_subtitle3');
+	$this->assertEquals($row["biography"], 'la vie de ce test sera très très très courte');
+	$this->assertEquals($row["skill"], 'skill_test3');
 
 	$this->assertEquals($zlib->table_count($project_id, 'artist'), 3);
 

@@ -110,9 +110,6 @@ class TestZeek extends PHPUnit_Framework_TestCase
 
 	// we delete again the project
         $this->assertFalse($zeek->project_delete('test'));
-	/* $this->assertTrue(
-           $zeek->checkOutput(
-	   '{"error":"No existing project delete \'test\' in database!"}')); */
 
         // we establish the connection with the database
         $this->assertTrue($zeek->connect_to_database());
@@ -189,38 +186,51 @@ class TestZeek extends PHPUnit_Framework_TestCase
     //     $zeek->environment_clean();
     // }
 
-    // public function test_data()
-    // {
-    //     $zeek = $this->zeek;
+    public function test_data()
+    {
+        $zeek = $this->zeek;
 
-    //     $this->assertTrue(
-    //         $zeek->connect('test', 'test', 'test'));
+        $this->assertTrue(
+            $zeek->connect('test', 'test', 'test'));
 
-    //     $this->assertTrue(
-    //         $zeek->checkOutput(
-    //             '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
 
-    //     $this->assertTrue($zeek->project_create('test'));
+        $this->assertTrue($zeek->project_create('test'));
 
-    //     $this->assertTrue(
-    //         $zeek->checkOutput('{"redirect":"home.php"}'));
+        $this->assertTrue(
+            $zeek->checkOutput('{"redirect":"home.php"}'));
 
-    //     $this->assertTrue(
-    //         $zeek->data_set('album', 'name=tutu&duration=10&comments=hey'));
+        $this->assertTrue(
+            $zeek->data_set('album', 'name=tutu&duration=10&comments=hey'));
 
-    //     $this->assertTrue(
-    //         $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
+	$this->assertTrue(
+            $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
 
-    //     $this->assertFalse(
-    //         $zeek->data_set('albu', 'name=tutu&duration=10&comments=hey'));
+	$zeek->data_get('album', 0, 1);
 
-    //     $result = $zeek->data_get('album', 0, 10);
+	$this->assertTrue(
+            $zeek->checkOutput(
+		'[{"name":"tutu","duration":"10","comments":"hey"}]'));
 
-    //     /* $this->assertFalse( */
-    //     /*     $zeek->data_set('album', 'name=tutu&duration=toto&comments=hey')); */
+        $this->assertTrue(
+            $zeek->data_set('album', 'name=toto&duration=120&comments=hoy'));
 
-    //     $zeek->environment_clean();
-    // }
+	$this->assertTrue(
+            $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
+
+	$zeek->data_get('album', 0, 2);
+
+	$this->assertTrue(
+            $zeek->checkOutput(
+		'[{"name":"tutu","duration":"10","comments":"hey"},{"name":"toto","duration":"120","comments":"hoy"}]'));
+
+	$this->assertFalse(
+            $zeek->data_set('albu', 'name=tutu&duration=10&comments=hey'));
+
+        $zeek->environment_clean();
+    }
 
     // public function test_password()
     // {

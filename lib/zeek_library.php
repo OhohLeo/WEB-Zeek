@@ -505,6 +505,7 @@ class ZeekLibrary extends ZeekOutput {
  * otherwise return false.
  *
  * @method table_check_and_create
+ * @param int project id
  * @param string table name
  */
     protected function table_check_and_create($project_id, $table_name)
@@ -551,6 +552,7 @@ class ZeekLibrary extends ZeekOutput {
  * Return the number of elements otherwise return 0.
  *
  * @method table_count
+ * @param int project id
  * @param string table name
  */
     public function table_count($project_id, $table_name)
@@ -575,17 +577,17 @@ class ZeekLibrary extends ZeekOutput {
  * return false.
  *
  * @method value_insert
+ * @param int project id
  * @param string table name
  * @param hash values to insert
  */
     public function value_insert($project_id, $table_name, $values)
     {
 	/* we insert the new value */
-        if ($this->table_check_and_create($project_id, $table_name))
+        if ($this->value_check($project_id, $table_name, $values)
+	    && $this->table_check_and_create($project_id, $table_name))
         {
 	    return $this->db->row_insert("$project_id$table_name", $values);
-
-	    return true;
         }
 
         return false;
@@ -599,6 +601,7 @@ class ZeekLibrary extends ZeekOutput {
  * return false.
  *
  * @method value_update
+ * @param int project id
  * @param string table name
  * @param integer id of the element to modify
  * @param hash values that will replace old one
@@ -615,6 +618,7 @@ class ZeekLibrary extends ZeekOutput {
  * return false.
  *
  * @method value_delete
+ * @param int project id
  * @param string table name
  * @param integer id of the element to delete
  */
@@ -627,25 +631,60 @@ class ZeekLibrary extends ZeekOutput {
  * Check if the value received is matching what is expected.
  *
  * @method value_check
+ * @param int project id
  * @param string table name
  * @param hash values to check
  */
-    private function value_check($table_name, $values)
+    private function value_check($project_id, $table_name, $values)
     {
+	// we get the project name from the project id
+	$project_name = $this->project_name_get_by_id($project_id);
+	if ($project_name == false)
+	    return false;
 
-	// we check that all the expected values exists
+	// we get the structure of the project
+	$expected = $this->structure_get($project_name);
+	if ($expected == false)
+	    return false;
+
+	// we check that the table exists
+	if (isset($expected[$table_name]) == false)
+	    return false;
+
+	$expected_table = $expected[$table_name];
+
+	foreach ($values as $key => $value)
+	{
+	    // we check that all the values exists
+	    if (isset($expected_table[$key]) == false)
+		return false;
+
+	    // we check that the defined values have expected type
+	    if ($this->db->check_value($expected_table[$key]["type"], $value)
+		== false)
+	    {
+		return false;
+	    }
+	}
 
 	// we check that the mandatory values are defined
+	foreach ($expected as $key => $value)
+	{
+	    if (isset($expected_table[$key]["mandatory"]))
+	    {
+		if (isset($values[$key]) == false)
+		    return false;
+	    }
+	}
 
-	// we check that the defined values have expected type
-
-	return false;
+	return true;
     }
 
 /**
  * Get values stored in database.
  *
  * @method value_get
+ * @param int project id
  * @param string table name
  * @param string wich parameter to use for sorting
  * @param integer number of elements
@@ -680,7 +719,7 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function value_fetch($result)
     {
-        return $this->db->handle_result($result);
+        return $this->object_to_array($this->db->handle_result($result));
     }
 
 /**
