@@ -234,7 +234,10 @@ class Zeek extends ZeekOutput {
 		return $this->structure_set($new_structure);
 
             case 'data_get':
-		return $this->data_get(strtolower($params['type']));
+		return $this->data_get(
+		    strtolower($params['name']),
+		    strtolower($params['offset']),
+		    strtolower($params['size']));
 
             case 'data_set':
 		return $this->data_set(strtolower($params['type']),
@@ -244,7 +247,8 @@ class Zeek extends ZeekOutput {
 		return $this->data_update($name, $id, $values);
 
             case 'data_delete':
-		return $this->data_delete($name, $id);
+		return $this->data_delete(strtolower($params['name']),
+					  strtolower($params['id']));
 
             case 'data_clean_all':
 		return $this->data_clean_all();
@@ -545,7 +549,7 @@ class Zeek extends ZeekOutput {
 	    foreach ($attribute as $name => $options)
 	    {
 		// we get the css options
-		$css_options = $this->db_to_css[$options->type];
+		$css_options = $this->db_to_css[$options['type']];
 
 		// we check that it doesn't exist a specific value
 		foreach ($options as $type => $value)
@@ -559,7 +563,7 @@ class Zeek extends ZeekOutput {
 		}
 
 		// we set the css options before sending the data
-		$structure->$domain->$name= $css_options;
+		$structure[$domain][$name] = $css_options;
 	    }
 	}
 
@@ -581,21 +585,24 @@ class Zeek extends ZeekOutput {
         if (!(isset($name) && isset($offset) && isset($size))) {
             $this->error("Expecting valid table name, offset and size field!");
             return false;
-        }
+	}
 
         $result = $this->zlib->value_get(
-            $this->project_id,
-            $name, array('id' => 'DEC'), $size, $offset);
+            $this->project_id, $name, array('id' => 'DEC'), $size, $offset);
 
+	// if no value : we return an empty array
+	if ($result == NULL)
+	    return $this->output_json(array());
+
+	// otherwise we store the values in an array
         $response = array();
 
-        while ($row = $this->zlib->value_fetch($result)) {
-            unset($row->id);
+	while ($row = $this->zlib->value_fetch($result)) {
             unset($row->project_id);
             array_push($response, $row);
         }
 
-        /* we return an array of values */
+        // we return an array of values
         return $this->output_json($response);
     }
 

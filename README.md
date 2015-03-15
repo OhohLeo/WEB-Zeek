@@ -34,12 +34,16 @@ The project is not yet finished.
 #### TODO Features :
  - finish the configuration & get_and_set visual functionnalities
  - insert data beetween old ones
- - save&restore database functionnalities
+ - save & restore database functionnalities
  - setup help methods
  - deployment tool (for 1&1)
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+15/03/2015 Leo
+ * display data on the UI
+ * add dialog JQuery UI to modify & delete data
+
 12/12/2014 Leo
  * add mustache.js for easy displaying html element
  * php sends now json structure to javascript client

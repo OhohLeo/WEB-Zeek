@@ -21,16 +21,26 @@ $generic_rsp = function($result) {
 };
 
 $send_request = (function($data, $handle_rsp) {
+
+    console.debug($data);
+
     $.ajax({
     	"type": "POST",
     	"url": "input.php",
     	"data": $data,
     	"dataType":"json",
     	"success": function($result) {
-    	    if ($handle_rsp && $handle_rsp($result)) {
-		$success.hide();
-		$danger.hide();
-		return;
+    	    if ($handle_rsp) {
+		var $res = $handle_rsp($result);
+
+		if ($res == -1)
+		    return;
+
+		if ($res == true) {
+		    $success.hide();
+		    $danger.hide();
+		    return;
+		}
     	    }
 
 	    $generic_rsp($result);

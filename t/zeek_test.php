@@ -189,38 +189,38 @@ class TestZeek extends PHPUnit_Framework_TestCase
     //     $zeek->environment_clean();
     // }
 
-    // public function test_data()
-    // {
-    //     $zeek = $this->zeek;
+    public function test_data()
+    {
+        $zeek = $this->zeek;
 
-    //     $this->assertTrue(
-    //         $zeek->connect('test', 'test', 'test'));
+        $this->assertTrue(
+            $zeek->connect('test', 'test', 'test'));
 
-    //     $this->assertTrue(
-    //         $zeek->checkOutput(
-    //             '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
 
-    //     $this->assertTrue($zeek->project_create('test'));
+        $this->assertTrue($zeek->project_create('test'));
 
-    //     $this->assertTrue(
-    //         $zeek->checkOutput('{"redirect":"home.php"}'));
+        $this->assertTrue(
+            $zeek->checkOutput('{"redirect":"home.php"}'));
 
-    //     $this->assertTrue(
-    //         $zeek->data_set('album', 'name=tutu&duration=10&comments=hey'));
+        $this->assertTrue(
+            $zeek->data_set('album', 'name=tutu&duration=10&comments=hey'));
 
-    //     $this->assertTrue(
-    //         $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
+        $this->assertTrue(
+            $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
 
-    //     $this->assertFalse(
-    //         $zeek->data_set('albu', 'name=tutu&duration=10&comments=hey'));
+        $this->assertFalse(
+            $zeek->data_set('albu', 'name=tutu&duration=10&comments=hey'));
 
-    //     $result = $zeek->data_get('album', 0, 10);
+        $result = $zeek->data_get('album', 0, 10);
 
-    //     /* $this->assertFalse( */
-    //     /*     $zeek->data_set('album', 'name=tutu&duration=toto&comments=hey')); */
+	/* $this->assertFalse(
+           $zeek->data_set('album', 'name=tutu&duration=toto&comments=hey')); */
 
-    //     $zeek->environment_clean();
-    // }
+        $zeek->environment_clean();
+    }
 
     // public function test_password()
     // {

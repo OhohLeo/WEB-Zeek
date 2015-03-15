@@ -142,8 +142,6 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
 	$structure = $zlib->projects_get('t/projects.ini');
 
-	echo var_dump($structure);
-
 	$this->assertEquals($structure,
 			    array(
 	    "test" => array(
@@ -199,12 +197,12 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
 	foreach ($wrong_tests as $filename) {
 	    $this->assertFalse($zlib->projects_get($filename));
-	    $this->assertTrue($zlib->checkOutput('{"error":"Structure not defined!"}'));
+	    $this->assertTrue($zlib->checkOutput('{"error":"structure not defined!"}'));
 	}
 
 	$this->assertFalse($zlib->projects_get('t/projects/unknown.ini'));
 	$this->assertTrue($zlib->checkOutput(
-	    '{"error":"Can\'t find projects configuration file \'t\/projects\/unknown.ini\'!"}'));
+	    '{"error":"can\'t find projects configuration file \'t\/projects\/unknown.ini\'!"}'));
 
 	$zlib->environment_clean($this->db_name);
     }
@@ -231,6 +229,8 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
 	$this->assertTrue($zlib->connect_to_database());
 
+	$structure = $zlib->projects_get('t/projects.ini');
+
 	$zlib->environment_clean($this->db_name);
 
 	$this->assertTrue(
@@ -251,7 +251,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 		      'age'       => 27,
 		      'subtitle'  => 'test_subtitle',
 		      'biography' => 'la vie de ce test sera très courte',
-		      'skill'    => 'skill_test')));
+		      'skill'     => 'skill_test')));
 
 	$result = $zlib->value_get($project_id, 'artist');
 

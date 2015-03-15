@@ -33,6 +33,9 @@ if ((time() - $start_ts) >= 300) {
 
 include 'default/header.php';
 ?>
+<link rel="stylesheet" href="css/jquery-ui.min.css">
+<link rel="stylesheet" href="css/jquery-ui.structure.min.css">
+<link rel="stylesheet" href="css/jquery-ui.theme.min.css">
 <link rel="stylesheet" href="css/zeek_home.css">
 </head>
 <body>
@@ -156,15 +159,10 @@ include 'default/header.php';
 	<div id="dynamic" class="menu">
 	    <h2 id="data_set">create new {{name}}</h2>
 	    <div id="data_set">
-		{{#set}}
-		<p>{{name}}</p>
-		{{{input}}}
-		{{/set}}
-		<button id="data_set">CREATE</button>
 	    </div>
 	    <hr>
 	    <div id="data_get">
-		<table>
+		<table id="data_get" class="table">
 		    <thead>
 			<tr>
 			    <!-- {{#get_head}} -->
@@ -172,14 +170,18 @@ include 'default/header.php';
 			    <!-- {{/get_head}} -->
 			</tr>
 		    </thead>
+		    <tbody id="data_get">
+		    </tbody>
 		</table>
 	    </div>
 	</div>
 	<hr>
     </div>
+    <div id="modal">
     </div>
 </body>
 <?php include 'default/scripts.php'; ?>
+<script src="js/jquery-ui.min.js"></script>
 <script src="js/ace/ace.js"></script>
 <script src="js/mustache.js"></script>
 <script src="js/zeek_home.js"></script>

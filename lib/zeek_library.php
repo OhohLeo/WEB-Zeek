@@ -155,7 +155,7 @@ class ZeekLibrary extends ZeekOutput {
     {
         /* We check if the user already exists */
         if ($this->user_check($project_id, $username, $password)) {
-            $this->error("User $username already exist!");
+            $this->error("user $username already exist!");
             return false;
         }
 
@@ -178,14 +178,14 @@ class ZeekLibrary extends ZeekOutput {
         $user = $this->user_get($project_id, $username);
         if ($user == NULL) {
             $this->error(
-                "Can't change password : '$username' doesn't exist!");
+                "can't change password : '$username' doesn't exist!");
             return false;
         }
 
         /* we check the old password */
         if ($old_password !== $user->password) {
             $this->error(
-                "Can't change password : unexpected old password!");
+                "can't change password : unexpected old password!");
             return false;
         }
 
@@ -204,7 +204,7 @@ class ZeekLibrary extends ZeekOutput {
 
         /* We check if the project already exists */
         if ($user == NULL) {
-            $this->error("Can't remove user, '$username' doesn't exist!");
+            $this->error("can't remove user, '$username' doesn't exist!");
             return false;
         }
 
@@ -270,7 +270,7 @@ class ZeekLibrary extends ZeekOutput {
     {
         /* we check if the file exists */
         if (file_exists($file) == false) {
-            $this->error("Can't find projects configuration file '$file'!");
+            $this->error("can't find projects configuration file '$file'!");
             return false;
         }
 
@@ -284,7 +284,7 @@ class ZeekLibrary extends ZeekOutput {
 
         /* we check if the structure is defined */
         if (!isset($structure)) {
-            $this->error("Structure not defined!");
+            $this->error("structure not defined!");
             fclose($handle);
             return false;
         }
@@ -309,14 +309,14 @@ class ZeekLibrary extends ZeekOutput {
 
         if ($this->project_check($project_name) == false) {
             $this->error(
-                "No existing project '$project_name' in configuration file!");
+                "no existing project '$project_name' in configuration file!");
             return false;
         }
 
         /* we check if the project already exists */
         if ($this->project_get_id($project_name)) {
             $this->error(
-                "Another project have the same name $project_name!");
+                "another project have the same name $project_name!");
             return false;
         }
 
@@ -331,7 +331,7 @@ class ZeekLibrary extends ZeekOutput {
             return true;
         }
 
-        $this->error("New project not found!");
+        $this->error("new project not found!");
         return false;
     }
 
@@ -354,7 +354,7 @@ class ZeekLibrary extends ZeekOutput {
         /* we get the id of the project in the database */
         $project_id = $this->project_get_id($project_name);
         if ($project_id == false) {
-            $this->error("No existing project delete '$project_name' in database!");
+            $this->error("no existing project delete '$project_name' in database!");
             return false;
         }
 
@@ -467,12 +467,12 @@ class ZeekLibrary extends ZeekOutput {
  *
  * @method type_get
  * @param string project name
- * @param string type
+ * @param string table name
  */
-    public function type_get($project_name, $type)
+    public function type_get($project_name, $table_name)
     {
-        if ($this->type_check($project_name, $type))
-            return $this->data_structure[$project_name][$type];
+        if ($this->type_check($project_name, $table_name))
+            return $this->data_structure[$project_name][$table_name];
 
         return false;
     }
@@ -487,14 +487,14 @@ class ZeekLibrary extends ZeekOutput {
  * @param string project name
  * @param string type
  */
-    public function type_check($project_name, $type)
+    public function type_check($project_name, $table_name)
     {
         /* we check if the project exists */
         if ($this->project_check($project_name) == false) {
             return false;
         }
 
-        return array_key_exists($type, $this->data_structure[$project_name]);
+        return array_key_exists($table_name, $this->data_structure[$project_name]);
     }
 
 /**
@@ -580,9 +580,11 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function value_insert($project_id, $table_name, $values)
     {
-	/* we insert the new value */
-        if ($this->table_check_and_create($project_id, $table_name))
+	/* we check and create the table for the new value */
+        if ($this->value_check($project_id, $table_name, $values)
+	    && $this->table_check_and_create($project_id, $table_name))
         {
+	    /* we insert the new value */
 	    return $this->db->row_insert("$project_id$table_name", $values);
 
 	    return true;
@@ -605,7 +607,11 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function value_update($project_id, $table_name, $id, $values)
     {
-        return $this->db->row_update("$project_id$table_name", $id, $values);
+	if ($this->value_check($project_id, $table_name, $values))
+            return $this->db->row_update(
+		"$project_id$table_name", $id, $values);
+
+	return false;
     }
 
 /**
@@ -630,16 +636,61 @@ class ZeekLibrary extends ZeekOutput {
  * @param string table name
  * @param hash values to check
  */
-    private function value_check($table_name, $values)
+    private function value_check($project_id, $table_name, $values)
     {
+	// we check that the project id exists and we get the name
+	$project_name = $this->project_name_get_by_id($project_id);
 
-	// we check that all the expected values exists
+
+	if ($project_name == false) {
+	    $this->error("unknown project id '$project_id'!");
+	    return false;
+	}
+
+	// we get the structure associated with the project name
+	// and the table name
+	$type = $this->type_get($project_name, $table_name);
+
+	if ($type == false) {
+	    $this->error(
+		"unexpected type '$table_name' in project id '$project_id'!");
+	    return false;
+	}
+
+	foreach ($values as $name => $value)
+	{
+	    // we check that all the expected values exists
+	    $expected_format = $type[$name];
+
+	    if ($expected_format == NULL)
+	    {
+		$this->error("found no format for '$name'"
+			   . " in type '$table_name'");
+		return false;
+	    }
+
+	    // we check that the defined values have expected type
+	    if ($this->db->check_value($expected_format["type"], $value) == false)
+	    {
+		$this->error("invalid value '$value' for '$name'"
+			   . " in type '$table_name'");
+		return false;
+	    }
+	}
 
 	// we check that the mandatory values are defined
+	foreach ($type as $name => $format)
+	{
+	    if (array_key_exists("is_mandatory", $format)
+		&& !array_key_exists($name, $values))
+	    {
+		$this->error("value '$name' is mandatory but not found"
+			   . " in type '$table_name'");
+		return false;
+	    }
+	}
 
-	// we check that the defined values have expected type
-
-	return false;
+	return true;
     }
 
 /**

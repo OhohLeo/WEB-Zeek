@@ -97,3 +97,36 @@ div#action h2 {
 div#editor {
     height: 400px;
 }
+
+h2#data_set {
+   cursor: pointer;
+}
+
+.table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table td {
+    padding: 15px;
+    line-height: 1.42857;
+    vertical-align: top;
+    border-top: 1px solid #DDD;
+}
+
+.table tbody tr:hover {
+    background-color: #F5F5F5;
+}
+
+.ui-widget-header,.ui-state-default, ui-button{
+    background: #6f5499;
+    border: 1px solid #6f5499;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+.data_update, .data_delete {
+    cursor: pointer;
+}
