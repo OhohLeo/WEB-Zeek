@@ -505,6 +505,7 @@ class ZeekLibrary extends ZeekOutput {
  * otherwise return false.
  *
  * @method table_check_and_create
+ * @param int project id
  * @param string table name
  */
     protected function table_check_and_create($project_id, $table_name)
@@ -551,6 +552,7 @@ class ZeekLibrary extends ZeekOutput {
  * Return the number of elements otherwise return 0.
  *
  * @method table_count
+ * @param int project id
  * @param string table name
  */
     public function table_count($project_id, $table_name)
@@ -575,6 +577,7 @@ class ZeekLibrary extends ZeekOutput {
  * return false.
  *
  * @method value_insert
+ * @param int project id
  * @param string table name
  * @param hash values to insert
  */
@@ -586,8 +589,6 @@ class ZeekLibrary extends ZeekOutput {
         {
 	    /* we insert the new value */
 	    return $this->db->row_insert("$project_id$table_name", $values);
-
-	    return true;
         }
 
         return false;
@@ -601,6 +602,7 @@ class ZeekLibrary extends ZeekOutput {
  * return false.
  *
  * @method value_update
+ * @param int project id
  * @param string table name
  * @param integer id of the element to modify
  * @param hash values that will replace old one
@@ -621,6 +623,7 @@ class ZeekLibrary extends ZeekOutput {
  * return false.
  *
  * @method value_delete
+ * @param int project id
  * @param string table name
  * @param integer id of the element to delete
  */
@@ -633,6 +636,7 @@ class ZeekLibrary extends ZeekOutput {
  * Check if the value received is matching what is expected.
  *
  * @method value_check
+ * @param int project id
  * @param string table name
  * @param hash values to check
  */
@@ -697,6 +701,7 @@ class ZeekLibrary extends ZeekOutput {
  * Get values stored in database.
  *
  * @method value_get
+ * @param int project id
  * @param string table name
  * @param string wich parameter to use for sorting
  * @param integer number of elements
@@ -731,7 +736,7 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function value_fetch($result)
     {
-        return $this->db->handle_result($result);
+        return $this->object_to_array($this->db->handle_result($result));
     }
 
 /**

@@ -1,16 +1,14 @@
 # *Zeek Project*
 ### Open Source Back-Office : Simply administrate websites!
 
-#### Introduction :
+This project is dedicated to simple website administration.
 
-This is my 1st steps on internet technologies (php, jQuery) thanks to
-this project.
+It will offer the possibilities to
+- modify, test & deploy a static website
+- handle some mySQL abstraction to store data that will be displayed
+- can handle multiple projects & can be administrated by multiple users
 
-Please correct & optimise as you wish this project.
-
-You can see the actual state of art here :
-
-http://zeekadmin.free.fr/
+Actual state of art could be seen at this address : http://zeekadmin.free.fr/
 
 using following
 
@@ -19,17 +17,6 @@ using following
  - Password : test
 
 #### How to use it
-
-The project is not yet finished.
-
-#### Main Features :
- - handle multiple projects
- - handle multiple users
- - deployment tool (only on free.fr for the moment)
- - set all mysql tools as insible as possible
- - work with PDO & Mysql
- - lots of unit tests & error cases
- - keep it as simple as possible
 
 #### TODO Features :
  - finish the configuration & get_and_set visual functionnalities
@@ -43,6 +30,9 @@ The project is not yet finished.
 15/03/2015 Leo
  * display data on the UI
  * add dialog JQuery UI to modify & delete data
+
+12/02/2014 Leo
+ * modification on the way to store & get data from mySQL
 
 12/12/2014 Leo
  * add mustache.js for easy displaying html element

@@ -110,9 +110,6 @@ class TestZeek extends PHPUnit_Framework_TestCase
 
 	// we delete again the project
         $this->assertFalse($zeek->project_delete('test'));
-	/* $this->assertTrue(
-           $zeek->checkOutput(
-	   '{"error":"No existing project delete \'test\' in database!"}')); */
 
         // we establish the connection with the database
         $this->assertTrue($zeek->connect_to_database());

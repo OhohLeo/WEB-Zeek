@@ -223,6 +223,8 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
 	$this->assertTrue(
 	    $db->check_integer(-125, -125, 127));
 	$this->assertTrue(
+	    $db->check_integer(10, 0, 255));
+	$this->assertTrue(
 	    $db->check_integer(127, 0, 255));
 	$this->assertTrue(
 	    $db->check_integer(255, 0, 255));
