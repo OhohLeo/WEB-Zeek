@@ -78,6 +78,36 @@ nav#edit {
     text-align:center;
 }
 
+button.edit {
+    margin-right: 0;
+    border-right: 0;
+    padding: 6px 80px;
+}
+
+button.add {
+    margin-left: 0;
+    border-left: 0;
+    padding: 6px 20px;
+}
+
+button.html {
+    color: #fff;
+    background-color: #398439;
+    border-color: #398439;
+}
+
+button.css {
+    color: #fff;
+    background-color: #EC971F;
+    border-color: #EC971F;
+}
+
+button.javascript {
+    color: #fff;
+    background-color: #286090;
+    border-color: #286090;
+}
+
 ul.sidebar li {
     padding: 10px 0;
 }

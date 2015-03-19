@@ -197,26 +197,52 @@ class TestZeek extends PHPUnit_Framework_TestCase
             $zeek->checkOutput(
                 '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
 
+	// create new project
         $this->assertTrue($zeek->project_create('test'));
 
         $this->assertTrue(
             $zeek->checkOutput('{"redirect":"home.php"}'));
 
+	// create new album element
         $this->assertTrue(
             $zeek->data_set('album', 'name=tutu&duration=10&comments=hey'));
 
+	// check the value has been correctly created
         $this->assertTrue(
             $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
 
+        $zeek->data_get('album', 0, 10);
+
+        $this->assertTrue(
+            $zeek->checkOutput('[{"id":"1","name":"tutu","duration":"10","comments":"hey"}]'));
+
+	// try to create a new value on an unkown element
         $this->assertFalse(
             $zeek->data_set('albu', 'name=tutu&duration=10&comments=hey'));
 
-        $result = $zeek->data_get('album', 0, 10);
-
+	// try to create album element with wrong parameters : ERROR duration=toto accepted!!
 	/* $this->assertFalse(
            $zeek->data_set('album', 'name=tutu&duration=toto&comments=hey')); */
 
+	// try to update the value of this element
+        $this->assertTrue(
+            $zeek->data_update('album', 1, 'name=toto&duration=20&comments=hoy'));
+
+        $zeek->data_get('album', 0, 10);
+
+        $this->assertTrue(
+            $zeek->checkOutput('[{"id":"1","name":"toto","duration":"20","comments":"hoy"}]'));
+
+
         $zeek->environment_clean();
+    }
+
+
+    public function test_directory()
+    {
+	$zeek = $this->zeek;
+
+	$zeek->directory_create('test');
     }
 
     // public function test_password()

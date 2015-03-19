@@ -244,7 +244,9 @@ class Zeek extends ZeekOutput {
 				       $params['values']);
 
             case 'data_update':
-		return $this->data_update($name, $id, $values);
+		return $this->data_update(strtolower($params['name']),
+					  strtolower($params['id']),
+					  $params['values']);
 
             case 'data_delete':
 		return $this->data_delete(strtolower($params['name']),
@@ -533,6 +535,120 @@ class Zeek extends ZeekOutput {
     }
 
 /**
+ * Check if the directory exists.
+ *
+ * @param path ot the directory
+ * @method directory_check_and_create
+ */
+    public function directories_create()
+    {
+    }
+
+/**
+ * Check if the directory exists.
+ *
+ * @param path ot the directory
+ * @method directory_check_and_create
+ */
+    public function directories_delete()
+    {
+    }
+
+/**
+ * Check if the directory exists.
+ *
+ * @param path ot the directory
+ * @method directory_check_and_create
+ */
+    public function directory_create($path)
+    {
+	if (mkdir($path))
+	{
+	    return true;
+	}
+
+	$this->error("Impossible to create '$path'!");
+
+	return false;
+    }
+
+/**
+ * Check if the directory exists.
+ *
+ * @param path ot the directory
+ * @method directory_check_and_create
+ */
+    public function directory_delete($path)
+    {
+    }
+
+/**
+ * Check if the directory exists.
+ *
+ * @param path ot the directory
+ * @method directory_check_and_create
+ */
+    public function directory_check($path)
+    {
+    }
+
+/**
+ * @param
+ * @method
+ */
+    public function file_create($type, $name)
+    {
+    }
+
+/**
+ * @param
+ * @method
+ */
+    public function file_delete($type, $name)
+    {
+    }
+
+/**
+ * @param
+ * @method
+ */
+    public function file_update($type, $name)
+    {
+    }
+
+/**
+ * @param
+ * @method
+ */
+    public function file_check($type, $name)
+    {
+    }
+
+/**
+ * @param
+ * @method
+ */
+    public function file_download($type, $name)
+    {
+    }
+
+/**
+ * @param
+ * @method
+ */
+    public function file_upload($type, $name)
+    {
+    }
+
+/**
+ * @param
+ * @method
+ */
+    public function file_deploy($type, $name)
+    {
+    }
+
+/**
  * Send the project structure.
  *
  * @method structure_get
@@ -706,8 +822,10 @@ class Zeek extends ZeekOutput {
             return false;
         }
 
-        if ($this->zlib->value_update(
-            $this->project_id, $name, $id, $values_str)) {
+	$params = array();
+	parse_str($values_str, $params);
+
+        if ($this->zlib->value_update($this->project_id, $name, $id, $params)) {
             $this->success("Value correctly updated!");
             return true;
         }

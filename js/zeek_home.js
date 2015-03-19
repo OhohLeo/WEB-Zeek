@@ -135,6 +135,8 @@ $(document).ready(function() {
 	};
 
 	$data_update = function() {
+	    var $id = $(this).attr("item");
+
 	    $modal.dialog({
 		open: function() {
 		    $(this).dialog("option", "title",
@@ -142,7 +144,20 @@ $(document).ready(function() {
 		},
 		buttons: {
 		    "Update": function() {
-			$(this).dialog("close");
+			$send_request(
+			    {
+				method: "data_update",
+				name: $name,
+				id: $id,
+				values: $div_modal.children().serialize(),
+			    },
+			    function ($result) {
+				if ($result['success'])
+				{
+				    $update_get();
+				    $modal.dialog("close");
+				}
+			    });
 		    },
 		}});
 

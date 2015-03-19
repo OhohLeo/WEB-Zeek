@@ -116,9 +116,7 @@ class ZeekLibrary extends ZeekOutput {
             'name'        => array('type' => 'VARCHAR',
 				   'size' => 25),
             'since'       => array('type' => 'DATE'),
-            'subtitle'    => array('type' => 'VARCHAR',
-				   'size' => 300),
-            'biography'   => array('type' => 'TEXT',
+            'structure'   => array('type' => 'TEXT',
 				   'size' => 1000)));
 
         /* we create the user table */

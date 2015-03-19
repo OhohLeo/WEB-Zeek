@@ -79,8 +79,11 @@ include 'default/header.php';
 	    <h2>Edit</h2>
 	    <nav id="edit">
 		<button class="edit html">html</button>
+		<button class="add html">+</button>
 		<button class="edit css">css</button>
+		<button class="add css">+</button>
 		<button class="edit javascript">javascript</button>
+		<button class="add javascript">+</button>
 	    </nav>
 	    <div id="editor">
 		function foo(items) {
@@ -88,8 +91,9 @@ include 'default/header.php';
 		return x;
 		}
 	    </div>
-	    <button id="import">Import</button>
-	    <button id="export">Export</button>
+	    <button id="file_upload">Import</button>
+	    <button id="file_download">Export</button>
+	    <button id="file_delete" class="danger">Delete</button>
 	</div>
 	<div id="test" class="menu"><h2>test</h2></div>
 	<div id="deploy" class="menu"><h2>deploy</h2></div>
