@@ -907,108 +907,6 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-
-/*
- * Return html set content.
- *
- * @method display_get_and_set
- * @param string type to display
- */
-    private function display_get_and_set($type) {
-        /* we check the existence of the table name in the static
-         * datastructure */
-        $structure = $this->zlib->type_get($this->project_name, $type);
-        if ($structure == NULL) {
-            $this->error("table '$type' not found in static database structure!");
-            return false;
-        }
-
-        $project_id = $this->project_id;
-
-        ob_start();
-        include $this->global_path . "view/get_and_set.html";
-        return ob_get_clean();
-    }
-
-/**
- * Return html post content.
- *
- * @method display_post
- * @param string element that generate the post request
- * @param string method name to call
- * @param string action to do on success
- */
-    public function display_post(
-        $element, $action, $method, $data, $on_success)
-    {
-        $project_id = $this->project_id;
-        ob_start();
-        include $this->global_path . "view/post.html";
-        return ob_get_clean();
-    }
-
-
-/**
- * Return button displayed.
- *
- * @method display_button
- * @param string button title
- * @param string params of the button
- */
-    public function display_button($title, $params) {
-        ob_start();
-        include $this->global_path . "view/button.html";
-        return ob_get_clean();
-    }
-
-/**
- * Return html modal content.
- *
- * @method display_modal
- * @param string modal title
- * @param string content of the modal body
- * @param string action to do before
- * @param string action to do after
- */
-    public function display_modal($text, $display_footer, $body,
-                                  $action_before, $action_after) {
-        ob_start();
-        include $this->global_path . "view/modal.html";
-        return ob_get_clean();
-    }
-
-/**
- * Return html content around dynamic div.
- *
- * @method display_dynamic
- * @param string html to put inside dynamic div
- */
-    public function display_dynamic($input) {
-        ob_start();
-        include $this->global_path . "view/dynamic.html";
-        return ob_get_clean();
-    }
-
-
-/**
- * Output all the html content in the dynamic content.
- *
- * @method clean_and_send
- * @param string input to send
- */
-    public function clean_and_send($action, $input) {
-
-        $input = str_replace(
-            array("\n", "  "), "", $this->display_dynamic($input));
-
-        if ($action == 'append') {
-            $this->append($input);
-            return;
-        }
-
-        $this->replace($input);
-    }
-
 /**
  * Launch jquery redirection.
  *
@@ -1018,6 +916,7 @@ class Zeek extends ZeekOutput {
     public function redirect($url) {
         $this->output_json(array("redirect" => $url));
     }
+
 
 /**
  * Return true if the string is not empty otherwise return false.

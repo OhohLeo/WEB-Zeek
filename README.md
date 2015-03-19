@@ -27,6 +27,10 @@ using following
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+19/03/2015 Leo
+ * start working on html, css & js files
+ * removing all process since understanding javascript functionnalities
+
 15/03/2015 Leo
  * display data on the UI
  * add dialog JQuery UI to modify & delete data
