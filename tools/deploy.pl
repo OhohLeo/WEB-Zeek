@@ -58,7 +58,7 @@ sub read_directory
 	{
 	    read_directory($url, $files);
 	}
-	elsif (-f $url and $filename =~ /\.(html|php|js|css|ini)+$/)
+	elsif (-f $url and $filename =~ /\.(html|php|js|css|ini|png)+$/)
 	{
 	    next if $filename =~ /^(external_|internal_)+/;
 
@@ -169,9 +169,6 @@ foreach my $replace (qw(scripts header))
 		 "$directory/default/external_$replace.php");
 }
 
-replace_link("$directory/input.php",
-	     "$directory/lib/external_input.php");
-
 if (defined $action_before) {
     $action_before->();
 }
@@ -199,6 +196,9 @@ while (my($cwd, $files) = each %files)
     # we write the file
     foreach my $file (@$files)
     {
+	# we set binary mode
+	$ftp->binary;
+
  	$ftp->put("$directory/$cwd/$file");
 	say "send $file";
     }
@@ -210,9 +210,6 @@ foreach my $replace (qw(scripts header))
     replace_link("$directory/default/$replace.php",
 		 "$directory/default/internal_$replace.php");
 }
-
-replace_link("$directory/input.php",
-	     "$directory/lib/internal_input.php");
 
 if (defined $action_after) {
     $action_after->();

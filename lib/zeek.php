@@ -128,12 +128,16 @@ class Zeek extends ZeekOutput {
 
         // we get the global_path
         if (isset($config['global_path'])) {
-            $global_path = $config['global_path'] . "/";
+            $global_path = $config['global_path'];
+	} else if (isset($_SERVER['DOCUMENT_ROOT'])) {
+	    $global_path = $_SERVER['DOCUMENT_ROOT'];
         } else {
-            $global_path = $_SERVER['DOCUMENT_ROOT'] . "/";
+            $global_path = getcmd();
         }
 
-       $this->global_path = $global_path;
+	$global_path .=  "/";
+
+	$this->global_path = $global_path;
 
 	// we create de zeek_library object
 	require_once $global_path . "lib/zeek_library.php";
