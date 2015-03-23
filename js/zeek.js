@@ -5,6 +5,7 @@ $success = $("div.success");
 $success.hide();
 
 $generic_rsp = function($result) {
+
     $success.hide();
     $danger.hide();
 

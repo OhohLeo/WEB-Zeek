@@ -560,36 +560,19 @@ class Zeek extends ZeekOutput {
  * @param path ot the directory
  * @method directory_check_and_create
  */
-    public function directory_create($path)
+    public function directory_create($name)
     {
-	if (mkdir($path))
-	{
-	    return true;
-	}
+	$path = $this->global_path . '/projects/' . $name;
 
-	$this->error("Impossible to create '$path'!");
+	if (mkdir($path))
+	    return true;
+
+	$error = error_get_last();
+
+	$this->error("Impossible to create '$name' directory: "
+		   . $error['message']);
 
 	return false;
-    }
-
-/**
- * Check if the directory exists.
- *
- * @param path ot the directory
- * @method directory_check_and_create
- */
-    public function directory_delete($path)
-    {
-    }
-
-/**
- * Check if the directory exists.
- *
- * @param path ot the directory
- * @method directory_check_and_create
- */
-    public function directory_check($path)
-    {
     }
 
 /**

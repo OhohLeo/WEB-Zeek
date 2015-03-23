@@ -8,7 +8,7 @@ use Cwd;
 
 use feature 'say';
 
-my %AUTHORISED = map { $_ => 1 } qw(lib js css view default sessions);
+my %AUTHORISED = map { $_ => 1 } qw(lib js css default projects extends img);
 
 my($action, $host, $login, $password, $directory, $help);
 
@@ -113,23 +113,13 @@ if ($host eq 'ftpperso.free.fr')
 	my $filehandle;
 	open($filehandle, '>', "$directory/$filename");
 	print {$filehandle} <<END;
-<IfDefine Free>
 php 1
-</IfDefine>
-Options -Indexes
-
-<Files ".ht*">
-Order allow,deny
-Deny from all
-Satisfy all
-</Files>
-
 END
 
 	close($filehandle);
 
 	# we add the file to the list
-	push($files{$directory}, $filename);
+	push(@{$files{$directory}}, $filename);
 
 	# we add the json to the list
 	$files{"$directory/extends"} = [ 'json.php' ];

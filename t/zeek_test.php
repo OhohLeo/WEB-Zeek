@@ -238,12 +238,7 @@ class TestZeek extends PHPUnit_Framework_TestCase
     }
 
 
-    public function test_directory()
-    {
-	$zeek = $this->zeek;
 
-	$zeek->directory_create('test');
-    }
 
     // public function test_password()
     // {

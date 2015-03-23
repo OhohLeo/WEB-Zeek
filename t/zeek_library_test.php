@@ -42,10 +42,11 @@ class TestZeekLibrary extends TestZeekLibraryCommon
 
         $config = parse_ini_file('t/test.ini');
         $zlib->config($config);
-        $zlib->global_path = '';
+        $zlib->global_path = $config["global_path"] . '/';
 
         $this->zlib = $zlib;
     }
+
 }
 
 ?>

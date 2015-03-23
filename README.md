@@ -27,9 +27,13 @@ using following
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+23/03/2015 Leo
+ * setup methods to create directory & files associated to project
+ * start debugging the application on free.fr server
+
 19/03/2015 Leo
  * start working on html, css & js files
- * removing all process since understanding javascript functionnalities
+ * removing old commands & view directory (obsolete way of thinking!)
 
 15/03/2015 Leo
  * display data on the UI

@@ -481,6 +481,54 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	}
     }
 
+
+    public function test_files()
+    {
+	$zlib = $this->zlib;
+
+        $this->assertTrue(
+            $zlib->connect_to_database());
+
+        $zlib->environment_clean($this->db_name);
+
+	// we create :
+	//  - the directory 'test' in 'project directory'
+	//  - we create the table 'test_table' storing all files
+	$this->assertTrue($zlib->files_init('test'));
+	$this->assertTrue(is_dir($zlib->global_path . 'projects/test'));
+
+	// we check that multiple call doesn't affect the process
+	$this->assertTrue($zlib->files_init('test'));
+	$this->assertTrue(is_dir($zlib->global_path . 'projects/test'));
+
+	// we check that we can't create a wrong directory
+	$this->assertFalse($zlib->files_init('toto/test'));
+	$this->assertFalse(is_dir($zlib->global_path . 'projects/toto/test'));
+
+
+	// we create html file
+	$this->assertTrue($zlib->file_create('test', 'test', 'html', 'test'));
+	$this->assertTrue(file_exists($zlib->global_path
+				    . 'projects/test/html/test.html'));
+
+	// we check that we can't create similar directory
+	$this->assertFalse($zlib->file_create('test', 'test', 'html', 'test'));
+
+
+
+
+	/* $this->assertFalse(
+	   $zlib->directory_create('test'));
+
+	   $zlib->checkOutput(
+           '{"error":"impossible to create \'test\' directory!"}'); */
+
+	$zlib->environment_clean($this->db_name);
+    }
+
+
+
+
     /* public function test_all_values()
        {
        $zlib = new ZeekLibrary();

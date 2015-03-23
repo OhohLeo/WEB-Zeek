@@ -117,6 +117,8 @@ class ZeekLibrary extends ZeekOutput {
 				   'size' => 25),
             'since'       => array('type' => 'DATE'),
             'structure'   => array('type' => 'TEXT',
+				   'size' => 1000),
+	    'files'       => array('type' => 'TEXT',
 				   'size' => 1000)));
 
         /* we create the user table */
@@ -124,9 +126,9 @@ class ZeekLibrary extends ZeekOutput {
             'name'       => array('type' => 'VARCHAR',
 				  'size' => 25),
             'password'   => array('type' => 'CHAR',
-				  'size' =>  32),
+				  'size' => 32),
             'project_id' => array('type' => 'INT',
-				  'size' =>  11)));
+				  'size' => 11)));
 
         /* we add the actual user */
         $db->row_insert('user', array(
@@ -487,13 +489,189 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function type_check($project_name, $table_name)
     {
-        /* we check if the project exists */
+        // we check if the project exists
         if ($this->project_check($project_name) == false) {
             return false;
         }
 
         return array_key_exists($table_name, $this->data_structure[$project_name]);
     }
+
+
+/**
+* We create a directory in 'projects' directory
+*
+* Return true if the directory already exist or is correctly created,
+* otherwise return false.
+*
+* @method directory_create
+* @param string path
+*/
+    public function directory_create($path)
+    {
+	// we try to create the directory associated to the project
+	if (is_dir($path))
+            return true;
+
+	try
+	{
+	    mkdir($path);
+	}
+	catch (Exception $e)
+	{
+	    $this->error(
+		"Impossible to create '$path': $e!");
+
+	    return false;
+	}
+
+       return true;
+    }
+
+/**
+* We create the file copied from generic type files stored in 'default' directory.
+*
+* Return true if the file is correctly copied, otherwise return false.
+*
+* @method file_copy
+* @param string src
+* @param string dst
+*/
+    public function file_copy($src, $dst)
+    {
+	// we check that the file doesn't already exist
+	if (file_exists($dst))
+	{
+	    $this->error("Already existing file '$dst'!");
+
+	    return false;
+	}
+
+	try
+	{
+	    copy($src, $dst);
+	}
+	catch (Exception $e)
+	{
+	    $this->error("Impossible to copy '$src' to '$dst'");
+
+	    return false;
+	}
+
+	return true;
+    }
+
+
+/**
+* We create a directory in 'projects' directory and the _edit table.
+*
+* Return true if the directory is correctly created and also the _edit table,
+* otherwise return false.
+*
+* @method files_init
+* @param integer project_id
+*/
+    public function files_init($project_id)
+    {
+	if (!$this->directory_create($this->global_path
+				   . 'projects/' . $project_id))
+             return false;
+
+	$table_name = $project_id . "_edit";
+
+	// we check that the table does exist
+	if ($this->db->table_check($table_name))
+	    return true;
+
+	// otherwise we create the table associated to the project
+	if (!$this->db->table_create($table_name, array(
+	    'name'        => array('type' => 'VARCHAR',
+				   'size' => 25),
+	    'path'        => array('type' => 'TEXT',
+				   'size' => 1000),
+	    'type'        => array('type' => 'VARCHAR',
+				   'size' => 4),
+	    'revision'    => array('type' => 'INT_U'),
+	    'created'     => array('type' => 'DATETIME'),
+	    'created_by'  => array('type' => 'VARCHAR',
+				   'size' => 25),
+	    'modified'    => array('type' => 'DATETIME'),
+	    'modified_by' => array('type' => 'VARCHAR',
+				   'size' => 25))))
+	{
+	    $this->error(
+		"Impossible to create edit table for project '$project_id'!");
+
+	    return false;
+	}
+
+	return true;
+    }
+
+    public function files_delete($project_id)
+    {
+    }
+
+
+/**
+* We create the file copied from generic type files stored in 'default' directory
+* and we insert the new data in the '_edit' table.
+*
+* Return true if the file is correctly copied and added in database,
+* otherwise return false.
+*
+* @method file_create
+* @param integer project_id
+* @param string username
+* @param string type
+* @param string name
+*/
+    public function file_create($project_id, $username, $type, $name)
+    {
+	// we create the directory if it doesn't already exist
+	if (!$this->directory_create($this->global_path
+				   . "projects/$project_id/$type"))
+            return false;
+
+	$path = $this->global_path . "projects/$project_id/$type/$name.$type";
+
+	// we copy the generic type file in the directory with the
+	// specified name
+	if (!$this->file_copy(
+	    $this->global_path . "default/generic.$type", $path))
+	    return false;
+
+	if ($this->db->row_insert(
+            $project_id . '_edit', array(
+                'name'        => $name,
+                'path'        => $path,
+	        'type'        => $type,
+	        'revision'    => 0,
+	        'created'     => date('Y-m-d H:i:s'),
+	        'created_by'  => $username)))
+	{
+            return true;
+        }
+
+	return false;
+    }
+
+    public function file_delete($project_id, $type, $name)
+    {
+    }
+
+    public function file_set($project_id, $type, $name, $user)
+    {
+    }
+
+    public function file_get($project_id, $type, $name)
+    {
+    }
+
+    public function file_get_list_by_type($project_id, $type)
+    {
+    }
+
 
 /**
  * Check if a table exists otherwise automatically create if this
