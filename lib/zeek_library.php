@@ -280,7 +280,7 @@ class ZeekLibrary extends ZeekOutput {
             return false;
         }
 
-        $structure = json_decode(fgets($handle));
+        $structure = $this->json_decode(fgets($handle));
 
         /* we check if the structure is defined */
         if (!isset($structure)) {

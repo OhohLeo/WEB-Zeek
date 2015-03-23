@@ -29,7 +29,7 @@ using following
 #### Git Log :
 23/03/2015 Leo
  * setup methods to create directory & files associated to project
- * start debugging the application on free.fr server
+ * debug the application on free.fr server & update
 
 19/03/2015 Leo
  * start working on html, css & js files
