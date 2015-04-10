@@ -231,6 +231,23 @@ class Zeek extends ZeekOutput {
 		return $this->user_change_password(
 		    $project_id, $email, $password_old, $password_new);
 
+	    case 'file_get_list':
+	        return $this->file_get_list();
+
+	    case 'file_get':
+	        return $this->file_get(
+		    strtolower($params['user']),
+		    strtolower($params['name']));
+
+	    case 'file_set':
+	        return $this->file_set(
+		    strtolower($params['user']),
+		    strtolower($params['name']),
+		    $params['data']);
+
+	    case 'test':
+	        return $this->test();
+
             case 'structure_get':
 		return $this->structure_get();
 
@@ -538,101 +555,167 @@ class Zeek extends ZeekOutput {
         return mail($destination, $title, $message);
     }
 
-/**
- * Check if the directory exists.
- *
- * @param path ot the directory
- * @method directory_check_and_create
- */
-    public function directories_create()
-    {
-    }
 
 /**
- * Check if the directory exists.
+ * Initialise the files associated to the project.
  *
- * @param path ot the directory
- * @method directory_check_and_create
+ * @method file_init
  */
-    public function directories_delete()
+    public function file_init()
     {
-    }
+	$zlib = $this->zlib;
+	$project_id = $this->project_id;
+	$user = $_SESSION["login"];
 
-/**
- * Check if the directory exists.
- *
- * @param path ot the directory
- * @method directory_check_and_create
- */
-    public function directory_create($name)
-    {
-	$path = $this->global_path . '/projects/' . $name;
-
-	if (mkdir($path))
+	// the index.html file of the user already exist :
+	// we do nothing
+	if (file_exists($zlib->file_get_path($project_id, $user, 'html', 'index', true)))
 	    return true;
 
-	$error = error_get_last();
+	// the index.html file of deploy directory exist :
+	// we copy the whole deploy directory in the user's
+	if (file_exists($zlib->file_get_path($project_id, 'deploy', 'html', 'index', true)))
+	{
+	    return $zlib->directory_copy("projects/$project_id/deploy",
+					 "projects/$project_id/$user");
+	}
 
-	$this->error("Impossible to create '$name' directory: "
-		   . $error['message']);
+	// otherwise we create a generic index.html & css directory
+	if ($zlib->file_create($project_id, $user, 'html', 'index', true)
+ 	 && $zlib->file_create($project_id, $user, 'css', $this->project_name))
+	{
+	    return $this->file_get_list();
+	}
 
 	return false;
     }
 
 /**
+ * Return the list of current files in "Project" directory
+ *
+ * @method files_get_list()
  * @param
- * @method
  */
-    public function file_create($type, $name)
+    public function file_get_list()
     {
+	$get_list = $this->zlib->file_get_list($this->project_id);
+
+	if (is_array($get_list))
+	{
+	    if (count($get_list) > 0)
+	    {
+		$this->output_json(array('get_list' => $get_list));
+		return true;
+	    }
+
+	    return $this->file_init();
+	}
+
+	return false;
+    }
+
+
+/**
+ * Return the content of the specified file.
+ *
+ * @method file_get
+ * @param string user
+ * @param string type
+ * @param string name
+ * @param boolean is_main_directory
+ */
+    public function file_get($user, $name)
+    {
+	$zlib = $this->zlib;
+	$get = $zlib->file_get($this->project_id, $user, $name);
+
+	if ($get)
+	{
+	    $this->output_json(array('get' => $get,
+				     'type' => $zlib->file_get_type($name)));
+	    return true;
+	}
+
+	return false;
+    }
+
+
+/**
+ * Set the content of the specified file.
+ *
+ * @method file_set
+ * @param string user
+ * @param string name
+ * @param string data
+ */
+    public function file_set($user, $name, $data)
+    {
+	$zlib = $this->zlib;
+
+	if ($zlib->file_set($this->project_id, $user, $name, $data))
+	{
+	    $this->success(
+		$zlib->file_get_path($this->project_id, $user, $name)
+	      . " correctly updated");
+	    return true;
+	}
+
+	return false;
     }
 
 /**
- * @param
  * @method
+ * @param
  */
     public function file_delete($type, $name)
     {
     }
 
-/**
- * @param
- * @method
- */
-    public function file_update($type, $name)
-    {
-    }
+
 
 /**
- * @param
  * @method
- */
-    public function file_check($type, $name)
-    {
-    }
-
-/**
  * @param
- * @method
  */
     public function file_download($type, $name)
     {
     }
 
 /**
- * @param
  * @method
+ * @param
  */
     public function file_upload($type, $name)
     {
     }
 
 /**
- * @param
  * @method
+ * @param
  */
-    public function file_deploy($type, $name)
+    public function test()
     {
+	$this->output_json(
+	    array('href' => 'projects/' . $this->project_id
+			. '/' . $_SESSION['login'] . '/index.html'));
+    }
+
+/**
+ * Method to call to deploy the project on his final directory
+ *
+ * @method
+ * @param
+ */
+    public function deploy()
+    {
+	// we copy the whole user directory in the deploy directory
+
+	// foreach js & css files : we minimise the size
+
+	// we send back the deploy URL
+	$this->output_json(
+	    array('href' => 'projects/' . $this->project_id
+			. '/deploy/index.html'));
     }
 
 /**

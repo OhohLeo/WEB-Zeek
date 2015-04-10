@@ -27,6 +27,9 @@ using following
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+10/04/2015 Leo
+ * display methods to get list of files and get & save file modification
+
 23/03/2015 Leo
  * setup methods to create directory & files associated to project
  * debug the application on free.fr server & update

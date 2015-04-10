@@ -1,5 +1,5 @@
 // once the document is ready
-$(document).ready(function() {
+$(document).ready(function () {
 
     var $div_menus = $("div.menu");
     var $div_dynamic = $("div#dynamic");
@@ -11,18 +11,200 @@ $(document).ready(function() {
     $div_menus.hide();
     $("div#home").show();
 
+    // we configure edit menu
+    var $nav_edit = $("nav#edit");
+    var $div_edition = $("div#edition");
+
+    $div_edition.hide();
+
+    // we configure ace editor
+    var $editor = ace.edit("editor");
+
+    var $session = $editor.getSession();
+    $editor.setTheme("ace/theme/twilight");
+    $editor.setFontSize("16px");
+    $editor.resize();
+    $session.setTabSize(4);
+    $session.setUseWrapMode(true);
+    $session.setMode("ace/mode/html");
+
+    var $actual_file = null;
+
+    var $file_get = function ($user, $name) {
+	$send_request(
+	    {
+		method: "file_get",
+		user: $user,
+		name: $name,
+	    },
+	    function ($result)
+	    {
+		// we initialise the actual file used
+		$actual_file = {
+		    "user": $user,
+		    "name": $name,
+		    "type": $result["type"],
+		    "previous": $result["get"],
+		};
+
+		$editor.setValue($result["get"]);
+		$session.setMode("ace/mode/" + $result["type"]);
+		$div_edition.show();
+	    });
+    };
+
+    var $file_set = function () {
+
+	// the actual file should be defined
+	if ($actual_file == null)
+	    return;
+
+	var $actual_data = $editor.getValue();
+
+	// we set the file unless something has changed
+	if ($actual_data === $actual_file["previous"])
+	    return;
+
+	$send_request(
+	    {
+		method: "file_set",
+		user: $actual_file["user"],
+		name: $actual_file["name"],
+		data: $actual_data,
+	    },
+	    function()
+	    {
+		$actual_file["previous"] = $actual_data;
+	    });
+    }
+
+    // we configure save command
+    $editor.commands.addCommand({
+	name: 'saveFile',
+	bindKey: {
+	    win: 'Ctrl-S',
+	    mac: 'Command-S',
+	    sender: 'editor|cli'
+	},
+	exec: function(env, args, request) {
+	    // we update the content of the current file
+	    $file_set();
+	}
+    });
+
+    var $edit_update = function () {
+ 	$send_request(
+	    {
+		"method": "file_get_list",
+	    },
+	    function ($result) {
+
+		if ($result == false)
+		    return false;
+
+		var $get_list = $result["get_list"];
+
+		var $store_by_type = new Array();
+		var $select_edit = $("select#edit");
+
+		$get_list.forEach(function ($obj) {
+		    var $type = $obj["type"];
+
+		    // we create the type button
+		    if ($nav_edit.children("button." + $type).length == 0)
+		    {
+			// create the button
+			var $btn = $("<button>" + $type + "</button>");
+
+			// add the class
+			$btn.addClass("edit " + $type);
+
+			// we generate the color associated to the button
+			var $color =  "#" + int_to_ARGB(generate_hash_code($type) + 200);
+
+			// add the css
+			$btn.css({ "color": "#fff",
+				   "background-color": $color,
+				   "border-color": $color });
+
+			// we set clickable edit button
+			$btn.on("click", function () {
+			    var $type = $(this).text();
+
+			    $select_edit.empty();
+
+			    // we display the file list
+			    if ($store_by_type[$type].length > 0)
+			    {
+				$store_by_type[$type].forEach(function ($obj) {
+				    var $user = $obj["user"];
+				    var $name = $obj["name"];
+
+				    var $option = $("<option>");
+
+				    $option.text($user + " - " + $name);
+				    $option.on('click', function () {
+					$file_get($user, $name);
+				    });
+
+				    $select_edit.append($option);
+				});
+			    }
+			    // otherwise no file has been found
+			    else
+			    {
+				$store_by_type[$type].append(
+				    $("<option>No file found!</option>"));
+			    }
+			});
+
+			// add the button
+			$nav_edit.prepend($btn);
+		    }
+
+		    // we store the files by type
+		    if ($store_by_type[$type] == null)
+			$store_by_type[$type] = new Array();
+
+		    $store_by_type[$type].push($obj);
+		});
+	    });
+	};
+
     // we set clickable action menu
     var $li_data;
     var $li_menu = $("li.menu");
-    $li_menu.on("click", function() {
+
+    $li_menu.on("click", function () {
 	var $this = $(this);
+	var $id = $this.attr("id");
+
+	if ($id == 'test')
+	{
+	    $send_request(
+		{
+		    method: "test",
+		},
+		function ($result) {
+		    window.open($result['href'], '_blank');
+		    return true;
+		});
+
+	    return;
+	}
+
+	if ($id == 'edit')
+	{
+	    $edit_update();
+	}
+
 	$li_data.removeClass("data_clicked");
 	$li_menu.removeClass("menu_clicked");
 	$this.addClass("menu_clicked");
 	$div_menus.hide();
 	$div_dynamic.empty();
 	$div_dynamic.hide();
-	$("div#" + $this.attr("id")).show();
+	$("div#" + $id).show();
     });
 
     var $div_modal = $("#modal");
@@ -85,7 +267,7 @@ $(document).ready(function() {
 	var $data_update;
 	var $data_delete;
 
-	var $update_get = function() {
+	var $update_get = function () {
 	    $send_request(
 		{
 		    method: "data_get",
@@ -99,7 +281,7 @@ $(document).ready(function() {
 
 		    var $get_body = new Array();
 
-		    $array.forEach(function($obj) {
+		    $array.forEach(function ($obj) {
 			$id = $obj["id"];
 
 			delete $obj["id"];
@@ -134,16 +316,16 @@ $(document).ready(function() {
 		});
 	};
 
-	$data_update = function() {
+	$data_update = function () {
 	    var $id = $(this).attr("item");
 
 	    $modal.dialog({
-		open: function() {
+		open: function () {
 		    $(this).dialog("option", "title",
 				   "Update " + $name);
 		},
 		buttons: {
-		    "Update": function() {
+		    "Update": function () {
 			$send_request(
 			    {
 				method: "data_update",
@@ -165,7 +347,7 @@ $(document).ready(function() {
 	};
 
 
-        $data_delete = function() {
+        $data_delete = function () {
 	    $send_request(
 		{
 		    method: "data_delete",
@@ -180,14 +362,14 @@ $(document).ready(function() {
 	$update_get();
 
 
-	$("h2#data_set").on("click", function() {
+	$("h2#data_set").on("click", function () {
 	    $modal.dialog({
-		open: function() {
+		open: function () {
 		    $(this).dialog("option", "title",
 				   "Create new " + $name);
 		},
 		buttons: {
-		    "Create": function() {
+		    "Create": function () {
 			$send_request(
 			    {
 				method: "data_set",
@@ -237,7 +419,7 @@ $(document).ready(function() {
 		$li_data.show();
 
 		// we set clickable element
-		$li_data.on("click", function() {
+		$li_data.on("click", function () {
 		    var $this = $(this);
 
 		    $li_menu.removeClass("menu_clicked");
@@ -255,33 +437,36 @@ $(document).ready(function() {
     );
 
     // we configure the disconnect button
-    $("button#disconnect").on("click", function() {
+    $("button#disconnect").on("click", function () {
 	$send_request(
 	    {
 		"method": "disconnect",
 	    },
-	    function($result) {
+	    function ($result) {
 		$(location).attr("href", "index.php");
 		return true;
 	    });
     });
 
-    // we configure ace editor
-    var $editor = ace.edit("editor");
-    var $session = $editor.getSession();
-    $editor.setTheme("ace/theme/twilight");
-    $editor.setFontSize("16px");
-    $editor.resize();
-    $session.setTabSize(4);
-    $session.setUseWrapMode(true);
-    $session.setMode("ace/mode/html");
+    function generate_hash_code($str)
+    {
+	var $hash = 0;
 
-    // we set clickable edit button
-    $("button.edit").on("click", function() {
-	var $type = $(this).text();
-	$session.setMode("ace/mode/" + $type);
-	console.log($type);
-    });
+	for (var i = 0; i < $str.length; i++)
+	{
+	    $hash = $str.charCodeAt(i) + (($hash << 5) - $hash);
+	}
+
+	return $hash;
+    }
+
+    function int_to_ARGB($i)
+    {
+	return (($i>>24)&0xFF).toString(16) +
+            (($i>>16)&0xFF).toString(16) +
+            (($i>>8)&0xFF).toString(16) +
+            ($i&0xFF).toString(16);
+    }
 });
 
 

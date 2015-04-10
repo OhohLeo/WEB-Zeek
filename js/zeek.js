@@ -1,19 +1,22 @@
-$danger = $("div.error");
-$danger.hide();
+$alert = $("div.alert");
+$alert.hide();
 
+$danger = $("div.error");
 $success = $("div.success");
-$success.hide();
 
 $generic_rsp = function($result) {
 
     $success.hide();
     $danger.hide();
+    $alert.hide();
 
     if ($result["success"]) {
 	$success.text($result["success"]).show();
+	$alert.show();
     } else if ($result["error"]) {
 	console.log($result["error"]);
 	$danger.text($result["error"]).show();
+	$alert.show();
     } else if ($result["redirect"]) {
 	$(location).attr("href", $result["redirect"]);
     } else {
@@ -38,8 +41,7 @@ $send_request = (function($data, $handle_rsp) {
 		    return;
 
 		if ($res == true) {
-		    $success.hide();
-		    $danger.hide();
+		    $alert.hide();
 		    return;
 		}
     	    }

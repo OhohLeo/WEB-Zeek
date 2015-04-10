@@ -44,7 +44,7 @@ include 'default/header.php';
 	<ul>
 	    <li id="home" class="menu">Home</li>
 	    <li id="edit" class="menu">Edit</li>
-	    <li id="test" class="menu">Test</li>
+	    <li id="test" class="menu">Test</a></li>
 	    <li id="deploy" class="menu">Deploy</li>
 	    <li id="configuration" class="menu">Configuration</li>
 	    <li id="help" class="menu">Help</li>
@@ -66,7 +66,6 @@ include 'default/header.php';
     	    <div class="success"></div>
 	    <div class="error"></div>
 	</div>
-	<hr>
 	<div id="home" class="menu">
 	    <label>Project name
 		<input type="text"
@@ -76,27 +75,21 @@ include 'default/header.php';
 	    </label>
 	</div>
 	<div id="edit" class="menu">
-	    <h2>Edit</h2>
 	    <nav id="edit">
-		<button class="edit html">html</button>
-		<button class="add html">+</button>
-		<button class="edit css">css</button>
-		<button class="add css">+</button>
-		<button class="edit javascript">javascript</button>
-		<button class="add javascript">+</button>
+		<button class="edit create">+</button>
 	    </nav>
-	    <div id="editor">
-		function foo(items) {
-		var x = "All this is syntax highlighted";
-		return x;
-		}
+	    <select id="edit">
+		<option>No file found!</option>
+	    </select>
+	    <div id="edition">
+		<div id="editor"></div>
+		<button id="file_upload">Import</button>
+		<button id="file_download">Export</button>
+		<button id="file_delete" class="danger">Delete</button>
 	    </div>
-	    <button id="file_upload">Import</button>
-	    <button id="file_download">Export</button>
-	    <button id="file_delete" class="danger">Delete</button>
 	</div>
-	<div id="test" class="menu"><h2>test</h2></div>
-	<div id="deploy" class="menu"><h2>deploy</h2></div>
+	<div id="test" class="menu"></div>
+	<div id="deploy" class="menu"></div>
 	<div id="configuration" class="menu">
 	    <div class="config">
 		<h3>Add new user</h3>
@@ -178,8 +171,8 @@ include 'default/header.php';
 		    </tbody>
 		</table>
 	    </div>
+	    <hr>
 	</div>
-	<hr>
     </div>
     <div id="modal">
     </div>

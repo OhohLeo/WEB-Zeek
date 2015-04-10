@@ -24,7 +24,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
         $this->assertTrue(
             $db->table_check('user'));
 
-        $result = $db->table_view('user', '*', NULL, NULL, NULL, NULL);
+        $result = $db->table_view('user', '*');
 
         $result = $db->handle_result($result);
 
@@ -491,42 +491,64 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
         $zlib->environment_clean($this->db_name);
 
-	// we create :
-	//  - the directory 'test' in 'project directory'
-	//  - we create the table 'test_table' storing all files
-	$this->assertTrue($zlib->files_init('test'));
-	$this->assertTrue(is_dir($zlib->global_path . 'projects/test'));
+	// we create type file
+	$this->assertTrue($zlib->file_create(
+	    'test', 'user', 'type', 'test1', 'type', true));
+	$this->assertTrue(
+	    file_exists($zlib->global_path . 'projects/test/user/test1.type'));
 
-	// we check that multiple call doesn't affect the process
-	$this->assertTrue($zlib->files_init('test'));
-	$this->assertTrue(is_dir($zlib->global_path . 'projects/test'));
+	// we can't create similar file
+	$this->assertFalse($zlib->file_create(
+	    'test', 'user', 'type', 'test1', 'type', true));
 
-	// we check that we can't create a wrong directory
-	$this->assertFalse($zlib->files_init('toto/test'));
-	$this->assertFalse(is_dir($zlib->global_path . 'projects/toto/test'));
+	// we check the type of file
+	$this->assertEquals($zlib->file_get_type('test1.type'), 'type');
+
+	// we create css file
+	$this->assertTrue($zlib->file_create(
+	    'test', 'user', 'css', 'test2', 'css'));
+	$this->assertTrue(
+	    file_exists($zlib->global_path . 'projects/test/user/css/test2.css'));
+
+	// we can't create similar file
+	$this->assertFalse($zlib->file_create(
+	    'test', 'user', 'css', 'test2', 'css'));
+
+	// we check the type of file
+	$this->assertEquals($zlib->file_get_type('/css/test2.css'), 'css');
+
+	// we check that we can set the value
+	$this->assertTrue($zlib->file_set('test', 'user', 'test1.type',
+					  'Ceci est un test!'));
+
+	// we check that we can get the value
+	$this->assertEquals($zlib->file_get('test', 'user', 'test1.type'),
+			    'Ceci est un test!');
+
+	// we check the list of file
+	$this->assertEquals($zlib->file_get_list('test'),
+			    array(array('user' => 'user',
+					'name' => 'css/test2.css',
+					'type' => 'css'),
+				  array('user' => 'user',
+					'name' => 'test1.type',
+					'type' => 'type')));
+
+	// we check that we can delete the file
+	$this->assertTrue($zlib->file_delete('test', 'user', '/css/test2.css'));
+	$this->assertFalse(
+	    file_exists($zlib->global_path . 'projects/test/user/css/test2.css'));
 
 
-	// we create html file
-	$this->assertTrue($zlib->file_create('test', 'test', 'html', 'test'));
-	$this->assertTrue(file_exists($zlib->global_path
-				    . 'projects/test/html/test.html'));
+	// we delete everything
+	$this->assertTrue($zlib->files_delete('test'));
 
-	// we check that we can't create similar directory
-	$this->assertFalse($zlib->file_create('test', 'test', 'html', 'test'));
-
-
-
-
-	/* $this->assertFalse(
-	   $zlib->directory_create('test'));
-
-	   $zlib->checkOutput(
-           '{"error":"impossible to create \'test\' directory!"}'); */
+	// we check that whole directory has disappeared
+	$this->assertFalse(
+	    file_exists($zlib->global_path . 'projects/test'));
 
 	$zlib->environment_clean($this->db_name);
     }
-
-
 
 
     /* public function test_all_values()

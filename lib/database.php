@@ -257,7 +257,7 @@ class DataBase extends ZeekOutput {
  * @method table_delete
  * @param string table name
  */
-        public function table_delete($name)
+    public function table_delete($name)
     {
         return $this->send_query("DROP TABLE IF EXISTS $name", true);
     }
@@ -420,10 +420,12 @@ class DataBase extends ZeekOutput {
             $params = array('id' => $params);
         }
 
-        if ($this->send_request(
-            "DELETE FROM $name "
-            . " WHERE " . implode(' AND ', $this->get_values($params)), $params))
-            return true;
+	$result = $this->send_request(
+	    "DELETE FROM $name "
+	  . " WHERE " . implode(' AND ', $this->get_values($params)), $params);
+
+	if ($result)
+	    return true;
 
         return false;
     }
@@ -606,40 +608,44 @@ class DataBase extends ZeekOutput {
         static $last_request;
         static $result;
 
-        if ($db) {
 
-            try {
-                if ($this->debug) {
-                    print("\n request = $request;\n"
-                          . "last_request = $last_request\n"
-                          . "params = " . var_dump($params) . "\n");
-                    }
+        if ($db == NULL) {
+            $this->error("Need to establish connection with database at first");
+            return false;
+	}
 
-                if ($request != $last_request)
-                {
-                    $result = $db->prepare("$request;");
-                    $result->setFetchMode(PDO::FETCH_OBJ);
-                    $last_request = $request;
-                }
+	try {
 
-                $result->execute($params);
+	    if ($params == NULL)
+		$params = array();
 
-                return $result;
-
-           } catch (Exception $e) {
-                $this->debug(
-                    "Impossible to send request : " . $e->getMessage()
-		    . "\n request = $request\n"
-		    . " params = " . var_dump($params) . "\n");
-
-                return false;
+            if ($this->debug) {
+                print("\n ====== \nrequest = $request;\n"
+                    . " - params = " . join(' ', $params) . "\n"
+                    . " - last_request = $last_request\n");
             }
 
-            return true;
+            if ($request != $last_request)
+            {
+                $result = $db->prepare("$request;");
+                $result->setFetchMode(PDO::FETCH_OBJ);
+                $last_request = $request;
+            }
+
+	    $result->execute($params);
+
+            return $result;
+
+        } catch (Exception $e) {
+            $this->debug(
+                "Impossible to send request : " . $e->getMessage()
+	      . "\n request = $request\n"
+	      . " params = " . join(' ', $params) . "\n");
+
+            return false;
         }
 
-        $this->error("Need to establish connection with database at first");
-        return false;
+        return true;
     }
 
 

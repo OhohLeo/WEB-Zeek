@@ -6,5 +6,3 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Zeek</title>
     <link rel="stylesheet" href="//127.0.0.1/zeek/css/zeek.css">
-  </head>
-  <body>

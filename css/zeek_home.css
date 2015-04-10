@@ -78,34 +78,32 @@ nav#edit {
     text-align:center;
 }
 
+select#edit {
+    width: 320px;
+    height: 40px;
+    margin: 20px;
+    font-size: 16px;
+    font-weight: 400;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
 button.edit {
     margin-right: 0;
     border-right: 0;
-    padding: 6px 80px;
+    padding: 6px 55px;
 }
 
-button.add {
-    margin-left: 0;
-    border-left: 0;
-    padding: 6px 20px;
-}
-
-button.html {
-    color: #fff;
-    background-color: #398439;
-    border-color: #398439;
-}
-
-button.css {
+button.create {
     color: #fff;
     background-color: #EC971F;
     border-color: #EC971F;
 }
 
-button.javascript {
-    color: #fff;
-    background-color: #286090;
-    border-color: #286090;
+button.add {
+    margin-left: 0;
+    border-left: 0;
+    padding: 6px 15px;
 }
 
 ul.sidebar li {
@@ -125,6 +123,7 @@ div#action h2 {
 }
 
 div#editor {
+    text-align: left;
     height: 400px;
 }
 
