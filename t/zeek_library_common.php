@@ -534,11 +534,23 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 					'name' => 'test1.type',
 					'type' => 'type')));
 
+	// we modify the 2nd file
+	$this->assertTrue($zlib->file_modify(
+	    'test', 'user', 'projects/test/user/css/test2.css', 'type', 'test3', 'type'));
+	$this->assertFalse(
+	    file_exists($zlib->global_path . 'projects/test/user/css/test2.css'));
+	$this->assertTrue(
+	    file_exists($zlib->global_path . 'projects/test/user/type/test3.type'));
+
+
 	// we check that we can delete the file
 	$this->assertTrue($zlib->file_delete('test', 'user', '/css/test2.css'));
 	$this->assertFalse(
 	    file_exists($zlib->global_path . 'projects/test/user/css/test2.css'));
 
+	$this->assertTrue($zlib->file_delete('test', 'user', '/type/test3.type'));
+	$this->assertFalse(
+	    file_exists($zlib->global_path . 'projects/test/user/type/test3.type'));
 
 	// we delete everything
 	$this->assertTrue($zlib->files_delete('test'));
@@ -546,6 +558,9 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	// we check that whole directory has disappeared
 	$this->assertFalse(
 	    file_exists($zlib->global_path . 'projects/test'));
+
+	// we check the type of file
+	$this->assertEquals($zlib->file_get_type('css/test2.hey'), 'css');
 
 	$zlib->environment_clean($this->db_name);
     }

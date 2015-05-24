@@ -159,3 +159,14 @@ h2#data_set {
 .data_update, .data_delete {
     cursor: pointer;
 }
+
+button#file_create {
+    color: #fff;
+    background-color: #6f5499;
+}
+
+p#final_destination {
+    color: #6f5499;
+    font-weight: bold;
+    text-align: center;
+}

@@ -9,7 +9,7 @@ $generic_rsp = function($result) {
     $success.hide();
     $danger.hide();
     $alert.hide();
-
+    console.log($result);
     if ($result["success"]) {
 	$success.text($result["success"]).show();
 	$alert.show();

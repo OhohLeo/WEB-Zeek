@@ -351,38 +351,40 @@ class ZeekLibrary extends ZeekOutput {
     {
         $db = $this->db;
 
-        /* we get the id of the project in the database */
+        // we get the id of the project in the database
         $project_id = $this->project_get_id($project_name);
         if ($project_id == false) {
             $this->error("no existing project delete '$project_name' in database!");
             return false;
         }
 
-        /* if it exists only one project : we delete the database */
+        // if it exists only one project : we delete the database
         if ($db->table_count('project', '*', NULL) <= 1) {
-            return $db->database_delete($this->db_name);
+            return $db->database_delete($this->db_name)
+                && $this->files_delete($project_id);
         }
 
-        /* we remove the row with this project_id */
+        // we remove the row with this project_id
         $db->row_delete('project', $project_id);
 
-        /* we remove all users using this project id */
+        // we remove all users using this project id
         $db->row_delete('user', array('project_id' => $project_id));
 
-        /* we remove all the tables beginning with the project id */
+        // we remove all the tables beginning with the project id
         foreach ($this->data_structure[$project_name] as $name => $value) {
 
             $reel_name = "$project_id$name";
 
-            /* we check if the table exist, otherwise we continue */
+            // we check if the table exist, otherwise we continue
             if ($db->table_check($reel_name) == false)
                 continue;
 
-            /* for all other tables : we delete the table */
+            // for all other tables : we delete the table
             $db->table_delete($reel_name);
         }
 
-        return true;
+        // we remove all the files associated to the project
+        return $this->files_delete($project_id);
     }
 
 /**
@@ -507,7 +509,7 @@ class ZeekLibrary extends ZeekOutput {
 * @method directory_create
 * @param string path
 */
-    private function directory_create($path)
+    public function directory_create($path)
     {
 	// we try to create the directory associated to the project
 	if (is_dir($path))
@@ -592,10 +594,24 @@ class ZeekLibrary extends ZeekOutput {
 	{
 	    $files = scandir($path);
 
+	    // we remove data before the username
+	    $start = substr($path, $len_to_remove);
+
+	    // we get the username
+	    $idx = strpos($start, '/');
+
+	    $user = $idx ? substr($start, 0, $idx) : $start;
+
+	    $type = $idx ? substr($start, $idx + 1) : '';
+
 	    foreach ($files as $file)
 	    {
-		if ($file == "." || $file == "..")
+		if ($file == "."
+                          || $file == ".."
+                          || preg_match("/[~]+\z/", $file))
 		    continue;
+
+                // we ignore the files finishing with ~
 
 		if (filetype($path."/".$file) == "dir")
 		{
@@ -604,34 +620,25 @@ class ZeekLibrary extends ZeekOutput {
 		}
 		else if ($len_to_remove > 0)
 		{
-		    $len_to_remove += 1;
-
-		    // we remove data before the username
-		    $start = substr($path, $len_to_remove);
-
-		    // we get the username
-		    $idx = strpos($start, '/');
-
-		    $user = $idx ? substr($start, 0, $idx) : $start;
-
-		    $type = $idx ? substr($start, $idx + 1) : '';
-
 		    // the path doesn't exist : we get the type of the
 		    // file from the extension
 		    if ($type == "")
 		    {
 			$idx = strrpos($file, '.');
 			$type = substr($file, $idx + 1);
+                        $in_main_directory = true;
 		    }
 		    else
 		    {
 			$file = "$type/$file";
-		    }
+                        $in_main_directory = false;
+                    }
 
 		    array_push($list,
 			       array('user' => $user,
 				     'type' => $type,
-				     'name' => $file));
+				     'name' => $file,
+                                     'in_main_directory' => $in_main_directory));
 		}
 		else
 		{
@@ -712,7 +719,7 @@ class ZeekLibrary extends ZeekOutput {
 
 
 /**
-* We create the file copied from generic type files stored in 'default' directory.
+* We copy the file from src to dst.
 *
 * Return true if the file is correctly copied, otherwise return false.
 *
@@ -744,6 +751,38 @@ class ZeekLibrary extends ZeekOutput {
 	return true;
     }
 
+/**
+* We move the file  from src to dst.
+*
+* Return true if the file is correctly move, otherwise return false.
+*
+* @method file_copy
+* @param string src
+* @param string dst
+*/
+    private function file_move($src, $dst)
+    {
+	// we check that the source exists
+	if (file_exists($src) == false)
+	{
+	    $this->error("File '$src' not found!");
+	    return false;
+	}
+
+	try
+	{
+	    rename($src, $dst);
+	}
+	catch (Exception $e)
+	{
+	    $this->error("Impossible to move '$src' to '$dst'");
+
+	    return false;
+	}
+
+	return true;
+    }
+
 
 /**
 * We read the file.
@@ -753,7 +792,7 @@ class ZeekLibrary extends ZeekOutput {
 * @method file_read
 * @param string src
 */
-    private function file_read ($src)
+    public function file_read ($src)
     {
 	// we check that the file already exist
 	if (!$this->file_exists($src))
@@ -785,12 +824,8 @@ class ZeekLibrary extends ZeekOutput {
 * @param string src
 * @param string new_data to set on the src
 */
-    private function file_write($src, $data)
+    public function file_write($src, $data)
     {
-	// we check that the file doesn't already exist
-	if (!$this->file_exists($src))
-	    return false;
-
 	try
 	{
 	    $fp = fopen($src, 'w');
@@ -858,6 +893,23 @@ class ZeekLibrary extends ZeekOutput {
     }
 
 /**
+* We remove the files uploaded.
+*
+* Return true if everything is correctly removed, otherwise return false.
+*
+* @method uploaded_files_delete
+*/
+    public function uploaded_files_delete()
+    {
+	// on supprime l'ensemble des fichiers
+	if ($this->directory_remove($this->global_path . 'files'))
+	    return true;
+
+	return false;
+    }
+
+
+/**
 * Return file directory.
 *
 * @method file_get_directory
@@ -901,6 +953,12 @@ class ZeekLibrary extends ZeekOutput {
 	{
 	    $type = substr($name, 1, strrpos($name, '/') - 1);
 	}
+	// 2nd : the name contains '/' the type should be in
+	// the directory name
+	else if (strrpos($name, '/') > 0)
+	{
+	    $type = substr($name, 0, strrpos($name, '/'));
+	}
 	// otherwise we pickup the extension of the file
 	else
 	{
@@ -914,8 +972,7 @@ class ZeekLibrary extends ZeekOutput {
 * We create the file copied from generic type files stored in 'default' directory
 * and we insert the new data in the '_edit' table.
 *
-* Return true if the file is correctly copied and added in database,
-* otherwise return false.
+* Return true if the file is correctly copied otherwise return false.
 *
 * @method file_create
 * @param integer project_id
@@ -928,11 +985,8 @@ class ZeekLibrary extends ZeekOutput {
     public function file_create($project_id, $user, $type, $name,
 				$extension, $in_main_directory = false)
     {
-	// TODO : check that the type or the extension are valid
-	// based on the js/ace possible mode-TYPE.js possibilities
-
 	$dst = $this->file_get_directory(
-	    $project_id, $user, $in_main_directory ? '' : "$type");
+	    $project_id, $user, $in_main_directory ? '' : $type);
 
 	// we create the directory if it doesn't already exist
 	if ($this->directory_create($dst) == false)
@@ -954,6 +1008,52 @@ class ZeekLibrary extends ZeekOutput {
 	return false;
     }
 
+/**
+* We move the file due to modification of file's type or change on name
+*
+* Return true if the file is correctly moved otherwise return false.
+*
+* @method file_modify
+* @param integer project_id
+* @param string username
+* @param string path of the file to move
+* @param string type
+* @param string name
+* @param string extension
+* @param string in_main_directory
+*/
+    public function file_modify($project_id, $user, $file_to_move, $type, $name,
+				$extension, $in_main_directory = false)
+    {
+	$dst = $this->file_get_directory(
+	    $project_id, $user, $in_main_directory ? '' : $type);
+
+	// we create the directory if it doesn't already exist
+	if ($this->directory_create($dst) == false)
+            return false;
+
+	$src = $this->global_path . $file_to_move;
+	$dst .= "/$name.$extension";
+
+	// we move the specified file in the directory with the
+	// specified name
+	if ($this->file_move($src, $dst))
+            return true;
+
+	return false;
+    }
+
+
+/**
+* We delete the file
+*
+* Return true if the file is correctly moved otherwise return false.
+*
+* @method file_delete
+* @param integer project_id
+* @param string username
+* @param string name
+*/
     public function file_delete($project_id, $user, $name)
     {
 	$src = $this->file_get_path($project_id, $user, $name);
@@ -965,6 +1065,13 @@ class ZeekLibrary extends ZeekOutput {
     }
 
 
+    public function file_check($project_id, $user, $name)
+    {
+	return file_exists(
+	    $this->file_get_path($project_id, $user, $name));
+    }
+
+
     public function file_get_list($project_id)
     {
 	$rsp = array();
@@ -972,7 +1079,20 @@ class ZeekLibrary extends ZeekOutput {
 	// on récupère le path
 	$path = $this->global_path . "projects/$project_id";
 
-	if ($this->directory_scan($path, $rsp, strlen($path)))
+	if ($this->directory_scan($path, $rsp, strlen($path) + 1))
+	    return $rsp;
+
+	return false;
+    }
+
+    public function file_get_type_list()
+    {
+	$rsp = array();
+
+	// on récupère le path
+	$path = $this->global_path . "js/ace";
+
+	if ($this->directory_scan($path, $rsp, strlen($path) + 1))
 	    return $rsp;
 
 	return false;

@@ -221,8 +221,8 @@ class TestZeek extends PHPUnit_Framework_TestCase
             $zeek->data_set('albu', 'name=tutu&duration=10&comments=hey'));
 
 	// try to create album element with wrong parameters : ERROR duration=toto accepted!!
-	/* $this->assertFalse(
-           $zeek->data_set('album', 'name=tutu&duration=toto&comments=hey')); */
+	// $this->assertFalse(
+        //   $zeek->data_set('album', 'name=tutu&duration=toto&comments=hey'));
 
 	// try to update the value of this element
         $this->assertTrue(
@@ -238,21 +238,151 @@ class TestZeek extends PHPUnit_Framework_TestCase
     }
 
 
+    public function test_file()
+    {
+        $zeek = $this->zeek;
+
+        $this->assertTrue(
+            $zeek->connect('test', 'test', 'test'));
+
+	$zeek->file_get_type_list(true);
+
+	$this->assertTrue(
+	    $zeek->checkOutput(
+		json_encode(array('type_list' => array("abap","actionscript","ada","apache_conf","applescript","asciidoc","assembly_x86","autohotkey","batchfile","c9search","c_cpp","cirru","clojure","cobol","coffee","coldfusion","csharp","css","curly","d","dart","diff","django","dockerfile","dot","eiffel","ejs","elixir","elm","erlang","forth","ftl","gcode","gherkin","gitignore","glsl","golang","groovy","haml","handlebars","haskell","haxe","html","html_ruby","ini","io","jack","jade","java","javascript","json","jsoniq","jsp","jsx","julia","latex","less","liquid","lisp","livescript","logiql","lsl","lua","luapage","lucene","makefile","markdown","matlab","mel","mushcode","mysql","nix","objectivec","ocaml","pascal","perl","pgsql","php","plain_text","powershell","praat","prolog","properties","protobuf","python","r","rdoc","rhtml","ruby","rust","sass","scad","scala","scheme","scss","sh","sjs","smarty","snippets","soy_template","space","sql","stylus","svg","tcl","tex","text","textile","toml","twig","typescript","vala","vbscript","velocity","verilog","vhdl","xml","xquery","yaml")))));
+
+	$this->assertFalse($zeek->file_create(
+	    'type', 'to_to', 'extension', false));
+	$this->assertTrue(
+	    $zeek->checkOutput('{"error":"The filename \'to_to\' should only'
+			     . ' contains letters & numbers!"}'));
+
+	$this->assertFalse($zeek->file_create('type', 'toto', 'extension', false));
+	$this->assertTrue(
+	    $zeek->checkOutput('{"error":"The file type \'type\' is invalid!"}'));
+
+	$this->assertTrue($zeek->file_create('css', 'toto', 'css', false));
+	$this->assertTrue(
+	    $zeek->checkOutput(
+		'{"success":"file \'toto.css\' with type \'css\' created!"}'));
+
+	$this->assertTrue($zeek->file_create('css', 'tutu', 'css', false,
+					     'projects/test/css/toto.css'));
+	$this->assertTrue(
+	    $zeek->checkOutput(
+		'{"success":"file \'projects\/test\/css\/toto.css\' stored as \'tutu.css\' with type \'css\' created!"}'));
+
+	$this->assertTrue($zeek->file_delete('css/tutu.css'));
+	$this->assertTrue(
+	    $zeek->checkOutput(
+		'{"success":"The file \'css\/tutu.css\' successfully deleted!"}'));
 
 
-    // public function test_password()
-    // {
-    //     $password = $this->zeek->password_generate(9);
-    //     $this->assertEquals(strlen($password), 9);
 
-    //     for ($i = 0; $i < 20; $i++) {
-    //         $new_password = $this->zeek->password_generate(9);
-    //         $this->assertFalse($password == $new_password);
-    //     }
+        $zeek->environment_clean();
+    }
 
-    //     $password = $this->zeek->password_generate(8);
-    //     $this->assertEquals(strlen($password), 8);
-    // }
+
+    public function test_zeekify()
+    {
+        $zeek = $this->zeek;
+
+        $this->assertTrue(
+            $zeek->connect('test', 'test', 'test'));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
+
+	// create new project
+        $this->assertTrue($zeek->project_create('test'));
+
+        $this->assertTrue(
+            $zeek->checkOutput('{"redirect":"home.php"}'));
+
+	// create new album element
+        $this->assertTrue(
+            $zeek->data_set('album', 'name=test&duration=100&comments=Tropcool!'));
+
+	// check the value has been correctly created
+        $this->assertTrue(
+            $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
+
+	// create new album element
+        $this->assertTrue(
+            $zeek->data_set('album', 'name=tuto&duration=111&comments=ItWorks!'));
+
+	// check the value has been correctly created
+        $this->assertTrue(
+            $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
+
+	// create new album element
+        $this->assertTrue(
+            $zeek->data_set('album', 'name=titi&duration=321&comments=notWorking!'));
+
+	// check the value has been correctly created
+        $this->assertTrue(
+            $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
+
+        $this->assertEquals($zeek->zeekify(
+            'begin <zeek  tutu=""    >hey!</zeek> middle '
+          . '<zeek table="toto"  toto=""    >hoy!</zeek>'
+          . ' Here is the list of albums: '
+          . '<zeek table="album" offset="1" size="2"><p>album {{name}} ({{duration}}): {{comment}}</p></zeek> end'), "begin Table name should be defined! middle Table 'toto' not found! Here is the list of albums: <p>album tuto (111): Attribute 'comment' not found!</p><p>album titi (321): Attribute 'comment' not found!</p> end");
+
+        $zeek->environment_clean();
+    }
+
+    public function test_deploy()
+    {
+        $zeek = $this->zeek;
+
+        $this->assertTrue(
+            $zeek->connect('test', 'test', 'test'));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
+
+	// create new project
+        $this->assertTrue($zeek->project_create('test'));
+
+        $this->assertTrue(
+            $zeek->checkOutput('{"redirect":"home.php"}'));
+
+        // create toto.css
+	$this->assertTrue($zeek->file_create('html', 'index', 'html', true));
+	$this->assertTrue(
+	    $zeek->checkOutput(
+		'{"success":"file \'index.html\' with type \'html\' created!"}'));
+
+        // create css/tutu.css
+	$this->assertTrue($zeek->file_create('css', 'test', 'css', false));
+	$this->assertTrue(
+	    $zeek->checkOutput(
+		'{"success":"file \'test.css\' with type \'css\' created!"}'));
+
+        // check test functionality
+        $zeek->test();
+        $this->assertTrue(
+            $zeek->checkOutput('{"href":"projects\/1\/test_test\/index.html"}'));
+
+        // check the files have been correctly set & deploy
+        $this->assertTrue($zeek->file_get('test_test', 'index.html'));
+        $this->assertTrue(
+            $zeek->checkOutput('{"get":"<!DOCTYPE html>\n<html>\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>Generic<\/title>\n    <link rel=\"stylesheet\" href=\"generic.css\">\n  <\/head>\n  <body>\n      <!-- now you play!  -->\n  <\/body>\n<\/html>\n","type":"html"}'));
+
+        $this->assertTrue($zeek->file_get('test_test', 'css/test.css'));
+        $this->assertTrue(
+            $zeek->checkOutput('{"get":"body {\n    \/* now you play! *\/\n}\n","type":"css"}'));
+
+        // delete project
+	$this->assertTrue($zeek->project_delete('test'));
+        $this->assertTrue(
+	    $zeek->checkOutput('{"success":"Project \'test\' correctly deleted!"}'));
+
+        $zeek->environment_clean();
+    }
 
     // public function test_success()
     // {

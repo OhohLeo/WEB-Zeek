@@ -36,6 +36,8 @@ include 'default/header.php';
 <link rel="stylesheet" href="css/jquery-ui.min.css">
 <link rel="stylesheet" href="css/jquery-ui.structure.min.css">
 <link rel="stylesheet" href="css/jquery-ui.theme.min.css">
+<link rel="stylesheet" href="css/jquery.fileupload.css">
+<link rel="stylesheet" href="css/jquery.fileupload-ui.css">
 <link rel="stylesheet" href="css/zeek_home.css">
 </head>
 <body>
@@ -76,15 +78,15 @@ include 'default/header.php';
 	</div>
 	<div id="edit" class="menu">
 	    <nav id="edit">
-		<button class="edit create">+</button>
+		<button id="file_create" class="edit">Create</button>
 	    </nav>
 	    <select id="edit">
 		<option>No file found!</option>
 	    </select>
 	    <div id="edition">
 		<div id="editor"></div>
-		<button id="file_upload">Import</button>
-		<button id="file_download">Export</button>
+		<button id="file_modify">Modify</button>
+		<button id="file_export">Export</button>
 		<button id="file_delete" class="danger">Delete</button>
 	    </div>
 	</div>
@@ -181,5 +183,8 @@ include 'default/header.php';
 <script src="js/jquery-ui.min.js"></script>
 <script src="js/ace/ace.js"></script>
 <script src="js/mustache.js"></script>
+<script src="js/vendor/jquery.ui.widget.js"></script>
+<script src="js/jquery.iframe-transport.js"></script>
+<script src="js/jquery.fileupload.js"></script>
 <script src="js/zeek_home.js"></script>
 <?php include 'default/footer.php'; ?>

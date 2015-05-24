@@ -21,12 +21,18 @@ using following
 #### TODO Features :
  - finish the configuration & get_and_set visual functionnalities
  - insert data beetween old ones
+ - add piwik functionalities
+ - test/deploy functionalities : minimize css & zeekify & configuration
  - save & restore database functionnalities
  - setup help methods
  - deployment tool (for 1&1)
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+24/05/2015 Leo
+ * add zeekify method & handle
+ * add upload/modify/delete file functionality
+
 10/04/2015 Leo
  * display methods to get list of files and get & save file modification
 

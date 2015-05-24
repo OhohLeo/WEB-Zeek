@@ -92,6 +92,27 @@ $(document).ready(function () {
 	}
     });
 
+    var $select_edit = $("select#edit");
+
+    var $last_selected = "";
+
+    var $on_selected = function() {
+
+        var $selection = $("select#edit option:selected");
+
+        if ($selection.val() != $last_selected)
+        {
+	    $file_get($selection.attr("user"),
+                      $selection.attr("name"));
+
+            $last_selected = $selection.val();
+        }
+    };
+
+    $select_edit.change($on_selected);
+
+    var $last_edit_btn_type = "";
+
     var $edit_update = function () {
  	$send_request(
 	    {
@@ -105,7 +126,6 @@ $(document).ready(function () {
 		var $get_list = $result["get_list"];
 
 		var $store_by_type = new Array();
-		var $select_edit = $("select#edit");
 
 		$get_list.forEach(function ($obj) {
 		    var $type = $obj["type"];
@@ -120,7 +140,11 @@ $(document).ready(function () {
 			$btn.addClass("edit " + $type);
 
 			// we generate the color associated to the button
-			var $color =  "#" + int_to_ARGB(generate_hash_code($type) + 200);
+			var $letters = '0123456789ABCDEF'.split('');
+			var $color = '#';
+			for (var i = 0; i < 6; i++ ) {
+			    $color += $letters[Math.floor(Math.random() * 16)];
+			}
 
 			// add the css
 			$btn.css({ "color": "#fff",
@@ -130,6 +154,11 @@ $(document).ready(function () {
 			// we set clickable edit button
 			$btn.on("click", function () {
 			    var $type = $(this).text();
+
+			    if ($last_edit_btn_type === $type)
+				return;
+
+			    $last_edit_btn_type = $type;
 
 			    $select_edit.empty();
 
@@ -141,13 +170,13 @@ $(document).ready(function () {
 				    var $name = $obj["name"];
 
 				    var $option = $("<option>");
-
+                                    $option.attr("user", $user);
+                                    $option.attr("name", $name);
 				    $option.text($user + " - " + $name);
-				    $option.on('click', function () {
-					$file_get($user, $name);
-				    });
 
-				    $select_edit.append($option);
+                                    $select_edit.append($option);
+
+                                    $on_selected();
 				});
 			    }
 			    // otherwise no file has been found
@@ -168,8 +197,322 @@ $(document).ready(function () {
 
 		    $store_by_type[$type].push($obj);
 		});
+
+                // do not display anything
+		return -1;
 	    });
 	};
+
+
+    var $file_create_html;
+    var $file_modify_html;
+
+    $send_request(
+	{
+	    method: "file_get_type_list",
+	},
+	function ($result) {
+
+	    if ($result == false)
+		return false;
+
+
+	    var $select_type_list = $('<select></select>');
+	    $select_type_list.attr("id", "select_type");
+	    $select_type_list.attr("name", "type");
+
+	    $result["type_list"].forEach(function ($type) {
+		var $option = $("<option>");
+		$option.text($type);
+
+		$select_type_list.append($option);
+	    });
+
+            var $generate_html = function ($array) {
+                return "<table><tr><td><b>Type</b></td><td>"
+	             + $("<div></div>").append($select_type_list).html() + "</td></tr>"
+                     + Mustache.to_html("{{#foreach}}<tr><td><b>{{name}}</b></td>"
+                                      + "<td><input {{{input}}}/></td></tr>{{/foreach}}</table>",
+		                        { foreach: $array })
+	 	     + '<p id="final_create">Press enter to see the result!</p>';
+            };
+
+            var $array =  [
+		{ name: "Filename",
+		  input: 'name="name" type="text"'},
+		{ name: "Extension",
+		  input: 'name="extension" type="text"'},
+		{ name: "Is in main directory",
+		  input: 'name="in_main_directory" type="checkbox"'},
+	    ];
+
+	    $file_modify_html = $generate_html($array);
+
+            $array.push({ name: "File",
+		          input: 'id="file_upload" type="file" name="files[]" multiple'});
+
+            $file_create_html = $generate_html($array) + '<div id="progress_bar"></div>';
+	});
+
+
+    var $generate_filename = function () {
+
+	var $filename = {};
+
+	$("#modal :input").each(function() {
+	    var $name = $(this).attr("name");
+
+	    var $value;
+	    if ($name == "in_main_directory")
+		$value = $(this).is(":checked");
+	    else
+		$value = $(this).val();
+
+	    if ($name === "files[]" && $value.length > 0)
+            {
+                $filename["upload"] = $value;
+
+                if ($filename["name"] === "")
+		    $filename["name"] = $value;
+            }
+
+	    $filename[$name] = $value;
+	});
+
+
+        if ($filename["name"].length > 0)
+        {
+            var $name = $filename["name"];
+
+            var $ext = /(?:\.([^.]+))?$/.exec($name)[1] || "";
+
+            // we remove the extension from the name
+            if ($filename["extension"].length == 0 && $ext.length > 0)
+            {
+	        $name = $name.substring(
+                    0, $name.length - ($ext.length + 1));
+
+                // we set the detected extension
+                $filename["extension"] = $ext;
+            }
+
+            // we clean the file
+            $filename["name"] = $name;
+        }
+
+        // the extension is not set
+	if ($filename["extension"].length == 0)
+	    $filename["extension"] = $filename["type"];
+        // otherwise we check that the extension exists
+        else
+        {
+            var $select_type_list = $("select#select_type");
+
+            // we get all the options
+            var $option_values = $.map($select_type_list.children(),
+                                       function($option) {
+
+                                           return $option.value;
+                                       });
+
+            var $index = $.inArray($filename["extension"], $option_values);
+
+            // if the extension match
+            if ($index > -1)
+            {
+                $filename["type"] = $filename["extension"];
+                $select_type_list.children()
+                                 .eq($index)
+                                 .attr("selected", "selected");
+            }
+            else
+                $filename["extension"] = $filename["type"];
+        }
+
+	var $result;
+
+	if ($filename["in_main_directory"])
+	    $result = $filename["name"] + "." + $filename["type"];
+	else
+	    $result = $filename["type"] + "/" + $filename["name"]
+		    + "." +  $filename["extension"];
+
+	$("p#final_create").text($result);
+
+        return $filename;
+    }
+
+    $("button#file_create").on("click", function () {
+
+	// we check that the type is here
+	if ($file_create_html == null) {
+	    $danger.text("Error: type list not found!").show();
+	    $alert.show();
+	    return;
+	}
+
+	$div_modal.html($file_create_html);
+
+        var $filename = {};
+
+        $div_modal.change(function () {
+            $filename = $generate_filename();
+        });
+
+	var $file_upload = $("input#file_upload");
+	var $need_to_upload = false;
+
+	$modal.dialog({
+	    minWidth: 400,
+	    open: function () {
+		$need_to_upload = false;
+
+		$(this).dialog("option", "title", "Create new file");
+
+		var $progress_bar = $("div#progress_bar").hide();
+
+		$file_upload.fileupload({
+		    replaceFileInput: false,
+		    url: 'upload.php',
+		    dataType: 'json',
+		    add: function ($e, $data) {
+			$need_to_upload = true;
+
+			$("button#file_create_ok").on("click", function () {
+			    $data.submit();
+			});
+		    },
+		    progressall: function ($e, $data) {
+			$progress_bar.progressbar({
+			    value: parseInt($data.loaded / $data.total * 100, 10)
+			});
+		    },
+		    error: function ($e, $data) {
+                        $danger.text("Upload Error: " + $e).show();
+	                $alert.show();
+		    },
+		    done: function ($e, $data) {
+		        $send_request($filename, function ($result) {
+				 $last_edit_btn_type = "";
+				 $select_edit.empty();
+
+				 $modal.dialog("close");
+				 $edit_update();
+			 });
+		    },
+		   });
+	    },
+	    buttons: {
+		"Create": {
+		    text: "Create",
+		    id: "file_create_ok",
+		    click: function () {
+
+                        $filename["method"] = "file_create";
+
+			if ($need_to_upload)
+			    return;
+
+                        $send_request($filename, function ($result) {
+			    $last_edit_btn_type = "";
+			    $select_edit.empty();
+
+			    $modal.dialog("close");
+			    $edit_update();
+			});
+                    }
+		}
+	    }});
+
+	$modal.dialog("open");
+    });
+
+    $("button#file_modify").on("click", function () {
+
+        // the actual file should be defined
+	if ($actual_file == null)
+	    return;
+
+	// we check that the type is here
+	if ($file_modify_html == null) {
+	    $danger.text("Error: type list not found!").show();
+	    $alert.show();
+	    return;
+	}
+
+	$div_modal.html($file_modify_html);
+
+        var $filename = {};
+
+        $div_modal.change(function () {
+            $filename = $generate_filename();
+        });
+
+        $modal.dialog({
+	    minWidth: 400,
+	    open: function () {
+		$(this).dialog("option", "title", "Modify this file");
+            },
+            buttons: {
+		"Modify": {
+		    text: "Modify",
+		    click: function () {
+
+                        $filename["method"] = "file_modify";
+                        $filename["src"] = $actual_file["name"];
+
+                        $send_request($filename, function ($result) {
+			    $last_edit_btn_type = "";
+			    $select_edit.empty();
+
+			    $modal.dialog("close");
+			    $edit_update();
+			});
+                    }
+		}
+	    }});
+
+        $modal.dialog("open");
+    });
+
+
+    $("button#file_delete").on("click", function () {
+
+	// the actual file should be defined
+	if ($actual_file == null)
+	    return;
+
+	var $filename = $actual_file["name"];
+
+	$div_modal.html("<p>Do you still want to delete <b>" + $filename + "</b> ?</p>");
+
+	$modal.dialog({
+	    open: function () {
+		$(this).dialog("option", "title", "Confirm");
+	    },
+	    buttons: {
+		"Delete": function () {
+		    $send_request(
+			{ "method": "file_delete", "name": $filename },
+			function ($result) {
+			    $div_edition.hide();
+
+			    $last_edit_btn_type = "";
+			    $select_edit.empty();
+
+			    $modal.dialog("close");
+			    $edit_update();
+			});
+		}
+	    }
+	});
+
+	$modal.dialog("open");
+    });
+
+    $("button#file_export").on("click", function () {
+	console.log("export!");
+    });
 
     // we set clickable action menu
     var $li_data;
@@ -202,8 +545,7 @@ $(document).ready(function () {
 	$li_menu.removeClass("menu_clicked");
 	$this.addClass("menu_clicked");
 	$div_menus.hide();
-	$div_dynamic.empty();
-	$div_dynamic.hide();
+	$div_dynamic.empty().hide();
 	$("div#" + $id).show();
     });
 
@@ -291,7 +633,6 @@ $(document).ready(function () {
 			for (var $key in $obj) {
 			    $td += "<td>" + $obj[$key] + "</td>";
 			}
-
 
 			$td += "<td><img item=\"" + $id + "\""
 			     + " src=\"img/update.png\""
@@ -447,26 +788,6 @@ $(document).ready(function () {
 		return true;
 	    });
     });
-
-    function generate_hash_code($str)
-    {
-	var $hash = 0;
-
-	for (var i = 0; i < $str.length; i++)
-	{
-	    $hash = $str.charCodeAt(i) + (($hash << 5) - $hash);
-	}
-
-	return $hash;
-    }
-
-    function int_to_ARGB($i)
-    {
-	return (($i>>24)&0xFF).toString(16) +
-            (($i>>16)&0xFF).toString(16) +
-            (($i>>8)&0xFF).toString(16) +
-            ($i&0xFF).toString(16);
-    }
 });
 
 
