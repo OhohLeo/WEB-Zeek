@@ -15,6 +15,7 @@ class ZeekLibrary extends ZeekOutput {
     private $db_use_uniq;
 
     private $data_structure = array();
+    private $options;
 
 /**
  * Setup configuration for establishing a connection with MySQL
@@ -71,7 +72,6 @@ class ZeekLibrary extends ZeekOutput {
 		$this->projects_get($this->projects_path);
         }
 
-
         $check_environment = ($this->db_use_specific)
             ? !($db->table_check('project') || $db->table_check('user'))
             : $db->database_check($this->db_name) == false;
@@ -116,10 +116,10 @@ class ZeekLibrary extends ZeekOutput {
             'name'        => array('type' => 'VARCHAR',
 				   'size' => 25),
             'since'       => array('type' => 'DATE'),
-            'structure'   => array('type' => 'TEXT',
-				   'size' => 1000),
-	    'files'       => array('type' => 'TEXT',
-				   'size' => 1000)));
+            'structure'   => array('type' => 'VARCHAR',
+				   'size' => 2000),
+	    'options'     => array('type' => 'VARCHAR',
+				   'size' => 2000)));
 
         /* we create the user table */
         $db->table_create('user', array(
@@ -230,6 +230,25 @@ class ZeekLibrary extends ZeekOutput {
         return ($result == NULL) ? NULL : $db->handle_result($result);
     }
 
+    public function users_get_list($project_id)
+    {
+        $result = $this->db->table_view(
+            'user', '*', NULL, NULL, NULL,
+            array('project_id' => $project_id));
+
+        $users = array();
+
+        if ($result == NULL)
+            return $users;
+
+        while ($row = $this->value_fetch($result))
+        {
+            array_push($users, $row['name']);
+        }
+
+        return $users;
+    }
+
     public function user_check($project_id, $username, $password)
     {
         $db = $this->db;
@@ -302,8 +321,9 @@ class ZeekLibrary extends ZeekOutput {
  *
  * @method project_add
  * @param string project name
+ * @param array options associated to the the project
  */
-    public function project_add($project_name)
+    public function project_add($project_name, $options=null)
     {
         $db = $this->db;
 
@@ -313,21 +333,26 @@ class ZeekLibrary extends ZeekOutput {
             return false;
         }
 
-        /* we check if the project already exists */
+        // we check if the project already exists
         if ($this->project_get_id($project_name)) {
             $this->error(
                 "another project have the same name $project_name!");
             return false;
         }
 
-        /* we insert the new project */
-        if ($this->db->row_insert(
-            'project', array('name' => $project_name)) == false) {
-               return false;
-        }
+        $params = array('name' => $project_name);
 
-        /* we store the project id */
+        if ($options)
+            $params['options'] = $this->json_encode($options);
+
+
+        // we insert the new project
+        if ($this->db->row_insert('project', $params) == false)
+            return false;
+
+        // we store the project id
         if ($this->project_get_id($project_name)) {
+            $this->error('Impossible to add project!');
             return true;
         }
 
@@ -448,11 +473,12 @@ class ZeekLibrary extends ZeekOutput {
         return false;
     }
 
+
 /**
  * Return the whole structure if it exists otherwise return
  * NULL.
  *
- * @method struture_get
+ * @method struture_set
  * @param string project name
  */
     public function structure_get($project_name)
@@ -462,6 +488,85 @@ class ZeekLibrary extends ZeekOutput {
 
 	return false;
     }
+
+/**
+ * Return the whole structure if it exists otherwise return
+ * NULL.
+ *
+ * @method struture_get
+ * @param string project name
+ * @param array new structure
+ */
+    public function structure_set($project_name, $new_structure)
+    {
+	return false;
+    }
+
+
+/**
+ * Valid the structure.
+ *
+ * @method struture_check
+ * @param array structure to check
+ */
+    public function structure_check($structure)
+    {
+	return false;
+    }
+
+
+/**
+ * Return the options structure. Return false if the option doesn't exist.
+ *
+ * @method options_get
+ * @param int project id
+ * @param string option name
+ */
+    public function options_get($project_id, $name)
+    {
+        if ($this->options)
+            return $this->options[$name];
+
+        $db = $this->db;
+
+        $result = $this->db->table_view(
+            'projects', 'options', NULL, 1, 0, $project_id);
+
+        if ($result)
+        {
+            $this->options = $db->handle_result($result);
+
+            return $this->json_decode($this->options[$name]);
+        }
+
+        return NULL;
+    }
+
+
+ /**
+ * Set change on the options structure. Return false if the option doesn't exist.
+ *
+ * @method options_get
+ * @param int project id
+ * @param string option name
+ * @param array option values
+ */
+    public function options_set($project_id, $name, $values)
+    {
+        $this->options[$name] = $this->json_encode($values);
+
+        if ($this->db->row_update(
+            'project', $project_id, array('options' => $this->options)))
+        {
+            return true;
+        }
+
+        // if there is an issue : we remove all options
+        $this->options = null;
+
+        return false;
+    }
+
 
 /**
  * Return the content of a type if it exists otherwise return
@@ -492,7 +597,8 @@ class ZeekLibrary extends ZeekOutput {
     public function type_check($project_name, $table_name)
     {
         // we check if the project exists
-        if ($this->project_check($project_name) == false) {
+        if ($this->projects_path
+            && $this->project_check($project_name) == false) {
             return false;
         }
 
@@ -1265,7 +1371,6 @@ class ZeekLibrary extends ZeekOutput {
     {
 	// we check that the project id exists and we get the name
 	$project_name = $this->project_name_get_by_id($project_id);
-
 
 	if ($project_name == false) {
 	    $this->error("unknown project id '$project_id'!");

@@ -529,10 +529,12 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	$this->assertEquals($zlib->file_get_list('test'),
 			    array(array('user' => 'user',
 					'name' => 'css/test2.css',
-					'type' => 'css'),
+					'type' => 'css',
+                                        'in_main_directory' => false),
 				  array('user' => 'user',
 					'name' => 'test1.type',
-					'type' => 'type')));
+					'type' => 'type',
+                                        'in_main_directory' => true)));
 
 	// we modify the 2nd file
 	$this->assertTrue($zlib->file_modify(

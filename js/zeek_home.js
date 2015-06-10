@@ -2,6 +2,7 @@
 $(document).ready(function () {
 
     var $div_menus = $("div.menu");
+
     var $div_dynamic = $("div#dynamic");
 
     // we store the dynamic html
@@ -203,9 +204,10 @@ $(document).ready(function () {
 	    });
 	};
 
-
     var $file_create_html;
     var $file_modify_html;
+
+    var $table_type_accepted = $("table#file_type_accepted");
 
     $send_request(
 	{
@@ -216,26 +218,47 @@ $(document).ready(function () {
 	    if ($result == false)
 		return false;
 
+            var $select_type_proposed = $("select#file_type_proposed");
 
-	    var $select_type_list = $('<select></select>');
-	    $select_type_list.attr("id", "select_type");
-	    $select_type_list.attr("name", "type");
+            var $on_type_accepted = function ($name) {
 
+                // check if the type doesn't already exist
+                if ($("tr#config_" + $name).length) {
+                    return false;
+                }
+
+                // othewise add new type
+                var $row = $("<tr>").attr("type", "config_" + $name);
+
+                $row.append($("<td>").text($name))
+                    .append(
+                        $("<td>").append(
+                            $("<img>").attr("src", "img/delete.png")
+                                      .addClass("file_type_delete")
+                                      .on("click", function () {
+                                          $row.remove();
+                                      })
+                        ));
+
+		$table_type_accepted.append($row);
+            };
+
+            // display & configure the type of file proposed
 	    $result["type_list"].forEach(function ($type) {
 		var $option = $("<option>");
 		$option.text($type);
 
-		$select_type_list.append($option);
+		$select_type_proposed.append($option);
 	    });
 
-            var $generate_html = function ($array) {
-                return "<table><tr><td><b>Type</b></td><td>"
-	             + $("<div></div>").append($select_type_list).html() + "</td></tr>"
-                     + Mustache.to_html("{{#foreach}}<tr><td><b>{{name}}</b></td>"
-                                      + "<td><input {{{input}}}/></td></tr>{{/foreach}}</table>",
-		                        { foreach: $array })
-	 	     + '<p id="final_create">Press enter to see the result!</p>';
-            };
+            $select_type_proposed.change(function () {
+                $on_type_accepted(
+                    $("select#file_type_proposed option:selected").val());
+            });
+
+            // display & delete the type of file accepted
+	    /* $result["type_accepted"].forEach(function ($type) {
+	       }); */
 
             var $array =  [
 		{ name: "Filename",
@@ -246,12 +269,38 @@ $(document).ready(function () {
 		  input: 'name="in_main_directory" type="checkbox"'},
 	    ];
 
-	    $file_modify_html = $generate_html($array);
+            var $generate_html = function ($array) {
+
+                var $list = $('<select></select>');
+                $list.attr("id", "select_type");
+                $list.attr("name", "type");
+
+                $table_type_accepted.children()
+                                    .children()
+                                    .each(function() {
+	            $list.append($("<option>").text($(this).text()));
+                });
+
+                return "<table><tr><td><b>Type</b></td><td>"
+	             + $("<div></div>").append($list).html() + "</td></tr>"
+                     + Mustache.to_html("{{#foreach}}<tr><td><b>{{name}}</b></td>"
+                     + "<td><input {{{input}}}/></td></tr>{{/foreach}}</table>",
+		                        { foreach: $array })
+                    + '<p id="final_create">Press enter to see the result!</p>'
+            };
+
+
+	    $file_modify_html = function() {
+                return $generate_html($array);
+            };
 
             $array.push({ name: "File",
 		          input: 'id="file_upload" type="file" name="files[]" multiple'});
 
-            $file_create_html = $generate_html($array) + '<div id="progress_bar"></div>';
+            $file_create_html = function() {
+                return $generate_html($array)
+                    + '<div id="progress_bar"></div>';
+            };
 	});
 
 
@@ -351,7 +400,7 @@ $(document).ready(function () {
 	    return;
 	}
 
-	$div_modal.html($file_create_html);
+	$div_modal.html($file_create_html());
 
         var $filename = {};
 
@@ -440,7 +489,7 @@ $(document).ready(function () {
 	    return;
 	}
 
-	$div_modal.html($file_modify_html);
+	$div_modal.html($file_modify_html());
 
         var $filename = {};
 
@@ -552,10 +601,11 @@ $(document).ready(function () {
     var $div_modal = $("#modal");
 
     var $modal = $div_modal.dialog({
-            autoOpen: false,
-	    resizable: false,
-	    modal: true,
-        });
+        minWidth: 500,
+        autoOpen: false,
+	resizable: false,
+	modal: true,
+    });
 
     // we get the position to set the structure
     $ul_structure = $("ul.structure");
@@ -731,51 +781,303 @@ $(document).ready(function () {
 	});
     };
 
+    var $ul_structure = $("ul#structure");
+
+    // we store the initial structure
+    var $html_structure = $("ul#structure").html();
+
     // we get the database structure
-    $send_request(
-	{
-	    "method": "structure_get"
-	},
-	function ($result)
-	{
-	    var $li_loading = $("li#structure_loading");
+    $structure_get = function () {
 
-	    // we store the structure
-	    $structure = $result["structure"];
+        // we initialise the structure
+        $ul_structure.html($html_structure);
 
-	    if ($structure)
+        $send_request(
 	    {
-		var $ul_structure = $("ul.structure");
+	        "method": "structure_get"
+	    },
+	    function ($result)
+	    {
+	        // we store the structure
+	        $structure = $result["structure"];
 
-		$li_loading.remove();
+                console.log($structure);
 
-		$ul_structure.html(Mustache.render(
-		    $ul_structure.html(),
-		    {
-			structure: Object.keys($structure)
-		    }));
+	        if ($structure)
+	        {
+		    $ul_structure.html(Mustache.render(
+		        $html_structure,
+		        {
+			    structure: Object.keys($structure)
+		        }));
 
-		$li_data = $("li.data");
+                    $("li#structure_loading").remove();
 
-		$li_data.show();
+		    $li_data = $("li.data");
 
-		// we set clickable element
-		$li_data.on("click", function () {
-		    var $this = $(this);
+		    $li_data.show();
 
-		    $li_menu.removeClass("menu_clicked");
-		    $li_data.removeClass("data_clicked");
-		    $this.addClass("data_clicked");
+		    // we set clickable element
+		    $li_data.on("click", function () {
+		        var $this = $(this);
 
-		    $handle_data($this.text());
-		});
+		        $li_menu.removeClass("menu_clicked");
+		        $li_data.removeClass("data_clicked");
+		        $this.addClass("data_clicked");
 
-		return true;
+		        $handle_data($this.text());
+		    });
+
+		    return true;
+	        }
+
+                $("li#structure_loading").text('Error!');
 	    }
+        );
+    };
 
-	    $li_loading.text('Error!');
-	}
-    );
+    $structure_get();
+
+    var $div_users = $("div#users_list");
+
+    // we set the user configuration
+    var $users_get_list = function() {
+        $send_request(
+            {
+                "method": "users_get_list",
+            },
+            function ($users) {
+                $div_users.html(
+                    Mustache.to_html(
+                        '<table>{{#users}}<tr><td>{{{.}}}</td><td><img email="{{{.}}}" src="img/delete.png" class="user_delete"></td></tr>{{/users}}</table>', $users));
+
+                $("img.user_delete").on("click", function() {
+                    $send_request(
+                        {
+                            "method": "user_delete",
+                            "email": $(this).attr("email"),
+                        },
+                        function ($result) {
+                            $users_get_list();
+                        });
+                });
+
+                return -1;
+            });
+    };
+
+    $("form#user_add").on("submit", function($e) {
+        $e.preventDefault();
+
+        $send_request(
+            {
+                "method": "user_add",
+                "params": $(this).serialize(),
+            },
+            function ($result) {
+                $users_get_list();
+            });
+    });
+
+    $("form#user_change_password").on("submit", function($e) {
+        $e.preventDefault();
+
+        $send_request({
+            "method": "user_change_password",
+            "params": $(this).serialize(),
+        });
+    });
+
+    // we enable/disable the structure configuration
+    var $button_structure_set = $("button#structure_set");
+
+    var $reset_structure_set = function() {
+        $button_structure_set.text("MODIFY");
+        $('body').css('background', ' #FFF');
+        $structure_get();
+    };
+
+
+    var $select_type_list;
+    var $structure_get_list = function () {
+        $send_request(
+	    {
+	        method: "structure_get_list",
+                expert_mode: $("input#expert_mode").prop('checked'),
+	    },
+	    function ($result) {
+
+	        if ($result == false)
+		    return false;
+
+	        $select_type_list = $('<select></select>');
+	        $select_type_list.attr("id", "select_type");
+	        $select_type_list.attr("name", "type");
+
+                $result["list"].forEach(function ($type) {
+		    var $option = $("<option>");
+		    $option.text($type);
+
+		    $select_type_list.append($option);
+	        });
+            });
+    }
+
+    $("input#expert_mode").on("click", function() {
+        $structure_get_list();
+    });
+
+    $button_structure_set.on("click", function() {
+        var $this = $(this);
+
+        if ($this.text() == "MODIFY")
+        {
+            if ($select_type_list == null) {
+                $structure_get_list();
+            }
+
+            var $new_structure = $structure;
+
+            $this.text("VALIDATE");
+            $('body').css('background', ' #DDD');
+
+            $("ul#structure").append(
+                '<li class="data">CREATE</li>');
+
+            $("li.data")
+                 .off("click")
+                 .on("click", function() {
+                     var $name = $(this).text();
+
+                     $modal.dialog({
+		         open: function () {
+		             $(this).dialog(
+                                 "option", "title",
+                                 (($name === "CREATE") ? "New" :
+                                  "Modify '" + $name + "'") + " structure");
+
+	                     var $data = $new_structure[$name];
+
+                             var $setup = "<table id=\"attribute_add\">";
+
+                             // we handle new structure
+                             if ($name === "CREATE") {
+                                 $setup +=
+                                 "<tr><td><b>Structure name:</b></td>"
+                               + "<td><input name=\"structure_name\" type=\"text\"/></td></tr>";
+                             }
+
+                             var $delete_attribute = $("<td>").append(
+                                 $("<img>").attr("src", "img/delete.png")
+                                           .attr("class", "attribute_delete")).html();
+
+                             // we display the attributes already existing
+                             for (var $attribute in $data)
+	                     {
+	                         var $options = $data[$attribute];
+                                 $setup += "<tr name=\"" + $attribute + "\">"
+                                         + "<td><b>" + $attribute + "</b></td>"
+                                         + "<td>" + $options['db_type'] + "</td>"
+                                         + "<td>" + $delete_attribute
+                                         + "</td><td></td></tr>";
+	                     }
+
+                             // we add new attributes
+                             var $attribute_add =
+                             "<tr class=\"attribute_add\"><td><b>Name</b></td>"
+                           + "<td><input name=\"name\" type=\"text\"/></input></td>"
+                           + "</td>" + $delete_attribute + "</td></tr>"
+                           + "<tr><td><b>Type</b></td><td>"
+                           + $("<div></div>").append($select_type_list).html()
+                           + "<td></td></tr>";
+
+                             // if we are in expert mode : we ask for the type
+                             if ($("input#expert_mode").prop('checked'))
+                             {
+                                 $attribute_add +=
+                                   "<tr><td><b>Size</b></td>"
+                                 + "<td><input name=\"name\" type=\"text\"/></input></td>"
+                                 + "</td></td></tr>";
+                             }
+
+                             $setup += $attribute_add + "</table>"
+                                     + "<button id=\"attribute_add\"> + </button>";
+
+                             $div_modal.html($setup);
+
+                             var $attribute_delete = function() {
+                                 $("img.attribute_delete").on("click", function () {
+                                     var $parent_row = $(this).parents("tr");
+
+                                     if ($parent_row.hasClass("attribute_add")) {
+                                         $parent_row.next().remove();
+                                     } else {
+                                         // TODO: à supprimer!!
+                                         console.log($parent_row.attr("name"));
+                                         $new_structure[$name][$parent_row.attr("name")] = "";
+                                     }
+
+                                     $parent_row.remove();
+                                 });
+                             };
+
+                             $("button#attribute_add").on("click", function () {
+                                 $("table#attribute_add").append($attribute_add);
+                                 $attribute_delete();
+                             });
+
+                             $attribute_delete();
+		         },
+		         buttons: {
+                             "Cancel": function() {
+                                 $modal.dialog("close");
+                             },
+                             "Remove ALL": function() {
+                                 // TODO à supprimer
+                                 $new_structure[$name] = "";
+                                 $modal.dialog("close");
+                             },
+		             "Validate": function () {
+                                 console.log($("tr.attribute_add").children("input"));
+                                 console.log($new_structure);
+		             },
+		         }});
+
+	             $modal.dialog("open");
+
+                 });
+            return;
+        }
+        else
+        {
+            $reset_structure_set();
+        }
+
+        $reset_structure_set();
+
+    });
+
+
+    // we set the configuration visual effects
+    $div = $("div.config-group");
+    $div.hide();
+
+    $("div.config h3").on("click", function($e) {
+        $e.preventDefault();
+
+        var $this = $(this);
+
+        if ($this.attr('id') === "user") {
+            $users_get_list();
+        }
+
+        $boxed = $this.next("div.config-group");
+        if ($boxed.is(":hidden")) {
+	    $boxed.slideDown(200);
+        } else {
+	    $boxed.slideUp(200);
+        }
+    });
 
     // we configure the disconnect button
     $("button#disconnect").on("click", function () {
@@ -790,35 +1092,7 @@ $(document).ready(function () {
     });
 });
 
-
-
-/* $div = $("div.boxed-group");
-$div.hide();
-
-$("h3").on("click", function($e) {
-    $e.preventDefault();
-
-    $boxed = $(this).next("div.boxed-group");
-    if ($boxed.is(":hidden")) {
-	$boxed.slideDown(200);
-    } else {
-	$boxed.slideUp(200);
-    }
-});
-
- $("form#user_add").on("submit", function() {
-   $send_request({
-   "method": "user_add",
-   "params": $(this).serialize(),
-   });
-   });
-
-   $("form#user_change_password").on("submit", function() {
-   $send_request({
-   "method": "user_change_password",
-   "params": $(this).serialize(),
-   });
-   });
+/*
 
    $("button#data_clean").on("click", function($e) {
    e.preventDefault();

@@ -55,7 +55,7 @@ include 'default/header.php';
     </nav>
 
     <nav id="data">
-	<ul class="structure">
+	<ul id="structure">
 	    <li class="data" id="structure_loading">Loading...</li>
 	    <!-- {{#structure}} -->
 	    <li class="data" style="display:none">{{.}}</li>
@@ -94,12 +94,12 @@ include 'default/header.php';
 	<div id="deploy" class="menu"></div>
 	<div id="configuration" class="menu">
 	    <div class="config">
-		<h3>Add new user</h3>
-		<div class="boxed-group">
+		<h3 id="user">Add new user</h3>
+		<div class="config-group">
+                    <div id="users_list"></div>
 		    <form id="user_add" role="form">
-			<label>user e-mail address</label>
-			<input type="email" class="form-control" name="email"
-			       placeholder="enter e-mail"></input>
+			<p><input type="email" class="form-control" name="email"
+			          placeholder="enter new e-mail adress"></input></p>
 			<input type="submit" class="btn-block btn-success">
 		    </form>
 		</div>
@@ -107,22 +107,19 @@ include 'default/header.php';
 	    <hr>
 	    <div class="config">
 		<h3>Change password</h3>
-		<div class="boxed-group">
+		<div class="config-group">
 		    <form id="user_change_password" role="form">
-			<label>old password</label>
-			<input type="password"
-			       class="form-control"
-			       name="password_old"
-			       placeholder="enter old password"></input>
-			<label>new password</label>
-			<input type="password"
-			       class="form-control"
-			       name="password_new"
-			       placeholder="enter new password"></input>
-			<label>confirm new password</label>
-			<input type="password"
-			       class="form-control"
-			       placeholder="retape new password"></input>
+			<p><input type="password"
+			          class="form-control"
+			          name="password_old"
+			          placeholder="enter old password"></input></p>
+			<p><input type="password"
+			          class="form-control"
+			          name="password_new"
+			          placeholder="enter new password"></input></p>
+			<p><input type="password"
+			          class="form-control"
+			          placeholder="retape new password"></input></p>
 			<input type="submit"
 			       class="btn-block btn-success">
 		    </form>
@@ -131,21 +128,39 @@ include 'default/header.php';
 	    <hr>
 	    <div class="config">
 		<h3>Modify project structure</h3>
-		<div class="boxed-group danger-zone">
+		<div class="config-group danger-zone">
+                    <p>
+                        <label>Expert mode</label>
+                        <input type="checkbox" id="expert_mode">
+                    </p>
 		    <button id="structure_set" class="danger">MODIFY</button>
 		</div>
 	    </div>
 	    <hr>
 	    <div class="config">
-		<h3>Clean all data</h3>
-		<div class="boxed-group danger-zone">
+		<h3>Modify editor</h3>
+		<div class="config-group danger-zone">
+                    <select id="file_type_proposed"></select>
+                    <table id="file_type_accepted"></table>
+		</div>
+	    </div>
+	    <hr>
+	    <div class="config">
+		<h3>Modify test & deploy</h3>
+		<div class="config-group danger-zone">
+		</div>
+	    </div>
+	    <hr>
+	    <div class="config">
+		<h3>Clean data</h3>
+		<div class="config-group danger-zone">
 		    <button id="data_clean" class="danger">DELETE all data</button>
 		</div>
 	    </div>
 	    <hr>
 	    <div class="config">
-		<h3>Delete current project</h3>
-		<div class="boxed-group danger-zone">
+		<h3>Delete project</h3>
+		<div class="config-group danger-zone">
 		    <button id="project_delete" class="danger">DELETE this project</button>
 		</div>
 	    </div>

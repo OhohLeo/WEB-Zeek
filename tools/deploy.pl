@@ -8,7 +8,7 @@ use Cwd;
 
 use feature 'say';
 
-my %AUTHORISED = map { $_ => 1 } qw(lib js css default projects extends img);
+my %AUTHORISED = map { $_ => 1 } qw(lib js css default projects extends img ace vendor);
 
 my($action, $host, $login, $password, $directory, $help);
 

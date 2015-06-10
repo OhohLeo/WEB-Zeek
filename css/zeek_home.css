@@ -2,7 +2,7 @@ div#index {
     text-align: center;
 }
 
-input {
+input#file_upload {
     padding:3px;
     border:1px solid #F5C5C5;
     border-radius:5px;
@@ -156,7 +156,18 @@ h2#data_set {
     font-weight: bold;
 }
 
-.data_update, .data_delete {
+div#users_list {
+    width:70%;
+    margin-left:40%;
+    margin-right:15%;
+};
+
+.data_update, .data_delete, .user_delete {
+    cursor: pointer;
+}
+
+.structure_delete, .structure_modify {
+    margin: 2%;
     cursor: pointer;
 }
 

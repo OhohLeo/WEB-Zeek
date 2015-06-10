@@ -71,44 +71,44 @@ class TestZeek extends PHPUnit_Framework_TestCase
     {
         $zeek = $this->zeek;
 
-	// we connect with bad login & password
+    	// we connect with bad login & password
         $this->assertFalse(
             $zeek->connect('no_test', 'no_test', 'no_test'));
-            $zeek->checkOutput(
-                '{"error":"unexpected project name, login & password!"}');
+        $zeek->checkOutput(
+            '{"error":"unexpected project name, login & password!"}');
 
-	// we connect with good login & password
+    	// we connect with good login & password
         $this->assertTrue(
             $zeek->connect('test', 'test', 'test'));
         $this->assertTrue(
             $zeek->checkOutput(
                 '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
 
-	// we create a project
+    	// we create a project
         $this->assertTrue($zeek->project_create('test'));
         $this->assertTrue(
             $zeek->checkOutput('{"redirect":"home.php"}'));
 
-	// we create the project again
+    	// we create the project again
         $this->assertFalse($zeek->project_create('test'));
-	$this->assertTrue(
-           $zeek->checkOutput('{"error":"Project already existing!"}'));
+    	$this->assertTrue(
+            $zeek->checkOutput('{"error":"Project already existing!"}'));
 
         $this->assertTrue(
             $zeek->connect('test', 'test', 'test'));
 
-	// we check the structure
-	$zeek->structure_get();
-	$this->assertTrue(
-            $zeek->checkOutput('{"structure":{"artist":{"name":{"type":"text","size":100},"surname":{"type":"text","size":100},"age":{"type":"number","min":0,"max":4294967295,"step":1},"subtitle":{"type":"text","size":300},"biography":{"type":"text","size":1000},"skill":{"type":"text","size":100}},"show":{"name":{"type":"text","size":100},"date":{"type":"date"},"hour":{"type":"time"},"location":{"type":"text","size":300}},"news":{"name":{"type":"text","size":100},"date":{"type":"date"},"comments":{"type":"text","size":100}},"album":{"name":{"type":"text","size":100},"duration":{"type":"number","min":0,"max":4294967295,"step":1},"comments":{"type":"text","size":1000}},"music":{"name":{"type":"text","size":100},"date":{"type":"date"},"duration":{"type":"number","min":0,"max":4294967295,"step":1},"comments":{"type":"text","size":1000}},"video":{"name":{"type":"text","size":100},"date":{"type":"date"},"duration":{"type":"number","min":0,"max":4294967295,"step":1},"comments":{"type":"text","size":1000}},"media":{"name":{"type":"text","size":100},"date":{"type":"date"},"comments":{"type":"text","size":1000}}}}'));
+    	// we check the structure
+    	$zeek->structure_get();
+    	$this->assertTrue(
+            $zeek->checkOutput('{"structure":{"artist":{"name":{"type":"text","size":100,"db_type":"VARCHAR"},"surname":{"type":"text","size":100,"db_type":"VARCHAR"},"age":{"type":"number","min":0,"max":4294967295,"step":1,"db_type":"INT_U"},"subtitle":{"type":"text","size":300,"db_type":"VARCHAR"},"biography":{"type":"text","size":1000,"db_type":"TEXT"},"skill":{"type":"text","size":100,"db_type":"VARCHAR"}},"show":{"name":{"type":"text","size":100,"db_type":"VARCHAR"},"date":{"type":"date","db_type":"DATE"},"hour":{"type":"time","db_type":"TIME"},"location":{"type":"text","size":300,"db_type":"VARCHAR"}},"news":{"name":{"type":"text","size":100,"db_type":"VARCHAR"},"date":{"type":"date","db_type":"DATE"},"comments":{"type":"text","size":100,"db_type":"VARCHAR"}},"album":{"name":{"type":"text","size":100,"db_type":"VARCHAR"},"duration":{"type":"number","min":0,"max":4294967295,"step":1,"db_type":"INT_U"},"comments":{"type":"text","size":1000,"db_type":"TEXT"}},"music":{"name":{"type":"text","size":100,"db_type":"VARCHAR"},"date":{"type":"date","db_type":"DATE"},"duration":{"type":"number","min":0,"max":4294967295,"step":1,"db_type":"INT_U"},"comments":{"type":"text","size":1000,"db_type":"TEXT"}},"video":{"name":{"type":"text","size":100,"db_type":"VARCHAR"},"date":{"type":"date","db_type":"DATE"},"duration":{"type":"number","min":0,"max":4294967295,"step":1,"db_type":"INT_U"},"comments":{"type":"text","size":1000,"db_type":"TEXT"}},"media":{"name":{"type":"text","size":100,"db_type":"VARCHAR"},"date":{"type":"date","db_type":"DATE"},"comments":{"type":"text","size":1000,"db_type":"TEXT"}}}}'));
 
-	// we delete the project
+    	// we delete the project
         $this->assertTrue($zeek->project_delete('test'));
         $this->assertTrue(
             $zeek->checkOutput(
                 '{"success":"Project \'test\' correctly deleted!"}'));
 
-	// we delete again the project
+    	// we delete again the project
         $this->assertFalse($zeek->project_delete('test'));
 
         // we establish the connection with the database
@@ -124,67 +124,122 @@ class TestZeek extends PHPUnit_Framework_TestCase
         $zeek->environment_clean();
     }
 
-    // public function test_user()
-    // {
-    //     $zeek = $this->zeek;
 
-    //     $this->assertTrue(
-    //         $zeek->connect('test', 'test', 'test'));
+    public function test_structure()
+    {
+        $zeek = $this->zeek;
 
-    //     $this->assertTrue(
-    //         $zeek->checkOutput(
-    //             '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
+        // we check the structure
+    	$zeek->structure_get_list(true);
+    	$this->assertTrue(
+            $zeek->checkOutput('{"list":["TINYINT","TINYINT_U","SMALLINT","SMALLINT_U","MEDIUMINT","MEDIUMINT_U","INT","INT_U","BIGINT","BIGINT_U","DECIMAL","INTEGER","FLOAT","DOUBLE","REAL","DATE","TIME","TIMESTAMP","DATETIME","YEAR","CHAR","VARCHAR","TINYTEXT","TEXT","MEDIUMTEXT","LONGTEXT","TINYBLOB","BLOB","MEDIUMBLOB","LONGBLOB"]}'));
 
-    //     $this->assertTrue($zeek->project_create('test'));
+        $zeek->structure_get_list(false);
+    	$this->assertTrue(
+            $zeek->checkOutput('{"list":["TITLE","IMAGE","TEXT","INTEGER","NUMBER","FLOAT","DATE","TIME","YEAR","DATETIME"]}'));
+    }
 
-    //     $this->assertTrue(
-    //         $zeek->checkOutput('{"redirect":"home.php"}'));
+    public function test_user()
+    {
+        $zeek = $this->zeek;
 
-    //     $this->assertFalse($zeek->user_add(0,'test', NULL));
+        $this->assertTrue(
+            $zeek->connect('test', 'test', 'test'));
 
-    //     $this->assertTrue(
-    //         $zeek->checkOutput('{"error":"Expecting valid user email!"}'));
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
 
-    //     $this->assertFalse($zeek->user_add(0,'test', 'test'));
+        $this->assertTrue($zeek->project_create('test'));
 
-    //     $this->assertTrue(
-    //         $zeek->checkOutput('{"error":"The user \'test\' already exist!"}'));
+        $this->assertTrue(
+            $zeek->checkOutput('{"redirect":"home.php"}'));
 
-    //     $this->assertFalse($zeek->user_add(1,'test', 'test_zeek.fr'));
+        $this->assertFalse($zeek->user_add(0,'test', NULL));
 
-    //     $this->assertTrue(
-    //         $zeek->checkOutput(
-    //             '{"error":"Expected a valid email adress, received \'test_zeek.fr\'!"}'));
+        $this->assertTrue(
+            $zeek->checkOutput('{"error":"Expecting valid user email!"}'));
 
-    //     $zeek->send_email_output = false;
-    //     $this->assertFalse($zeek->user_add(1,'test', 'test@zeek.fr'));
+        $this->assertFalse($zeek->user_add(0,'test', 'test'));
 
-    //     $this->assertTrue(
-    //         $zeek->checkOutput(
-    //             '{"error":"Impossible to send email to \'test@zeek.fr\'!"}'));
+        $this->assertTrue(
+            $zeek->checkOutput('{"error":"The user \'test\' already exist!"}'));
 
-    //     $zeek->send_email_output = true;
-    //     $this->assertTrue($zeek->user_add(1,'test', 'test@zeek.fr'));
+        $this->assertFalse($zeek->user_add(1,'test', 'test_zeek.fr'));
 
-    //     $this->assertTrue(
-    //         $zeek->checkOutput(
-    //             '{"success":"User \'test@zeek.fr\' correctly added & informed!"}'));
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"error":"Expected a valid email adress, received \'test_zeek.fr\'!"}'));
 
-    //     $this->assertFalse($zeek->user_add(1,'test', 'test@zeek.fr'));
+        $zeek->send_email_output = false;
+        $this->assertFalse($zeek->user_add(1,'test', 'test@zeek.fr'));
 
-    //     $this->assertTrue(
-    //         $zeek->checkOutput('{"error":"The user \'test@zeek.fr\' already exist!"}'));
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"error":"Impossible to send email to \'test@zeek.fr\'!"}'));
 
-    //     $this->assertTrue($zeek->user_delete(1, 'test@zeek.fr'));
+        $zeek->send_email_output = true;
+        $this->assertTrue($zeek->user_add(1,'test', 'test@zeek.fr'));
 
-    //     $this->assertTrue(
-    //         $zeek->checkOutput(
-    //             '{"success":"User \'test@zeek.fr\' correctly deleted!"}'));
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"User \'test@zeek.fr\' correctly added & informed!"}'));
 
-    //     $this->assertFalse($zeek->user_delete(1, 'test@zeek.fr'));
+        $this->assertFalse($zeek->user_add(1,'test', 'test@zeek.fr'));
 
-    //     $zeek->environment_clean();
-    // }
+        $this->assertTrue(
+            $zeek->checkOutput('{"error":"The user \'test@zeek.fr\' already exist!"}'));
+
+        $this->assertTrue($zeek->user_add(1,'test', 'test2@zeek.fr'));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"User \'test2@zeek.fr\' correctly added & informed!"}'));
+
+        $this->assertTrue($zeek->user_add(1,'test', 'test3@zeek.fr'));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"User \'test3@zeek.fr\' correctly added & informed!"}'));
+
+        $this->assertTrue($zeek->users_get_list(1));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"users":["test@zeek.fr","test2@zeek.fr","test3@zeek.fr"]}'));
+
+        $this->assertTrue($zeek->user_delete(1, 'test@zeek.fr'));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"User \'test@zeek.fr\' correctly deleted!"}'));
+
+        $this->assertFalse($zeek->user_delete(1, 'test@zeek.fr'));
+
+        $this->assertTrue($zeek->users_get_list(1));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"users":["test2@zeek.fr","test3@zeek.fr"]}'));
+
+        $this->assertTrue($zeek->user_delete(1, 'test2@zeek.fr'));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"User \'test2@zeek.fr\' correctly deleted!"}'));
+
+        $this->assertTrue($zeek->user_delete(1, 'test3@zeek.fr'));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"User \'test3@zeek.fr\' correctly deleted!"}'));
+
+        $this->assertTrue($zeek->users_get_list(1));
+
+        $this->assertTrue($zeek->checkOutput('{"users":[]}'));
+
+        $zeek->environment_clean();
+    }
 
     public function test_data()
     {
@@ -197,17 +252,17 @@ class TestZeek extends PHPUnit_Framework_TestCase
             $zeek->checkOutput(
                 '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
 
-	// create new project
+    	// create new project
         $this->assertTrue($zeek->project_create('test'));
 
         $this->assertTrue(
             $zeek->checkOutput('{"redirect":"home.php"}'));
 
-	// create new album element
+    	// create new album element
         $this->assertTrue(
             $zeek->data_set('album', 'name=tutu&duration=10&comments=hey'));
 
-	// check the value has been correctly created
+    	// check the value has been correctly created
         $this->assertTrue(
             $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
 
@@ -216,15 +271,15 @@ class TestZeek extends PHPUnit_Framework_TestCase
         $this->assertTrue(
             $zeek->checkOutput('[{"id":"1","name":"tutu","duration":"10","comments":"hey"}]'));
 
-	// try to create a new value on an unkown element
+    	// try to create a new value on an unkown element
         $this->assertFalse(
             $zeek->data_set('albu', 'name=tutu&duration=10&comments=hey'));
 
-	// try to create album element with wrong parameters : ERROR duration=toto accepted!!
-	// $this->assertFalse(
-        //   $zeek->data_set('album', 'name=tutu&duration=toto&comments=hey'));
-
-	// try to update the value of this element
+    	// try to create album element with wrong parameters : ERROR duration=toto accepted!!
+        //$this->assertFalse(
+        //$zeek->data_set('album', 'name=tutu&duration=toto&comments=hey'));
+        //
+        // try to update the value of this element
         $this->assertTrue(
             $zeek->data_update('album', 1, 'name=toto&duration=20&comments=hoy'));
 
@@ -245,37 +300,37 @@ class TestZeek extends PHPUnit_Framework_TestCase
         $this->assertTrue(
             $zeek->connect('test', 'test', 'test'));
 
-	$zeek->file_get_type_list(true);
+        $zeek->file_get_type_list(true);
 
-	$this->assertTrue(
-	    $zeek->checkOutput(
-		json_encode(array('type_list' => array("abap","actionscript","ada","apache_conf","applescript","asciidoc","assembly_x86","autohotkey","batchfile","c9search","c_cpp","cirru","clojure","cobol","coffee","coldfusion","csharp","css","curly","d","dart","diff","django","dockerfile","dot","eiffel","ejs","elixir","elm","erlang","forth","ftl","gcode","gherkin","gitignore","glsl","golang","groovy","haml","handlebars","haskell","haxe","html","html_ruby","ini","io","jack","jade","java","javascript","json","jsoniq","jsp","jsx","julia","latex","less","liquid","lisp","livescript","logiql","lsl","lua","luapage","lucene","makefile","markdown","matlab","mel","mushcode","mysql","nix","objectivec","ocaml","pascal","perl","pgsql","php","plain_text","powershell","praat","prolog","properties","protobuf","python","r","rdoc","rhtml","ruby","rust","sass","scad","scala","scheme","scss","sh","sjs","smarty","snippets","soy_template","space","sql","stylus","svg","tcl","tex","text","textile","toml","twig","typescript","vala","vbscript","velocity","verilog","vhdl","xml","xquery","yaml")))));
+        $this->assertTrue(
+    	    $zeek->checkOutput(
+    	        json_encode(array('type_list' => array("abap","actionscript","ada","apache_conf","applescript","asciidoc","assembly_x86","autohotkey","batchfile","c9search","c_cpp","cirru","clojure","cobol","coffee","coldfusion","csharp","css","curly","d","dart","diff","django","dockerfile","dot","eiffel","ejs","elixir","elm","erlang","forth","ftl","gcode","gherkin","gitignore","glsl","golang","groovy","haml","handlebars","haskell","haxe","html","html_ruby","ini","io","jack","jade","java","javascript","json","jsoniq","jsp","jsx","julia","latex","less","liquid","lisp","livescript","logiql","lsl","lua","luapage","lucene","makefile","markdown","matlab","mel","mushcode","mysql","nix","objectivec","ocaml","pascal","perl","pgsql","php","plain_text","powershell","praat","prolog","properties","protobuf","python","r","rdoc","rhtml","ruby","rust","sass","scad","scala","scheme","scss","sh","sjs","smarty","snippets","soy_template","space","sql","stylus","svg","tcl","tex","text","textile","toml","twig","typescript","vala","vbscript","velocity","verilog","vhdl","xml","xquery","yaml")))));
 
-	$this->assertFalse($zeek->file_create(
-	    'type', 'to_to', 'extension', false));
-	$this->assertTrue(
-	    $zeek->checkOutput('{"error":"The filename \'to_to\' should only'
-			     . ' contains letters & numbers!"}'));
+        $this->assertFalse($zeek->file_create(
+    	    'type', 'to_to', 'extension', false));
+        $this->assertTrue(
+    	    $zeek->checkOutput('{"error":"The filename \'to_to\' should only'
+    			     . ' contains letters & numbers!"}'));
 
-	$this->assertFalse($zeek->file_create('type', 'toto', 'extension', false));
-	$this->assertTrue(
-	    $zeek->checkOutput('{"error":"The file type \'type\' is invalid!"}'));
+        $this->assertFalse($zeek->file_create('type', 'toto', 'extension', false));
+        $this->assertTrue(
+    	    $zeek->checkOutput('{"error":"The file type \'type\' is invalid!"}'));
 
-	$this->assertTrue($zeek->file_create('css', 'toto', 'css', false));
-	$this->assertTrue(
-	    $zeek->checkOutput(
-		'{"success":"file \'toto.css\' with type \'css\' created!"}'));
+        $this->assertTrue($zeek->file_create('css', 'toto', 'css', false));
+        $this->assertTrue(
+    	    $zeek->checkOutput(
+    	        '{"success":"file \'toto.css\' with type \'css\' created!"}'));
 
-	$this->assertTrue($zeek->file_create('css', 'tutu', 'css', false,
-					     'projects/test/css/toto.css'));
-	$this->assertTrue(
-	    $zeek->checkOutput(
-		'{"success":"file \'projects\/test\/css\/toto.css\' stored as \'tutu.css\' with type \'css\' created!"}'));
+        $this->assertTrue($zeek->file_create('css', 'tutu', 'css', false,
+    					     'projects/test/css/toto.css'));
+        $this->assertTrue(
+    	    $zeek->checkOutput(
+    	        '{"success":"file \'projects\/test\/css\/toto.css\' stored as \'tutu.css\' with type \'css\' created!"}'));
 
-	$this->assertTrue($zeek->file_delete('css/tutu.css'));
-	$this->assertTrue(
-	    $zeek->checkOutput(
-		'{"success":"The file \'css\/tutu.css\' successfully deleted!"}'));
+        $this->assertTrue($zeek->file_delete('css/tutu.css'));
+        $this->assertTrue(
+    	    $zeek->checkOutput(
+    	        '{"success":"The file \'css\/tutu.css\' successfully deleted!"}'));
 
 
 
@@ -294,33 +349,33 @@ class TestZeek extends PHPUnit_Framework_TestCase
             $zeek->checkOutput(
                 '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
 
-	// create new project
+        // create new project
         $this->assertTrue($zeek->project_create('test'));
 
         $this->assertTrue(
             $zeek->checkOutput('{"redirect":"home.php"}'));
 
-	// create new album element
+        // create new album element
         $this->assertTrue(
             $zeek->data_set('album', 'name=test&duration=100&comments=Tropcool!'));
 
-	// check the value has been correctly created
+        // check the value has been correctly created
         $this->assertTrue(
             $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
 
-	// create new album element
+        // create new album element
         $this->assertTrue(
             $zeek->data_set('album', 'name=tuto&duration=111&comments=ItWorks!'));
 
-	// check the value has been correctly created
+        // check the value has been correctly created
         $this->assertTrue(
             $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
 
-	// create new album element
+        // create new album element
         $this->assertTrue(
             $zeek->data_set('album', 'name=titi&duration=321&comments=notWorking!'));
 
-	// check the value has been correctly created
+        // check the value has been correctly created
         $this->assertTrue(
             $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
 
@@ -344,62 +399,87 @@ class TestZeek extends PHPUnit_Framework_TestCase
             $zeek->checkOutput(
                 '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
 
-	// create new project
+        // create new project
         $this->assertTrue($zeek->project_create('test'));
 
         $this->assertTrue(
             $zeek->checkOutput('{"redirect":"home.php"}'));
 
         // create toto.css
-	$this->assertTrue($zeek->file_create('html', 'index', 'html', true));
-	$this->assertTrue(
-	    $zeek->checkOutput(
-		'{"success":"file \'index.html\' with type \'html\' created!"}'));
+        $this->assertTrue($zeek->file_create('html', 'index', 'html', true));
+        $this->assertTrue(
+    	    $zeek->checkOutput(
+    	        '{"success":"file \'index.html\' with type \'html\' created!"}'));
 
         // create css/tutu.css
-	$this->assertTrue($zeek->file_create('css', 'test', 'css', false));
-	$this->assertTrue(
-	    $zeek->checkOutput(
-		'{"success":"file \'test.css\' with type \'css\' created!"}'));
+        $this->assertTrue($zeek->file_create('css', 'test', 'css', false));
+        $this->assertTrue(
+    	    $zeek->checkOutput(
+    	        '{"success":"file \'test.css\' with type \'css\' created!"}'));
 
         // check test functionality
         $zeek->test();
         $this->assertTrue(
-            $zeek->checkOutput('{"href":"projects\/1\/test_test\/index.html"}'));
+            $zeek->checkOutput('{"href":"projects\/1\/TEST_test\/index.html"}'));
 
         // check the files have been correctly set & deploy
-        $this->assertTrue($zeek->file_get('test_test', 'index.html'));
+        $this->assertTrue($zeek->file_get('TEST_test', 'index.html'));
         $this->assertTrue(
             $zeek->checkOutput('{"get":"<!DOCTYPE html>\n<html>\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>Generic<\/title>\n    <link rel=\"stylesheet\" href=\"generic.css\">\n  <\/head>\n  <body>\n      <!-- now you play!  -->\n  <\/body>\n<\/html>\n","type":"html"}'));
 
-        $this->assertTrue($zeek->file_get('test_test', 'css/test.css'));
+        $this->assertTrue($zeek->file_get('TEST_test', 'css/test.css'));
         $this->assertTrue(
             $zeek->checkOutput('{"get":"body {\n    \/* now you play! *\/\n}\n","type":"css"}'));
 
         // delete project
-	$this->assertTrue($zeek->project_delete('test'));
+        $this->assertTrue($zeek->project_delete('test'));
         $this->assertTrue(
-	    $zeek->checkOutput('{"success":"Project \'test\' correctly deleted!"}'));
+    	    $zeek->checkOutput('{"success":"Project \'test\' correctly deleted!"}'));
 
         $zeek->environment_clean();
     }
 
-    // public function test_success()
-    // {
-    //     $this->zeek->success('toto', array('tutu' => 'titi'));
-    //     $this->assertTrue(
-    //         $this->zeek->checkOutput(
-    //             json_encode(array('success' => 'toto', 'tutu' => 'titi'))));
+    public function test_minify()
+    {
+        $zeek = $this->zeek;
+
+        $this->assertEquals($zeek->minify('
+body {
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 16px;
+}
+p.message {
+    border-color: #EEE;
+    border-radius: 3px;
+}', 'js'), 'body{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:16px;}
+p.message{border-color:#EEE;border-radius:3px;}');
+
+        $this->assertEquals($zeek->minify('
+$alert = $("div.alert");
+$alert.hide();
+
+$danger = $("div.error");
+$success = $("div.success");
+', 'js'), '$alert=$("div.alert");$alert.hide();$danger=$("div.error");$success=$("div.success");'
+        );
+    }
+
+    public function test_success()
+    {
+        $this->zeek->success('toto', array('tutu' => 'titi'));
+        $this->assertTrue(
+            $this->zeek->checkOutput(
+                json_encode(array('success' => 'toto', 'tutu' => 'titi'))));
 
 
-    //     $this->zeek->success('toto', NULL);
-    //     $this->assertTrue(
-    //         $this->zeek->checkOutput(
-    //             json_encode(array('success' => 'toto'))));
+        $this->zeek->success('toto', NULL);
+        $this->assertTrue(
+            $this->zeek->checkOutput(
+                json_encode(array('success' => 'toto'))));
 
-    //     $result = json_decode(json_encode(array('success' => 'toto')));
-    //     $this->assertEquals($result->success, 'toto');
-    // }
+        $result = json_decode(json_encode(array('success' => 'toto')));
+        $this->assertEquals($result->success, 'toto');
+    }
 
 }
 ?>

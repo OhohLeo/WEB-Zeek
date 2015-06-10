@@ -150,6 +150,90 @@ class DataBase extends ZeekOutput {
     }
 
 /**
+ * Return attribute parameters request
+ *
+ * @method attribute_add
+ * @param string attribute name
+ * @param array/string detail parameter
+ */
+    private function attribute_add($name, $type)
+    {
+        $request = "$name  ";
+
+        $vartype = NULL;
+        $size = NULL;
+        $default = NULL;
+
+        /* we validate the type at first */
+        if (is_array($type)) {
+
+            /* 1st element is the vartype */
+            $vartype = $type["type"];
+
+	    if (array_key_exists("size", $type))
+		$size = $type["size"];
+
+	    if (array_key_exists("default", $type))
+		$default = $type["default"];
+
+        } else {
+            $vartype = $type;
+        }
+
+        /* the vartype should be defined */
+        if ($vartype == NULL) {
+            $this->error(
+                "Unknown attribute type for value '$value'"
+              . " when creating table '$name'");
+            return false;
+        }
+
+        /* the vartype should be valid */
+        if ($this->check_type($vartype)) {
+
+            /* we add the unsigned flag */
+            if (preg_match('/^([A-Z]+)_U$/', $vartype, $result)) {
+                $vartype = $result[1] . ' UNSIGNED ';
+            }
+
+            $request .= "$vartype";
+        } else {
+            $this->error(
+                "Unexpected attribute type '$vartype'"
+              . " when creating table '$name'");
+
+            return false;
+        }
+
+        /* 2nd element is the size */
+        if (isset($size)) {
+            if (is_numeric($size)) {
+                $request .= "($size) ";
+            } else {
+                $this->error(
+                    "Unexpected attribute size '$size' on type "
+                  . "'$vartype' when creating table '$name'");
+                return false;
+            }
+        }
+
+        /* 3rd element is or the default value or the 'NULL' /
+         * 'NOT NULL' */
+        if (isset($default)) {
+            if ($default == "NOT NULL" or $default == "NULL") {
+                $request .= " $default ";
+            } else {
+                $request .= " NOT NULL DEFAULT '$default' ";
+            }
+        } else {
+            /* by default the value is NOT NULL */
+            $request .= " NOT NULL ";
+        }
+
+        return $request;
+    }
+
+/**
  * Create a new table
  *
  * It automatically creates the auto-increment 'id' integer attribute.
@@ -169,80 +253,14 @@ class DataBase extends ZeekOutput {
 
         if (isset($attributes) && is_array($attributes)) {
 
-            foreach ($attributes as $key => $type) {
+            foreach ($attributes as $name => $type) {
 
-                $request .= "$key  ";
+                $attribute_request = $this->attribute_add($name, $type);
 
-                $vartype = NULL;
-                $size = NULL;
-                $default = NULL;
-
-                /* we validate the type at first */
-                if (is_array($type)) {
-
-                    /* 1st element is the vartype */
-                    $vartype = $type["type"];
-
-		    if (array_key_exists("size", $type))
-			$size = $type["size"];
-
-		    if (array_key_exists("default", $type))
-			$default = $type["default"];
-
-                } else {
-                    $vartype = $type;
-                }
-
-                /* the vartype should be defined */
-                if ($vartype == NULL) {
-                    $this->error(
-                        "Unknown attribute type for value '$value'"
-                        . " when creating table '$name'");
+                if ($attribute_request == false)
                     return false;
-                }
 
-                /* the vartype should be valid */
-                if ($this->check_type($vartype)) {
-
-                    /* we add the unsigned flag */
-                    if (preg_match('/^([A-Z]+)_U$/', $vartype, $result)) {
-                        $vartype = $result[1] . ' UNSIGNED ';
-                    }
-
-                    $request .= "$vartype";
-                } else {
-                    $this->error(
-                        "Unexpected attribute type '$vartype'"
-                        . " when creating table '$name'");
-                }
-
-                /* 2nd element is the size */
-                if (isset($size)) {
-                    if (is_numeric($size)) {
-                        $request .= "($size) ";
-                    } else {
-                        $this->error(
-                            "Unexpected attribute size '$size' on type "
-                            . "'$vartype' when creating table '$name'");
-                        return false;
-                    }
-                }
-
-                /* 3rd element is or the default value or the 'NULL' /
-                 * 'NOT NULL' */
-                if (isset($default)) {
-                    if ($default == "NOT NULL" or $default == "NULL") {
-                        $request .= " $default ";
-                    } else {
-                        $request .= " NOT NULL DEFAULT '$default' ";
-                    }
-                } else {
-                    /* by default the value is NOT NULL */
-                    $request .= " NOT NULL ";
-                }
-
-
-                $request .= ", ";
+                $request .= $attribute_request . ", ";
             }
         }
 
@@ -260,6 +278,37 @@ class DataBase extends ZeekOutput {
     public function table_delete($name)
     {
         return $this->send_query("DROP TABLE IF EXISTS $name", true);
+    }
+
+/**
+ * Add the attribute of the table
+ *
+ * @method table_add_attribute
+ * @param string table name
+ * @param string attribute name
+ * @param type type associated to the attribute
+ */
+    public function table_add_attribute($table_name, $attribute_name, $type)
+    {
+        $attribute_request = $this->attribute_add($attribute_name, $type);
+
+        if ($attribute_request == false)
+            return false;
+
+        return $this->send_query(
+            "ALTER TABLE $table_name ADD COLUMN $attribute_request", true);
+    }
+
+/**
+ * Remove an attribute of the table
+ *
+ * @method table_add_column
+ * @param string attribute name
+ */
+    public function table_remove_attribute($table_name, $attribute_name)
+    {
+        return $this->send_query(
+            "ALTER TABLE $table_name DROP COLUMN $attribute_name", true);
     }
 
 /**

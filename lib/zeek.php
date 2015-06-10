@@ -13,6 +13,19 @@ class Zeek extends ZeekOutput {
     protected $zlib;
     private $type_list;
 
+    private $simple_db = array(
+        "TITLE"    => "VARCHAR",
+        "IMAGE"    => "LONGBLOB",
+        "TEXT"     => "LONGTEXT",
+        "INTEGER"  => "INTEGER",
+        "NUMBER"   => "BIGINT",
+        "FLOAT"    => "FLOAT",
+        "DATE"     => "DATE",
+        "TIME"     => "TIME",
+        "YEAR"     => "YEAR",
+        "DATETIME" => "TIMESTAMP",
+    );
+
     private $db_to_css = array(
         "TINYINT" => array(
 	    "type" => "number",
@@ -227,7 +240,10 @@ class Zeek extends ZeekOutput {
 		return $this->user_add($project_id, $project_name, $email);
 
             case 'user_delete':
-		return $this->user_delete($project_id, $email);
+	        return $this->user_delete($project_id, $params["email"]);
+
+            case 'users_get_list':
+	        return $this->users_get_list($project_id);
 
             case 'user_change_password':
 		return $this->user_change_password(
@@ -246,7 +262,7 @@ class Zeek extends ZeekOutput {
 		    strtolower($params["type"]),
 		    strtolower($params["name"]),
 		    strtolower($params["extension"]),
-		    $params["in_main_directory"] === "true",
+ 		    $params["in_main_directory"] === "true",
 		    "projects/" . $project_id . "/"
                                 . $user . "/". $params["src"]);
 
@@ -280,6 +296,10 @@ class Zeek extends ZeekOutput {
 
             case 'structure_set':
 		return $this->structure_set($new_structure);
+
+            case 'structure_get_list':
+	        return $this->structure_get_list(
+                    $params['expert_mode']  === "true");
 
             case 'data_get':
 		return $this->data_get(
@@ -381,8 +401,9 @@ class Zeek extends ZeekOutput {
  *
  * @method project_create
  * @param string project name to create
+ * @param array options associated to the the project
  */
-    public function project_create($project_name)
+    public function project_create($project_name, $options=null)
     {
         $zlib = $this->zlib;
 
@@ -393,7 +414,7 @@ class Zeek extends ZeekOutput {
             if ($zlib->project_get_id($project_name) == false)
             {
 		// we create the project
-		if ($zlib->project_add($project_name) == false)
+		if ($zlib->project_add($project_name, $options) == false)
 		{
 		    $this->error('Impossible to add project!');
 		    return false;
@@ -461,7 +482,7 @@ class Zeek extends ZeekOutput {
     public function user_add($project_id, $project_name, $email)
     {
         /* we check if the email is set */
-        if (!isset($email)) {
+        if ($this->check_string($email) == false) {
             $this->error("Expecting valid user email!");
             return false;
         }
@@ -487,7 +508,7 @@ class Zeek extends ZeekOutput {
             "Login Access to Zeek '$project_name'",
             "Welcome to Zeek '$project_name':\n"
             . "login: $email\n"
-            . "password : $password\n")) {
+          . "password : $password\n")) {
 
             if ($this->zlib->user_add($project_id, $email, $password)) {
                 $this->success("User '$email' correctly added & informed!");
@@ -511,12 +532,14 @@ class Zeek extends ZeekOutput {
     public function user_delete($project_id, $email)
     {
         /* we check if the email is set */
-        if (!isset($email)) {
+        if ($this->check_string($email) == false)
+        {
             $this->error("Expecting valid user email!");
             return false;
         }
 
-        if ($this->zlib->user_remove($project_id, $email)) {
+        if ($this->zlib->user_remove($project_id, $email))
+        {
             $this->success("User '$email' correctly deleted!");
             return true;
         }
@@ -525,11 +548,27 @@ class Zeek extends ZeekOutput {
     }
 
 /**
+ * Return the list of users associated to the current project.
+ *
+ * @method users_get_list
+ * @param integer id of the current project
+ */
+    public function users_get_list($project_id)
+    {
+        $this->output_json(
+            array('users' => $this->zlib->users_get_list($project_id)));
+
+	return true;
+    }
+
+/**
  * Don't authorized user to connect with this project.
  *
- * @method user_delete
+ * @method user_change_password
  * @param integer id of the current project
  * @param email email of user to remove
+ * @param string old password
+ * @param string new password
  */
     public function user_change_password(
         $project_id, $email, $password_old, $password_new)
@@ -877,20 +916,23 @@ class Zeek extends ZeekOutput {
 
             if ($start_idx >= $offset && $end_idx + 7 > $offset)
             {
-                $xml = simplexml_load_string(
+                $xml = @simplexml_load_string(
                     substr($input, $start_idx, $end_idx + 7 - $start_idx));
 
-                $options = array();
+                if ($xml)
+                {
+                    $options = array();
 
-                foreach($xml->attributes() as $key => $value) {
-                    $options[$key] = $value->__toString();
+                    foreach($xml->attributes() as $key => $value) {
+                        $options[$key] = $value->__toString();
+                    }
+
+                    $start_idx = strpos($input, '>', $start_idx) + 1;
+
+                    $output .= $this->zeekify_one_by_one(
+                        substr($input, $start_idx, $end_idx - $start_idx),
+                        $options);
                 }
-
-                $start_idx = strpos($input, '>', $start_idx) + 1;
-
-                $output .= $this->zeekify_one_by_one(
-                    substr($input, $start_idx, $end_idx - $start_idx),
-                    $options);
 
                 $offset += $end_idx + 7 - $offset;
             }
@@ -995,6 +1037,32 @@ class Zeek extends ZeekOutput {
     }
 
  /**
+  * Method that minify js & css files.
+  *
+  * @method minify
+  * @param string input to minify
+  * @param string type (css|js)
+  *
+  * @return string minified output
+  */
+    public function minify($input, $type)
+    {
+        switch ($type)
+        {
+            case 'css':
+            require_once($this->global_path . "extends/cssmin/CssMin.php");
+            return CssMin::minify($input);
+
+            case 'javascript':
+            case 'js':
+            require_once($this->global_path . "extends/JShrink/src/JShrink/Minifier.php");
+            return \JShrink\Minifier::minify($input);
+        }
+
+        return $input;
+    }
+
+ /**
   * Method to zeekify all the code & deploy the test platform
   *
   * @method test
@@ -1004,7 +1072,10 @@ class Zeek extends ZeekOutput {
         $dst = 'projects/' . $this->project_id
 	     . '/TEST_' . $_SESSION['login'];
 
-        $this->deploy_files($dst, array("zeekify" => array('html')));
+        $this->deploy_files($dst, array());
+
+        //"zeekify" => array('html'),
+        //"minify" => array('css', 'javascript')
 
 	$this->output_json(array('href' => $dst . '/index.html'));
     }
@@ -1019,9 +1090,6 @@ class Zeek extends ZeekOutput {
     {
 	// we copy the whole user directory in the deploy directory
         $dst = 'projects/' . $this->project_id . '/DEPLOY_';
-
-
-	// foreach js & css files : we minimise the size
 
 	// we send back the deploy URL
 	$this->output_json(
@@ -1077,7 +1145,13 @@ class Zeek extends ZeekOutput {
             foreach ($options as $option => $types_concerned)
             {
                 if (in_array($file['type'], $types_concerned))
-                    $input = $this->$option($input);
+                    $input = $this->$option($input, $file['type']);
+
+                if ($input == null)
+                {
+                    $input = "Error on '$option' functionnality: null output!";
+                    break;
+                }
             }
 
             // we write the file
@@ -1107,6 +1181,9 @@ class Zeek extends ZeekOutput {
 		// we get the css options
 		$css_options = $this->db_to_css[$options['type']];
 
+		// we set the options with the db type
+		$css_options['db_type'] = $options['type'];
+
 		// we check that it doesn't exist a specific value
 		foreach ($options as $type => $value)
 		{
@@ -1114,9 +1191,8 @@ class Zeek extends ZeekOutput {
 		    if ($type === "type")
 			continue;
 
-		    // we set the options with the specific value
 		    $css_options[$type] = $value;
-		}
+                }
 
 		// we set the css options before sending the data
 		$structure[$domain][$name] = $css_options;
@@ -1126,6 +1202,49 @@ class Zeek extends ZeekOutput {
 	$this->output_json(array('structure' => $structure));
 
 	return true;
+    }
+
+/**
+ * Send the project structure.
+ *
+ * @param boolean expert mode
+ *
+ * @method structure_get_list
+ */
+    public function structure_get_list($expert_mode)
+    {
+	$this->output_json(array('list' =>
+            array_keys($expert_mode ? $this->db_to_css : $this->simple_db)));
+
+	return true;
+    }
+
+
+/**
+ * Set a new project structure.
+ *
+ * We compare to the previous structure and process the change.
+ *
+ * @method structure_set
+ * @param array new structure
+ *
+ * It has following behavior :
+ *  {
+ *    table_name: {
+ *         attribute_name: {
+ *             type: DB_TYPE,
+ *             size: DB_SIZE,
+ *         },
+ *         ...
+ *    },
+ *    ...
+ *  }
+ */
+    public function structure_set($new_structure)
+    {
+        // we valid the new structure format
+
+        // we set the new structure into the database
     }
 
 /**

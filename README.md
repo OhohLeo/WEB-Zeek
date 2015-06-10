@@ -29,6 +29,10 @@ using following
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+10/06/2015 Leo
+ * setup configuration (project structure, editor & deploy options)
+ * handle minimise css & js
+
 24/05/2015 Leo
  * add zeekify method & handle
  * add upload/modify/delete file functionality

@@ -195,6 +195,14 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
             $this->assertEquals($row->Default, NULL);
         }
 
+        // we add more attributes (new columns) to the table
+        $this->assertTrue(
+            $db->table_add_attribute('more_attributes', 'test', 'TEXT'));
+
+        // we remove an attribute (column) from the table
+        $this->assertTrue(
+            $db->table_remove_attribute('more_attributes', 'test'));
+
         $this->assertTrue(
             $db->database_delete($this->test_dbname));
 
