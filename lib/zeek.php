@@ -403,7 +403,7 @@ class Zeek extends ZeekOutput {
  * @param string project name to create
  * @param array options associated to the the project
  */
-    public function project_create($project_name, $options=null)
+    public function project_create($project_name, $options = null)
     {
         $zlib = $this->zlib;
 
@@ -413,6 +413,8 @@ class Zeek extends ZeekOutput {
             // we check if the project_name does not exist
             if ($zlib->project_get_id($project_name) == false)
             {
+                var_dump($options);
+
 		// we create the project
 		if ($zlib->project_add($project_name, $options) == false)
 		{
@@ -1171,6 +1173,12 @@ class Zeek extends ZeekOutput {
     {
 	// we get the structure project
 	$structure = $this->zlib->structure_get($this->project_name);
+
+        if ($structure == NULL)
+        {
+            $this->output_json(array('structure' => NULL));
+	    return true;
+        }
 
 	// we go through all domains
 	foreach ($structure as $domain => $attribute)

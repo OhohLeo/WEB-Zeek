@@ -1,57 +1,6 @@
 <?php
 
-require_once 'lib/output.php';
-require_once 'lib/zeek.php';
-
-class ExtendsZeek extends Zeek
-{
-    private $output;
-    public $send_email_output = true;
-
-    public function checkOutput($input)
-    {
-        if ($this->output == $input) {
-            $this->output = NULL;
-            return true;
-        }
-
-        echo "\n expect : " . $input
-	   . "\n received : " . $this->output . "\n";
-
-        return false;
-    }
-
-    public function connect_to_database()
-    {
-        return $this->zlib->connect_to_database();
-    }
-
-    public function database()
-    {
-        return $this->db;
-    }
-
-    public function output($input)
-    {
-        /* echo "expect : " . $input . "\n"; */
-
-        $this->output = $input;
-    }
-
-    public function disconnect()
-    {
-    }
-
-    public function environment_clean()
-    {
-        $this->zlib->environment_clean($this->zlib->db_name);
-    }
-
-    public function send_email($email, $title, $msg)
-    {
-        return $this->send_email_output;
-    }
-}
+require_once 't/zeek_extends.php';
 
 class TestZeek extends PHPUnit_Framework_TestCase
 {
@@ -137,6 +86,8 @@ class TestZeek extends PHPUnit_Framework_TestCase
         $zeek->structure_get_list(false);
     	$this->assertTrue(
             $zeek->checkOutput('{"list":["TITLE","IMAGE","TEXT","INTEGER","NUMBER","FLOAT","DATE","TIME","YEAR","DATETIME"]}'));
+
+        $zeek->environment_clean();
     }
 
     public function test_user()
@@ -332,8 +283,6 @@ class TestZeek extends PHPUnit_Framework_TestCase
     	    $zeek->checkOutput(
     	        '{"success":"The file \'css\/tutu.css\' successfully deleted!"}'));
 
-
-
         $zeek->environment_clean();
     }
 
@@ -462,6 +411,8 @@ $danger = $("div.error");
 $success = $("div.success");
 ', 'js'), '$alert=$("div.alert");$alert.hide();$danger=$("div.error");$success=$("div.success");'
         );
+
+        $zeek->environment_clean();
     }
 
     public function test_success()
@@ -479,7 +430,11 @@ $success = $("div.success");
 
         $result = json_decode(json_encode(array('success' => 'toto')));
         $this->assertEquals($result->success, 'toto');
+
+        $this->zeek->environment_clean();
     }
+
+
 
 }
 ?>

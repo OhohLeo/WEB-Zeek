@@ -26,7 +26,8 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function config($config)
     {
-        $this->projects_path = $config['projects_path'];
+        if (isset($config['projects_path']))
+            $this->projects_path = $config['projects_path'];
 
         $this->db_host = $config['db_host'];
         $this->db_name = $config['db_name'];
@@ -327,7 +328,8 @@ class ZeekLibrary extends ZeekOutput {
     {
         $db = $this->db;
 
-        if ($this->project_check($project_name) == false) {
+        if ($this->projects_path
+            && $this->project_check($project_name) == false) {
             $this->error(
                 "no existing project '$project_name' in configuration file!");
             return false;
@@ -351,12 +353,10 @@ class ZeekLibrary extends ZeekOutput {
             return false;
 
         // we store the project id
-        if ($this->project_get_id($project_name)) {
-            $this->error('Impossible to add project!');
+        if ($this->project_get_id($project_name))
             return true;
-        }
 
-        $this->error("new project not found!");
+        $this->error('Impossible to add project!');
         return false;
     }
 
@@ -486,7 +486,7 @@ class ZeekLibrary extends ZeekOutput {
 	if (isset($this->data_structure[$project_name]))
 	    return $this->data_structure[$project_name];
 
-	return false;
+	return NULL;
     }
 
 /**
