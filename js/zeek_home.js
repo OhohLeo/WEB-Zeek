@@ -120,8 +120,7 @@ $(document).ready(function () {
 		"method": "file_get_list",
 	    },
 	    function ($result) {
-
-		if ($result == false)
+		if ($result == false || !("get_list" in $result))
 		    return false;
 
 		var $get_list = $result["get_list"];
@@ -578,8 +577,11 @@ $(document).ready(function () {
 		    method: "test",
 		},
 		function ($result) {
-		    window.open($result['href'], '_blank');
-		    return true;
+                    if ($result['href'])
+                    {
+		        window.open($result['href'], '_blank');
+		        return true;
+                    }
 		});
 
 	    return;
@@ -618,6 +620,9 @@ $(document).ready(function () {
     {
 	$div_menus.hide();
 	var $data = $structure[$name];
+
+        if ($data == null)
+            return false;
 
 	var $set = new Array();
 	for (var $attribute in $data)
@@ -781,6 +786,15 @@ $(document).ready(function () {
 	});
     };
 
+    // we enable/disable the structure configuration
+    var $button_structure_set = $("button#structure_set");
+
+    var $reset_structure_set = function() {
+        $button_structure_set.text("MODIFY");
+        $('body').css('background', ' #FFF');
+        $structure_get();
+    };
+
     var $ul_structure = $("ul#structure");
 
     // we store the initial structure
@@ -801,8 +815,6 @@ $(document).ready(function () {
 	        // we store the structure
 	        $structure = $result["structure"];
 
-                console.log($structure);
-
 	        if ($structure)
 	        {
 		    $ul_structure.html(Mustache.render(
@@ -812,6 +824,12 @@ $(document).ready(function () {
 		        }));
 
                     $("li#structure_loading").remove();
+
+                    // if the structure is empty : we activate the configuration mode
+                    if ($structure.length == 0)
+                    {
+                        $button_structure_set.trigger("click");
+                    }
 
 		    $li_data = $("li.data");
 
@@ -827,6 +845,8 @@ $(document).ready(function () {
 
 		        $handle_data($this.text());
 		    });
+
+
 
 		    return true;
 	        }
@@ -849,7 +869,9 @@ $(document).ready(function () {
             function ($users) {
                 $div_users.html(
                     Mustache.to_html(
-                        '<table>{{#users}}<tr><td>{{{.}}}</td><td><img email="{{{.}}}" src="img/delete.png" class="user_delete"></td></tr>{{/users}}</table>', $users));
+                        '<table>{{#users}}<tr><td>{{{.}}}</td>'
+                            + '<td><img email="{{{.}}}" src="img/delete.png" class="user_delete"></td>'
+                            + '</tr>{{/users}}</table>', $users));
 
                 $("img.user_delete").on("click", function() {
                     $send_request(
@@ -887,16 +909,6 @@ $(document).ready(function () {
             "params": $(this).serialize(),
         });
     });
-
-    // we enable/disable the structure configuration
-    var $button_structure_set = $("button#structure_set");
-
-    var $reset_structure_set = function() {
-        $button_structure_set.text("MODIFY");
-        $('body').css('background', ' #FFF');
-        $structure_get();
-    };
-
 
     var $select_type_list;
     var $structure_get_list = function () {
@@ -958,7 +970,7 @@ $(document).ready(function () {
 
 	                     var $data = $new_structure[$name];
 
-                             var $setup = "<table id=\"attribute_add\">";
+                             var $setup = "<table id=\"new_attribute\">";
 
                              // we handle new structure
                              if ($name === "CREATE") {
@@ -971,20 +983,28 @@ $(document).ready(function () {
                                  $("<img>").attr("src", "img/delete.png")
                                            .attr("class", "attribute_delete")).html();
 
-                             // we display the attributes already existing
-                             for (var $attribute in $data)
-	                     {
-	                         var $options = $data[$attribute];
-                                 $setup += "<tr name=\"" + $attribute + "\">"
-                                         + "<td><b>" + $attribute + "</b></td>"
-                                         + "<td>" + $options['db_type'] + "</td>"
-                                         + "<td>" + $delete_attribute
-                                         + "</td><td></td></tr>";
-	                     }
+                             var $display_attribute = function ($attribute, $options)
+                             {
+                                 return "<tr name=\"" + $attribute + "\">"
+                                 + "<td><b>" + $attribute + "</b></td>"
+                                 + "<td>" + $options['db_type'] + "</td>"
+                                 + "<td>" + $delete_attribute
+                                 + "</td><td></td></tr>";
+                             };
+
+                             if ($data != null)
+                             {
+                                 // we display the attributes already existing
+                                 for (var $attribute in $data)
+	                         {
+                                     $setup += $display_attribute(
+                                         $attribute, $data[$attribute]);
+	                         }
+                             }
 
                              // we add new attributes
-                             var $attribute_add =
-                             "<tr class=\"attribute_add\"><td><b>Name</b></td>"
+                             var $new_attribute =
+                             "<tr id=\"new_attribute\" type=\"name\"><td><b>Name</b></td>"
                            + "<td><input name=\"name\" type=\"text\"/></input></td>"
                            + "</td>" + $delete_attribute + "</td></tr>"
                            + "<tr><td><b>Type</b></td><td>"
@@ -994,39 +1014,25 @@ $(document).ready(function () {
                              // if we are in expert mode : we ask for the type
                              if ($("input#expert_mode").prop('checked'))
                              {
-                                 $attribute_add +=
+                                 $new_attribute +=
                                    "<tr><td><b>Size</b></td>"
                                  + "<td><input name=\"name\" type=\"text\"/></input></td>"
                                  + "</td></td></tr>";
                              }
 
-                             $setup += $attribute_add + "</table>"
-                                     + "<button id=\"attribute_add\"> + </button>";
+                             $setup += $new_attribute + "</table>"
+                                     + "<button id=\"new_attribute\"> + </button>";
 
                              $div_modal.html($setup);
 
-                             var $attribute_delete = function() {
-                                 $("img.attribute_delete").on("click", function () {
-                                     var $parent_row = $(this).parents("tr");
+                             $("button#new_attribute").on("click", function () {
+                                 // Check that previous 'Name' attribute is not empty
 
-                                     if ($parent_row.hasClass("attribute_add")) {
-                                         $parent_row.next().remove();
-                                     } else {
-                                         // TODO: à supprimer!!
-                                         console.log($parent_row.attr("name"));
-                                         $new_structure[$name][$parent_row.attr("name")] = "";
-                                     }
+                                 // Replace the previous attribute form
 
-                                     $parent_row.remove();
-                                 });
-                             };
-
-                             $("button#attribute_add").on("click", function () {
-                                 $("table#attribute_add").append($attribute_add);
-                                 $attribute_delete();
+                                 // Add the new attribute form
+                                 $("table#new_attribute").append($new_attribute);
                              });
-
-                             $attribute_delete();
 		         },
 		         buttons: {
                              "Cancel": function() {
@@ -1038,7 +1044,7 @@ $(document).ready(function () {
                                  $modal.dialog("close");
                              },
 		             "Validate": function () {
-                                 console.log($("tr.attribute_add").children("input"));
+                                 console.log($("tr#new_attribute").children("input"));
                                  console.log($new_structure);
 		             },
 		         }});
@@ -1048,13 +1054,8 @@ $(document).ready(function () {
                  });
             return;
         }
-        else
-        {
-            $reset_structure_set();
-        }
 
         $reset_structure_set();
-
     });
 
 

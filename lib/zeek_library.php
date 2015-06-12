@@ -476,7 +476,7 @@ class ZeekLibrary extends ZeekOutput {
 
 /**
  * Return the whole structure if it exists otherwise return
- * NULL.
+ * empty array.
  *
  * @method struture_set
  * @param string project name
@@ -486,7 +486,7 @@ class ZeekLibrary extends ZeekOutput {
 	if (isset($this->data_structure[$project_name]))
 	    return $this->data_structure[$project_name];
 
-	return NULL;
+	return array();
     }
 
 /**
@@ -794,8 +794,7 @@ class ZeekLibrary extends ZeekOutput {
 		return false;
 
 	    // we copy the file
-	    if ($this->file_copy(
-		$src, $dst . $path_end ) == false)
+	    if ($this->file_copy($src, $dst . $path_end ) == false)
 		return false;
 	}
 
@@ -845,16 +844,16 @@ class ZeekLibrary extends ZeekOutput {
 
 	try
 	{
-	    copy($src, $dst);
+	    return copy($src, $dst);
 	}
 	catch (Exception $e)
 	{
-	    $this->error("Impossible to copy '$src' to '$dst'");
+	    $this->error("Error while copying '$src' to '$dst'");
 
 	    return false;
 	}
 
-	return true;
+	return false;
     }
 
 /**
@@ -877,7 +876,7 @@ class ZeekLibrary extends ZeekOutput {
 
 	try
 	{
-	    rename($src, $dst);
+	    return rename($src, $dst);
 	}
 	catch (Exception $e)
 	{
@@ -886,7 +885,7 @@ class ZeekLibrary extends ZeekOutput {
 	    return false;
 	}
 
-	return true;
+	return false;
     }
 
 
@@ -1099,7 +1098,7 @@ class ZeekLibrary extends ZeekOutput {
             return false;
 
 	$src = $this->global_path . "default/generic";
-	$dst .= "/$name.$extension";
+	$dst .= "$name.$extension";
 
 	// we copy the generic type file in the directory with the
 	// specified name
@@ -1111,6 +1110,7 @@ class ZeekLibrary extends ZeekOutput {
 	if ($this->file_copy($src, $dst))
 	    return true;
 
+        $this->error("Impossible to copy '$src' to '$dst'");
 	return false;
     }
 

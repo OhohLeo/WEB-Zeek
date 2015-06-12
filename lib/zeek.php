@@ -413,8 +413,6 @@ class Zeek extends ZeekOutput {
             // we check if the project_name does not exist
             if ($zlib->project_get_id($project_name) == false)
             {
-                var_dump($options);
-
 		// we create the project
 		if ($zlib->project_add($project_name, $options) == false)
 		{
@@ -640,6 +638,7 @@ class Zeek extends ZeekOutput {
 	if (file_exists($zlib->file_get_path($project_id, $user, 'html', 'index', true)))
 	    return true;
 
+
 	// the index.html file of deploy directory exist :
 	// we copy the whole deploy directory in the user's
 	if (file_exists($zlib->file_get_path($project_id, 'deploy', 'html', 'index', true)))
@@ -649,13 +648,16 @@ class Zeek extends ZeekOutput {
 	}
 
 	// otherwise we create a generic index.html & css directory
-	if ($zlib->file_create($project_id, $user, 'html', 'index', 'html', true)
-         && $zlib->file_create($project_id, $user, 'css', $this->project_name, 'css'))
+	if ($zlib->file_create($project_id, $user, 'html', 'index', 'html', true))
+            //&& $zlib->file_create($project_id, $user, 'css', $this->project_name, 'css'))
 	{
 	    return $this->file_get_list();
 	}
 
-	return false;
+
+        /* $this->error("Impossible to init files!");
+	   return false; */
+
     }
 
 
@@ -786,6 +788,7 @@ class Zeek extends ZeekOutput {
 	    return $this->file_init();
 	}
 
+        $this->error("No files found!");
 	return false;
     }
 
@@ -1074,12 +1077,17 @@ class Zeek extends ZeekOutput {
         $dst = 'projects/' . $this->project_id
 	     . '/TEST_' . $_SESSION['login'];
 
-        $this->deploy_files($dst, array());
+        if ($this->deploy_files($dst, array()) == false)
+        {
+            $this->error("Impossible to deploy files!");
+            return false;
+        }
 
         //"zeekify" => array('html'),
         //"minify" => array('css', 'javascript')
 
 	$this->output_json(array('href' => $dst . '/index.html'));
+        return true;
     }
 
 /**
@@ -1111,13 +1119,10 @@ class Zeek extends ZeekOutput {
         $zlib = $this->zlib;
         $project_id = $this->project_id;
 
-        $files = $zlib->file_get_list($project_id);
+        $files = $zlib->file_get_list($project_id) ;
 
         if ($files == false)
-        {
-            $this->error("Impossible to get the files list!");
             return false;
-        }
 
         $destination = $this->global_path . $destination;
 
@@ -1173,12 +1178,6 @@ class Zeek extends ZeekOutput {
     {
 	// we get the structure project
 	$structure = $this->zlib->structure_get($this->project_name);
-
-        if ($structure == NULL)
-        {
-            $this->output_json(array('structure' => NULL));
-	    return true;
-        }
 
 	// we go through all domains
 	foreach ($structure as $domain => $attribute)
