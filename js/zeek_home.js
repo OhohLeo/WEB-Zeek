@@ -1,5 +1,5 @@
 // once the document is ready
-$(document).ready(function () {
+$(document).ready(function() {
 
     var $div_menus = $("div.menu");
 
@@ -31,14 +31,14 @@ $(document).ready(function () {
 
     var $actual_file = null;
 
-    var $file_get = function ($user, $name) {
+    var $file_get = function($user, $name) {
 	$send_request(
 	    {
 		method: "file_get",
 		user: $user,
 		name: $name,
 	    },
-	    function ($result)
+	    function($result)
 	    {
 		// we initialise the actual file used
 		$actual_file = {
@@ -54,7 +54,7 @@ $(document).ready(function () {
 	    });
     };
 
-    var $file_set = function () {
+    var $file_set = function() {
 
 	// the actual file should be defined
 	if ($actual_file == null)
@@ -114,12 +114,12 @@ $(document).ready(function () {
 
     var $last_edit_btn_type = "";
 
-    var $edit_update = function () {
+    var $edit_update = function() {
  	$send_request(
 	    {
 		"method": "file_get_list",
 	    },
-	    function ($result) {
+	    function($result) {
 		if ($result == false || !("get_list" in $result))
 		    return false;
 
@@ -127,7 +127,7 @@ $(document).ready(function () {
 
 		var $store_by_type = new Array();
 
-		$get_list.forEach(function ($obj) {
+		$get_list.forEach(function($obj) {
 		    var $type = $obj["type"];
 
 		    // we create the type button
@@ -152,7 +152,7 @@ $(document).ready(function () {
 				   "border-color": $color });
 
 			// we set clickable edit button
-			$btn.on("click", function () {
+			$btn.on("click", function() {
 			    var $type = $(this).text();
 
 			    if ($last_edit_btn_type === $type)
@@ -165,7 +165,7 @@ $(document).ready(function () {
 			    // we display the file list
 			    if ($store_by_type[$type].length > 0)
 			    {
-				$store_by_type[$type].forEach(function ($obj) {
+				$store_by_type[$type].forEach(function($obj) {
 				    var $user = $obj["user"];
 				    var $name = $obj["name"];
 
@@ -212,14 +212,14 @@ $(document).ready(function () {
 	{
 	    method: "file_get_type_list",
 	},
-	function ($result) {
+	function($result) {
 
 	    if ($result == false)
 		return false;
 
             var $select_type_proposed = $("select#file_type_proposed");
 
-            var $on_type_accepted = function ($name) {
+            var $on_type_accepted = function($name) {
 
                 // check if the type doesn't already exist
                 if ($("tr#config_" + $name).length) {
@@ -234,7 +234,7 @@ $(document).ready(function () {
                         $("<td>").append(
                             $("<img>").attr("src", "img/delete.png")
                                       .addClass("file_type_delete")
-                                      .on("click", function () {
+                                      .on("click", function() {
                                           $row.remove();
                                       })
                         ));
@@ -243,20 +243,20 @@ $(document).ready(function () {
             };
 
             // display & configure the type of file proposed
-	    $result["type_list"].forEach(function ($type) {
+	    $result["type_list"].forEach(function($type) {
 		var $option = $("<option>");
 		$option.text($type);
 
 		$select_type_proposed.append($option);
 	    });
 
-            $select_type_proposed.change(function () {
+            $select_type_proposed.change(function() {
                 $on_type_accepted(
                     $("select#file_type_proposed option:selected").val());
             });
 
             // display & delete the type of file accepted
-	    /* $result["type_accepted"].forEach(function ($type) {
+	    /* $result["type_accepted"].forEach(function($type) {
 	       }); */
 
             var $array =  [
@@ -268,7 +268,7 @@ $(document).ready(function () {
 		  input: 'name="in_main_directory" type="checkbox"'},
 	    ];
 
-            var $generate_html = function ($array) {
+            var $generate_html = function($array) {
 
                 var $list = $('<select></select>');
                 $list.attr("id", "select_type");
@@ -303,7 +303,7 @@ $(document).ready(function () {
 	});
 
 
-    var $generate_filename = function () {
+    var $generate_filename = function() {
 
 	var $filename = {};
 
@@ -390,7 +390,7 @@ $(document).ready(function () {
         return $filename;
     }
 
-    $("button#file_create").on("click", function () {
+    $("button#file_create").on("click", function() {
 
 	// we check that the type is here
 	if ($file_create_html == null) {
@@ -403,7 +403,7 @@ $(document).ready(function () {
 
         var $filename = {};
 
-        $div_modal.change(function () {
+        $div_modal.change(function() {
             $filename = $generate_filename();
         });
 
@@ -412,7 +412,7 @@ $(document).ready(function () {
 
 	$modal.dialog({
 	    minWidth: 400,
-	    open: function () {
+	    open: function() {
 		$need_to_upload = false;
 
 		$(this).dialog("option", "title", "Create new file");
@@ -423,24 +423,24 @@ $(document).ready(function () {
 		    replaceFileInput: false,
 		    url: 'upload.php',
 		    dataType: 'json',
-		    add: function ($e, $data) {
+		    add: function($e, $data) {
 			$need_to_upload = true;
 
-			$("button#file_create_ok").on("click", function () {
+			$("button#file_create_ok").on("click", function() {
 			    $data.submit();
 			});
 		    },
-		    progressall: function ($e, $data) {
+		    progressall: function($e, $data) {
 			$progress_bar.progressbar({
 			    value: parseInt($data.loaded / $data.total * 100, 10)
 			});
 		    },
-		    error: function ($e, $data) {
+		    error: function($e, $data) {
                         $danger.text("Upload Error: " + $e).show();
 	                $alert.show();
 		    },
-		    done: function ($e, $data) {
-		        $send_request($filename, function ($result) {
+		    done: function($e, $data) {
+		        $send_request($filename, function($result) {
 				 $last_edit_btn_type = "";
 				 $select_edit.empty();
 
@@ -454,14 +454,14 @@ $(document).ready(function () {
 		"Create": {
 		    text: "Create",
 		    id: "file_create_ok",
-		    click: function () {
+		    click: function() {
 
                         $filename["method"] = "file_create";
 
 			if ($need_to_upload)
 			    return;
 
-                        $send_request($filename, function ($result) {
+                        $send_request($filename, function($result) {
 			    $last_edit_btn_type = "";
 			    $select_edit.empty();
 
@@ -475,7 +475,7 @@ $(document).ready(function () {
 	$modal.dialog("open");
     });
 
-    $("button#file_modify").on("click", function () {
+    $("button#file_modify").on("click", function() {
 
         // the actual file should be defined
 	if ($actual_file == null)
@@ -492,24 +492,24 @@ $(document).ready(function () {
 
         var $filename = {};
 
-        $div_modal.change(function () {
+        $div_modal.change(function() {
             $filename = $generate_filename();
         });
 
         $modal.dialog({
 	    minWidth: 400,
-	    open: function () {
+	    open: function() {
 		$(this).dialog("option", "title", "Modify this file");
             },
             buttons: {
 		"Modify": {
 		    text: "Modify",
-		    click: function () {
+		    click: function() {
 
                         $filename["method"] = "file_modify";
                         $filename["src"] = $actual_file["name"];
 
-                        $send_request($filename, function ($result) {
+                        $send_request($filename, function($result) {
 			    $last_edit_btn_type = "";
 			    $select_edit.empty();
 
@@ -524,7 +524,7 @@ $(document).ready(function () {
     });
 
 
-    $("button#file_delete").on("click", function () {
+    $("button#file_delete").on("click", function() {
 
 	// the actual file should be defined
 	if ($actual_file == null)
@@ -535,14 +535,14 @@ $(document).ready(function () {
 	$div_modal.html("<p>Do you still want to delete <b>" + $filename + "</b> ?</p>");
 
 	$modal.dialog({
-	    open: function () {
+	    open: function() {
 		$(this).dialog("option", "title", "Confirm");
 	    },
 	    buttons: {
-		"Delete": function () {
+		"Delete": function() {
 		    $send_request(
 			{ "method": "file_delete", "name": $filename },
-			function ($result) {
+			function($result) {
 			    $div_edition.hide();
 
 			    $last_edit_btn_type = "";
@@ -558,7 +558,7 @@ $(document).ready(function () {
 	$modal.dialog("open");
     });
 
-    $("button#file_export").on("click", function () {
+    $("button#file_export").on("click", function() {
 	console.log("export!");
     });
 
@@ -566,7 +566,7 @@ $(document).ready(function () {
     var $li_data;
     var $li_menu = $("li.menu");
 
-    $li_menu.on("click", function () {
+    $li_menu.on("click", function() {
 	var $this = $(this);
 	var $id = $this.attr("id");
 
@@ -576,7 +576,7 @@ $(document).ready(function () {
 		{
 		    method: "test",
 		},
-		function ($result) {
+		function($result) {
                     if ($result['href'])
                     {
 		        window.open($result['href'], '_blank');
@@ -613,10 +613,10 @@ $(document).ready(function () {
     $ul_structure = $("ul.structure");
 
     // we store the structure
-    var $structure;
+    var $structure = [];
 
     // we handle the data process
-    var $handle_data = function ($name)
+    var $handle_data = function($name)
     {
 	$div_menus.hide();
 	var $data = $structure[$name];
@@ -664,7 +664,7 @@ $(document).ready(function () {
 	var $data_update;
 	var $data_delete;
 
-	var $update_get = function () {
+	var $update_get = function() {
 	    $send_request(
 		{
 		    method: "data_get",
@@ -672,13 +672,13 @@ $(document).ready(function () {
 		    offset: 0,
 		    size: 10,
 		},
-		function ($array) {
+		function($array) {
 		    if ($array == false)
 			return false;
 
 		    var $get_body = new Array();
 
-		    $array.forEach(function ($obj) {
+		    $array.forEach(function($obj) {
 			$id = $obj["id"];
 
 			delete $obj["id"];
@@ -712,16 +712,16 @@ $(document).ready(function () {
 		});
 	};
 
-	$data_update = function () {
+	$data_update = function() {
 	    var $id = $(this).attr("item");
 
 	    $modal.dialog({
-		open: function () {
+		open: function() {
 		    $(this).dialog("option", "title",
 				   "Update " + $name);
 		},
 		buttons: {
-		    "Update": function () {
+		    "Update": function() {
 			$send_request(
 			    {
 				method: "data_update",
@@ -729,7 +729,7 @@ $(document).ready(function () {
 				id: $id,
 				values: $div_modal.children().serialize(),
 			    },
-			    function ($result) {
+			    function($result) {
 				if ($result['success'])
 				{
 				    $update_get();
@@ -743,14 +743,14 @@ $(document).ready(function () {
 	};
 
 
-        $data_delete = function () {
+        $data_delete = function() {
 	    $send_request(
 		{
 		    method: "data_delete",
 		    name: $name,
 		    id: $(this).attr("item"),
 		},
-		function ($result) {
+		function($result) {
 		    $update_get();
 		});
 	};
@@ -758,21 +758,21 @@ $(document).ready(function () {
 	$update_get();
 
 
-	$("h2#data_set").on("click", function () {
+	$("h2#data_set").on("click", function() {
 	    $modal.dialog({
-		open: function () {
+		open: function() {
 		    $(this).dialog("option", "title",
 				   "Create new " + $name);
 		},
 		buttons: {
-		    "Create": function () {
+		    "Create": function() {
 			$send_request(
 			    {
 				method: "data_set",
 				type: $name,
 				values: $div_modal.children().serialize(),
 			    },
-			    function ($result) {
+			    function($result) {
 				if ($result['success'])
 				{
 				    $update_get();
@@ -795,13 +795,220 @@ $(document).ready(function () {
         $structure_get();
     };
 
+    var $append_create_structure = function() {
+        $("ul#structure").append(
+            '<li class="data">CREATE</li>');
+
+        $("li.data")
+             .off("click")
+             .on("click", function() {
+                 $structure_config($(this).text());
+             });
+    };
+
+
     var $ul_structure = $("ul#structure");
 
     // we store the initial structure
     var $html_structure = $("ul#structure").html();
 
+    var $structure_config = function($name) {
+
+        var $new_structure = $structure;
+        var $is_new_structure = ($name === "CREATE");
+        var $input_structure_name = $("input#structure_name");
+
+        var $buttons = {
+            "Cancel": function() {
+                $modal.dialog("close");
+            },
+	    "Validate": function() {
+                var $structure_name = $is_new_structure ?
+                    $input_structure_name.val() : $name;
+
+                if ($structure_name == "") {
+                    return;
+                }
+
+                // we set the last attribute if it is defined
+                $("button#new_attribute").trigger("click");
+
+                $new_structure[$structure_name] = [];
+
+                $.each($("tr.attribute"), function($idx, $tr) {
+                    var $name = $($tr).children("td.name").text();
+                    var $type = $($tr).children("td.type").text();
+                    var $size = $($tr).children("td.size").text();
+
+                    $new_structure[$structure_name][$name] =
+                           { "db_type": $type, "db_size": $size };
+                });
+
+                $structure_set($new_structure);
+                $append_create_structure();
+                $modal.dialog("close");
+	    },
+	};
+
+        if ($is_new_structure == false)
+        {
+            $buttons["Remove"] = function() {
+                delete $new_structure[$name];
+                $structure_set($new_structure);
+                $append_create_structure();
+                $modal.dialog("close");
+            };
+        }
+
+        $modal.dialog({
+	    open: function() {
+		$(this).dialog(
+                    "option", "title",
+                    ($is_new_structure ? "New" :
+                     "Modify '" + $name + "'") + " structure");
+
+	        var $data = $new_structure[$name];
+
+                var $setup = "<table id=\"new_attribute\">";
+
+                // we handle new structure
+                if ($name === "CREATE") {
+                    $setup +=
+                    "<tr><td><b>Structure name:</b></td>"
+                  + "<td><input id=\"structure_name\" type=\"text\"/></td></tr>";
+                }
+
+                var $delete_attribute = $("<td>").append(
+                    $("<img>").attr("src", "img/delete.png")
+                              .attr("class", "attribute_delete")).html();
+
+                var $handle_delete_attribute = function() {
+                    $("img.attribute_delete").on("click", function() {
+                        $(this).parents("tr").remove();
+                    });
+                };
+
+                var $display_attribute = function($attribute, $type, $size)
+                {
+                    $size += ($size != null && $size.length != 0)
+                        ? "<td class=\"size\">" + $size + "</td>" : "";
+
+                    return "<tr class=\"attribute\">"
+                         + "<td class=\"name\"><b>" + $attribute + "</b></td>"
+                         + "<td class=\"type\">" + $type + "</td>"
+                         + $size + "<td>" + $delete_attribute
+                         + "</td><td></td></tr>";
+                };
+
+                if ($data != null)
+                {
+                    // we display the attributes already existing
+                    for (var $attribute in $data)
+	            {
+                        $setup += $display_attribute(
+                            $attribute,
+                            $data[$attribute]["db_type"],
+                            $data[$attribute]["db_size"]);
+	            }
+                }
+
+                // we add new attributes
+                var $new_attribute =
+                "<tr class=\"add_attribute\"><td><b>Name</b></td><td>"
+              + "<input id=\"new_attribute\" name=\"name\" type=\"text\"/>"
+              + "</input></td></tr>"
+              + "<tr class=\"add_attribute\"><td><b>Type</b></td><td>"
+              + $("<div></div>").append($select_type_list).html()
+                    + "</td></tr>";
+
+                // if we are in expert mode : we ask for the type
+                if ($("input#expert_mode").prop('checked'))
+                {
+                    $new_attribute +=
+                    "<tr class=\"add_attribute\"><td><b>Size</b></td>"
+                  + "<td><input id=\"attribute_size\" name=\"name\""
+                  + "type=\"number\"/></input></td>"
+                  + "</td></td></tr>";
+                }
+
+                $setup += $new_attribute + "</table>"
+                        + "<button id=\"new_attribute\"> + </button>";
+
+                $div_modal.html($setup);
+
+                $handle_delete_attribute();
+
+                $("button#new_attribute").on("click", function() {
+                    var $name = $("input#new_attribute").val();
+                    var $type = $("select#select_type option:selected").val();
+                    var $size = $("input#attribute_size").val();
+
+                    // we check if the attribute name is empty or already exists
+                    if ($name == "" || $name.indexOf(" ") >= 0) {
+                        return;
+                    }
+
+                    if ($size != null
+                        && ($size.length == 0
+                                         || $.isNumeric($size) == false)) {
+                                             console.log($size);
+                                             return;
+                    }
+
+                    $("tr.add_attribute").remove();
+
+                    $("table#new_attribute").append(
+                        $display_attribute($name, $type, $size)
+                            + $new_attribute);
+
+                    $handle_delete_attribute();
+                });
+	    },
+	    buttons: $buttons
+        });
+
+	$modal.dialog("open");
+    }
+
+    var $structure_set = function($structure) {
+        $ul_structure.html(Mustache.render(
+	    $html_structure,
+	    {
+		structure: Object.keys($structure)
+	    }));
+
+        $("li#structure_loading").remove();
+
+        // if the structure is empty : we activate the configuration mode
+        if (Object.keys($structure).length == 0)
+        {
+            $button_structure_set.trigger("click");
+        }
+
+	$li_data = $("li.data");
+
+	$li_data.show();
+
+	// we set clickable element
+	$li_data.on("click", function() {
+	    var $this = $(this);
+
+            if ($button_structure_set.text() == "VALIDATE")
+            {
+                $structure_config($this.text());
+                return;
+            }
+
+	    $li_menu.removeClass("menu_clicked");
+	    $li_data.removeClass("data_clicked");
+	    $this.addClass("data_clicked");
+
+	    $handle_data($this.text());
+	});
+    }
+
     // we get the database structure
-    $structure_get = function () {
+    $structure_get = function() {
 
         // we initialise the structure
         $ul_structure.html($html_structure);
@@ -810,44 +1017,14 @@ $(document).ready(function () {
 	    {
 	        "method": "structure_get"
 	    },
-	    function ($result)
+	    function($result)
 	    {
 	        // we store the structure
 	        $structure = $result["structure"];
 
 	        if ($structure)
 	        {
-		    $ul_structure.html(Mustache.render(
-		        $html_structure,
-		        {
-			    structure: Object.keys($structure)
-		        }));
-
-                    $("li#structure_loading").remove();
-
-                    // if the structure is empty : we activate the configuration mode
-                    if ($structure.length == 0)
-                    {
-                        $button_structure_set.trigger("click");
-                    }
-
-		    $li_data = $("li.data");
-
-		    $li_data.show();
-
-		    // we set clickable element
-		    $li_data.on("click", function () {
-		        var $this = $(this);
-
-		        $li_menu.removeClass("menu_clicked");
-		        $li_data.removeClass("data_clicked");
-		        $this.addClass("data_clicked");
-
-		        $handle_data($this.text());
-		    });
-
-
-
+                    $structure_set($structure);
 		    return true;
 	        }
 
@@ -866,12 +1043,13 @@ $(document).ready(function () {
             {
                 "method": "users_get_list",
             },
-            function ($users) {
+            function($users) {
                 $div_users.html(
                     Mustache.to_html(
                         '<table>{{#users}}<tr><td>{{{.}}}</td>'
-                            + '<td><img email="{{{.}}}" src="img/delete.png" class="user_delete"></td>'
-                            + '</tr>{{/users}}</table>', $users));
+                      + '<td><img email="{{{.}}}" src="img/delete.png"'
+                      + 'class="user_delete"></td>'
+                      + '</tr>{{/users}}</table>', $users));
 
                 $("img.user_delete").on("click", function() {
                     $send_request(
@@ -879,7 +1057,7 @@ $(document).ready(function () {
                             "method": "user_delete",
                             "email": $(this).attr("email"),
                         },
-                        function ($result) {
+                        function($result) {
                             $users_get_list();
                         });
                 });
@@ -896,7 +1074,7 @@ $(document).ready(function () {
                 "method": "user_add",
                 "params": $(this).serialize(),
             },
-            function ($result) {
+            function($result) {
                 $users_get_list();
             });
     });
@@ -911,13 +1089,13 @@ $(document).ready(function () {
     });
 
     var $select_type_list;
-    var $structure_get_list = function () {
+    var $structure_get_list = function() {
         $send_request(
 	    {
 	        method: "structure_get_list",
                 expert_mode: $("input#expert_mode").prop('checked'),
 	    },
-	    function ($result) {
+	    function($result) {
 
 	        if ($result == false)
 		    return false;
@@ -926,7 +1104,7 @@ $(document).ready(function () {
 	        $select_type_list.attr("id", "select_type");
 	        $select_type_list.attr("name", "type");
 
-                $result["list"].forEach(function ($type) {
+                $result["list"].forEach(function($type) {
 		    var $option = $("<option>");
 		    $option.text($type);
 
@@ -948,110 +1126,11 @@ $(document).ready(function () {
                 $structure_get_list();
             }
 
-            var $new_structure = $structure;
-
             $this.text("VALIDATE");
             $('body').css('background', ' #DDD');
 
-            $("ul#structure").append(
-                '<li class="data">CREATE</li>');
+            $append_create_structure();
 
-            $("li.data")
-                 .off("click")
-                 .on("click", function() {
-                     var $name = $(this).text();
-
-                     $modal.dialog({
-		         open: function () {
-		             $(this).dialog(
-                                 "option", "title",
-                                 (($name === "CREATE") ? "New" :
-                                  "Modify '" + $name + "'") + " structure");
-
-	                     var $data = $new_structure[$name];
-
-                             var $setup = "<table id=\"new_attribute\">";
-
-                             // we handle new structure
-                             if ($name === "CREATE") {
-                                 $setup +=
-                                 "<tr><td><b>Structure name:</b></td>"
-                               + "<td><input name=\"structure_name\" type=\"text\"/></td></tr>";
-                             }
-
-                             var $delete_attribute = $("<td>").append(
-                                 $("<img>").attr("src", "img/delete.png")
-                                           .attr("class", "attribute_delete")).html();
-
-                             var $display_attribute = function ($attribute, $options)
-                             {
-                                 return "<tr name=\"" + $attribute + "\">"
-                                 + "<td><b>" + $attribute + "</b></td>"
-                                 + "<td>" + $options['db_type'] + "</td>"
-                                 + "<td>" + $delete_attribute
-                                 + "</td><td></td></tr>";
-                             };
-
-                             if ($data != null)
-                             {
-                                 // we display the attributes already existing
-                                 for (var $attribute in $data)
-	                         {
-                                     $setup += $display_attribute(
-                                         $attribute, $data[$attribute]);
-	                         }
-                             }
-
-                             // we add new attributes
-                             var $new_attribute =
-                             "<tr id=\"new_attribute\" type=\"name\"><td><b>Name</b></td>"
-                           + "<td><input name=\"name\" type=\"text\"/></input></td>"
-                           + "</td>" + $delete_attribute + "</td></tr>"
-                           + "<tr><td><b>Type</b></td><td>"
-                           + $("<div></div>").append($select_type_list).html()
-                           + "<td></td></tr>";
-
-                             // if we are in expert mode : we ask for the type
-                             if ($("input#expert_mode").prop('checked'))
-                             {
-                                 $new_attribute +=
-                                   "<tr><td><b>Size</b></td>"
-                                 + "<td><input name=\"name\" type=\"text\"/></input></td>"
-                                 + "</td></td></tr>";
-                             }
-
-                             $setup += $new_attribute + "</table>"
-                                     + "<button id=\"new_attribute\"> + </button>";
-
-                             $div_modal.html($setup);
-
-                             $("button#new_attribute").on("click", function () {
-                                 // Check that previous 'Name' attribute is not empty
-
-                                 // Replace the previous attribute form
-
-                                 // Add the new attribute form
-                                 $("table#new_attribute").append($new_attribute);
-                             });
-		         },
-		         buttons: {
-                             "Cancel": function() {
-                                 $modal.dialog("close");
-                             },
-                             "Remove ALL": function() {
-                                 // TODO à supprimer
-                                 $new_structure[$name] = "";
-                                 $modal.dialog("close");
-                             },
-		             "Validate": function () {
-                                 console.log($("tr#new_attribute").children("input"));
-                                 console.log($new_structure);
-		             },
-		         }});
-
-	             $modal.dialog("open");
-
-                 });
             return;
         }
 
@@ -1081,12 +1160,12 @@ $(document).ready(function () {
     });
 
     // we configure the disconnect button
-    $("button#disconnect").on("click", function () {
+    $("button#disconnect").on("click", function() {
 	$send_request(
 	    {
 		"method": "disconnect",
 	    },
-	    function ($result) {
+	    function($result) {
 		$(location).attr("href", "index.php");
 		return true;
 	    });
