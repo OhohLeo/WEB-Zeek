@@ -14,16 +14,16 @@ class Zeek extends ZeekOutput {
     private $type_list;
 
     private $simple_db = array(
-        "TITLE"    => "VARCHAR",
-        "IMAGE"    => "LONGBLOB",
-        "TEXT"     => "LONGTEXT",
-        "INTEGER"  => "INTEGER",
-        "NUMBER"   => "BIGINT",
-        "FLOAT"    => "FLOAT",
-        "DATE"     => "DATE",
-        "TIME"     => "TIME",
-        "YEAR"     => "YEAR",
-        "DATETIME" => "TIMESTAMP",
+        "TITLE"    => array("type" => "VARCHAR"),
+        "IMAGE"    => array("type" => "LONGBLOB"),
+        "TEXT"     => array("type" => "LONGTEXT"),
+        "INTEGER"  => array("type" => "INTEGER"),
+        "NUMBER"   => array("type" => "BIGINT"),
+        "FLOAT"    => array("type" => "FLOAT"),
+        "DATE"     => array("type" => "DATE"),
+        "TIME"     => array("type" => "TIME"),
+        "YEAR"     => array("type" => "YEAR"),
+        "DATETIME" => array("type" => "TIMESTAMP"),
     );
 
     private $db_to_css = array(
@@ -1167,6 +1167,7 @@ class Zeek extends ZeekOutput {
                     return false;
         }
 
+        return true;
     }
 
 /**
@@ -1235,7 +1236,7 @@ class Zeek extends ZeekOutput {
  * @method structure_set
  * @param array new structure
  *
- * It has following behavior :
+ * It has following behavior in expert mode :
  *  {
  *    table_name: {
  *         attribute_name: {
@@ -1246,10 +1247,70 @@ class Zeek extends ZeekOutput {
  *    },
  *    ...
  *  }
+ *
+ * It has following behavior in simple mode :
+ *  {
+ *    table_name: {
+ *         attribute_name: ATTRIBUTE_TYPE,
+ *         ...
+ *    },
+ *    ...
+ *  }
  */
     public function structure_set($new_structure)
     {
-        // we valid the new structure format
+        $structure = array();
+
+        foreach ($new_structure as $table_name => $attributes)
+        {
+            if (check_string_and_size($table_name, 25) == false)
+            {
+                $this->error("Invalid table name '$table_name'!");
+                return false;
+            }
+
+            foreach ($attributes as $attribute => $value)
+            {
+                if (check_string_and_size($attribute, 25) == false)
+                {
+                    $this->error(
+                        "$table_name : invalid attribute name '$attribute'!");
+                    return false;
+                }
+
+                // we convert the simple to the expert mode
+                if (in_array($value, $this->simple_db))
+                {
+                    $structure[$attribute] = $this->simple_db[$value];
+                    continue;
+                }
+
+                // we check the whole structure
+                if (is_array($value) == false
+                    || array_key_exists('type') == false)
+                {
+                    $this->error(
+                        "$table_name : type should be defined in '$attribute'!");
+                    return false;
+                }
+
+                if (in_array($value['type'], $this->db_to_css))
+                {
+                    $this->error("$table_name : invalid type in '$attribute'!");
+                    return false;
+                }
+
+                if (array_key_exists('size', $value)
+                    && is_numeric($value['size']) == false)
+                {
+                    $this->error(
+                        "$table_name : size should be numeric in '$attribute'!");
+                    return false;
+                }
+
+                $structure[$table_name][$attribute] = $value;
+            }
+        }
 
         // we set the new structure into the database
     }
