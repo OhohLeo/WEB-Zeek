@@ -654,10 +654,7 @@ class Zeek extends ZeekOutput {
 	    return $this->file_get_list();
 	}
 
-
-        /* $this->error("Impossible to init files!");
-	   return false; */
-
+	return false;
     }
 
 
@@ -1170,6 +1167,23 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
+
+/**
+ * Send the project structure.
+ *
+ * @param boolean expert mode
+ *
+ * @method structure_get_list
+ */
+    public function structure_get_list($expert_mode)
+    {
+	$this->output_json(array('list' =>
+            array_keys($expert_mode ? $this->db_to_css : $this->simple_db)));
+
+	return true;
+    }
+
+
 /**
  * Send the project structure.
  *
@@ -1178,7 +1192,8 @@ class Zeek extends ZeekOutput {
     public function structure_get()
     {
 	// we get the structure project
-	$structure = $this->zlib->structure_get($this->project_name);
+	$structure = $this->zlib->structure_get($this->project_id,
+                                                $this->project_name);
 
 	// we go through all domains
 	foreach ($structure as $domain => $attribute)
@@ -1208,21 +1223,6 @@ class Zeek extends ZeekOutput {
 	}
 
 	$this->output_json(array('structure' => $structure));
-
-	return true;
-    }
-
-/**
- * Send the project structure.
- *
- * @param boolean expert mode
- *
- * @method structure_get_list
- */
-    public function structure_get_list($expert_mode)
-    {
-	$this->output_json(array('list' =>
-            array_keys($expert_mode ? $this->db_to_css : $this->simple_db)));
 
 	return true;
     }
@@ -1259,11 +1259,15 @@ class Zeek extends ZeekOutput {
  */
     public function structure_set($new_structure)
     {
+        // we decode the json structure
+        $new_structure = $this->json_decode($new_structure);
+
         $structure = array();
 
+        // we check if it is valid
         foreach ($new_structure as $table_name => $attributes)
         {
-            if (check_string_and_size($table_name, 25) == false)
+            if ($this->check_string_and_size($table_name, 25) == false)
             {
                 $this->error("Invalid table name '$table_name'!");
                 return false;
@@ -1271,7 +1275,7 @@ class Zeek extends ZeekOutput {
 
             foreach ($attributes as $attribute => $value)
             {
-                if (check_string_and_size($attribute, 25) == false)
+                if ($this->check_string_and_size($attribute, 25) == false)
                 {
                     $this->error(
                         "$table_name : invalid attribute name '$attribute'!");
@@ -1279,22 +1283,22 @@ class Zeek extends ZeekOutput {
                 }
 
                 // we convert the simple to the expert mode
-                if (in_array($value, $this->simple_db))
+                if (is_string($value)
+                    && array_key_exists($value, $this->simple_db))
                 {
                     $structure[$attribute] = $this->simple_db[$value];
                     continue;
                 }
 
                 // we check the whole structure
-                if (is_array($value) == false
-                    || array_key_exists('type') == false)
+                if (array_key_exists('type', $value) == false)
                 {
                     $this->error(
                         "$table_name : type should be defined in '$attribute'!");
                     return false;
                 }
 
-                if (in_array($value['type'], $this->db_to_css))
+                if (array_key_exists($value['type'], $this->db_to_css) == false)
                 {
                     $this->error("$table_name : invalid type in '$attribute'!");
                     return false;
@@ -1313,6 +1317,8 @@ class Zeek extends ZeekOutput {
         }
 
         // we set the new structure into the database
+        return $this->zlib->structure_set(
+            $this->project_id, $this->project_name, $structure);
     }
 
 /**

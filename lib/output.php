@@ -123,7 +123,7 @@ class ZeekOutput {
             return $json->decode($input, true);
         }
 
-        return json_decode($input);
+        return json_decode($input, true);
     }
 }
 

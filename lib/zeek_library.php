@@ -479,12 +479,28 @@ class ZeekLibrary extends ZeekOutput {
  * empty array.
  *
  * @method struture_set
+ * @param integer project id
  * @param string project name
  */
-    public function structure_get($project_name)
+    public function structure_get($project_id, $project_name)
     {
-	if (isset($this->data_structure[$project_name]))
+	if (array_key_exists($project_name, $this->data_structure))
 	    return $this->data_structure[$project_name];
+
+        $db = $this->db;
+
+        $result = $this->db->table_view(
+            'projects', 'structure', NULL, 1, 0, $project_id);
+
+        if ($result)
+        {
+            $structure = $this->json_decode(
+                $db->handle_result($result));
+
+            $this->data_structure[$project_name] = $structure;
+
+            return $structure;
+        }
 
 	return array();
     }
@@ -494,26 +510,66 @@ class ZeekLibrary extends ZeekOutput {
  * NULL.
  *
  * @method struture_get
+ * @param integer project id
  * @param string project name
- * @param array new structure
+ * @param array structure to write
  */
-    public function structure_set($project_name, $new_structure)
+    public function structure_set($project_id, $project_name, $structure)
     {
+        // we check if the structure are similar
+        if ($this->structure_compare($project_name, $structure))
+            return true;
+
+        // if not similar : we write the new structure
+        $json_structure = $this->json_encode($structure);
+
+        if ($this->db->row_update(
+            'project', $project_id, array('structure' => $json_structure)))
+        {
+            $this->data_structure[$project_name] = $structure;
+            return true;
+        }
+
+        // if there is an issue : we remove the structure
+        unset($this->data_structure[$project_name]);
 	return false;
     }
 
 
 /**
- * Valid the structure.
+ * Compare the structure to the existing one. Return true if the structure are
+ * similar, false otherwise.
  *
- * @method struture_check
- * @param array structure to check
+ * @method struture_compare
+ * @param array structure to compare
  */
-    public function structure_check($structure)
+    public function structure_compare($project_name, $structure)
     {
-	return false;
-    }
+        // we check if there are some modifications between each structure
+        if (array_key_exists($project_name, $this->data_structure) == false)
+            return false;
 
+        $structure_stored = $this->data_structure[$project_name];
+
+        foreach ($new_structure as $table_name => $attributes)
+        {
+            if (array_key_exists($table_name, $structure_stored) == false)
+                return false;
+
+            foreach ($attributes as $attribute => $value)
+            {
+                if (array_key_exists(
+                    $attribute, $structure_stored[$table_name]) == false)
+                    return false;
+
+                if (array_diff($value,
+                               $structure_stored[$table_name][$attribute]) == false)
+                        return false;
+            }
+        }
+
+        return true;
+    }
 
 /**
  * Return the options structure. Return false if the option doesn't exist.
@@ -849,8 +905,6 @@ class ZeekLibrary extends ZeekOutput {
 	catch (Exception $e)
 	{
 	    $this->error("Error while copying '$src' to '$dst'");
-
-	    return false;
 	}
 
 	return false;
@@ -881,8 +935,6 @@ class ZeekLibrary extends ZeekOutput {
 	catch (Exception $e)
 	{
 	    $this->error("Impossible to move '$src' to '$dst'");
-
-	    return false;
 	}
 
 	return false;
@@ -1024,7 +1076,8 @@ class ZeekLibrary extends ZeekOutput {
 */
     public function file_get_directory($project_id, $user, $type)
     {
-	return $this->global_path . "projects/$project_id/$user/$type";
+	return $this->global_path . "projects/$project_id/$user"
+                                  . (($type == '') ? $type : "/$type");
     }
 
 /**
@@ -1098,7 +1151,7 @@ class ZeekLibrary extends ZeekOutput {
             return false;
 
 	$src = $this->global_path . "default/generic";
-	$dst .= "$name.$extension";
+	$dst .= "/$name.$extension";
 
 	// we copy the generic type file in the directory with the
 	// specified name
@@ -1110,7 +1163,11 @@ class ZeekLibrary extends ZeekOutput {
 	if ($this->file_copy($src, $dst))
 	    return true;
 
-        $this->error("Impossible to copy '$src' to '$dst'");
+        $errors = error_get_last();
+
+        $this->error("Impossible to copy '$src' to '$dst' "
+                    . $errors['message']);
+
 	return false;
     }
 
