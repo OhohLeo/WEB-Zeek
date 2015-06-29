@@ -8,7 +8,9 @@ require_once $global_path . '/lib/output.php';
 require_once $global_path . '/lib/zeek.php';
 
 $zeek = new Zeek();
-$zeek->start('config.ini');
+if ($zeek->start('config.ini') == false) {
+    header('HTTP/1.1 500 Internal Server Error');
+}
 
 if (isset($_POST)) {
     $zeek->input($_POST);

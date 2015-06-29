@@ -29,6 +29,10 @@ using following
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+30/06/2015 Leo
+ * finish configuration editor & deploy options
+ * work on project structure to handle dynamic changes
+
 10/06/2015 Leo
  * setup configuration (project structure, editor & deploy options)
  * handle minimise css & js

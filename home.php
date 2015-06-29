@@ -7,6 +7,7 @@ $login        = $_SESSION["login"];
 $project_name = $_SESSION["project_name"];
 $project_id   = $_SESSION["project_id"];
 $start_ts     = $_SESSION["start_ts"];
+$project_path = $_SESSION["project_path"];
 
 /* if one field is not define : do not authorize to display the
  * page */
@@ -38,6 +39,7 @@ include 'default/header.php';
 <link rel="stylesheet" href="css/jquery-ui.theme.min.css">
 <link rel="stylesheet" href="css/jquery.fileupload.css">
 <link rel="stylesheet" href="css/jquery.fileupload-ui.css">
+<link rel='stylesheet' href='css/spectrum.css' />
 <link rel="stylesheet" href="css/zeek_home.css">
 </head>
 <body>
@@ -49,7 +51,6 @@ include 'default/header.php';
 	    <li id="test" class="menu">Test</a></li>
 	    <li id="deploy" class="menu">Deploy</li>
 	    <li id="configuration" class="menu">Configuration</li>
-	    <li id="help" class="menu">Help</li>
 	    <li id="disconnect" class="menu">Disconnect</li>
 	</ul>
     </nav>
@@ -126,17 +127,19 @@ include 'default/header.php';
 		</div>
 	    </div>
 	    <hr>
+            <?php if ($project_path == false) { ?>
 	    <div class="config">
-		<h3>Modify project structure</h3>
+		<h3>Project structure</h3>
 		<div class="config-group danger-zone">
                     <p>
                         <label>Expert mode</label>
                         <input type="checkbox" id="expert_mode">
                     </p>
-		    <button id="structure_set" class="danger">MODIFY</button>
+		    <button id="structure_modify" class="danger">MODIFY</button>
 		</div>
 	    </div>
 	    <hr>
+            <?php } ?>
 	    <div class="config">
 		<h3>Modify editor</h3>
 		<div class="config-group danger-zone">
@@ -146,9 +149,10 @@ include 'default/header.php';
 	    </div>
 	    <hr>
 	    <div class="config">
-		<h3>Modify test & deploy</h3>
+		<h3>Deploy options</h3>
 		<div class="config-group danger-zone">
-		</div>
+                    <table id="options_deploy"></table>
+                </div>
 	    </div>
 	    <hr>
 	    <div class="config">
@@ -165,11 +169,40 @@ include 'default/header.php';
 		</div>
 	    </div>
 	</div>
-	<div id="help" class="menu"><p>help</p></div>
 	<div id="disconnect" class="menu">
 	    <h2>Are you sure you want to disconnect from Zeek ?</h2>
 	    <button id="disconnect" class="danger">Disconnect</button>
 	</div>
+        <?php if ($project_path == false) { ?>
+	<div id="structure" class="menu">
+            <h3>What is a Zeek structure ?</h3>
+            <p>A structure defines the way datas will be stored.</p>
+            <p>It could be seen as a table in database representation.</p>
+            <p>A structure has a unique name and some attributes linked with the structure.</p>
+            <p>The attributes could be seen as each column of the table.</p>
+            <h3>How to use a structure ?</h3>
+            <p>A structure could be used in all type of files.</p>
+            <p>Write as following:</p>
+            <textarea id="structure_explain" rows="3" readonly><zeek name="structure_name" limit="5" offset="1">
+       some stuff ... {{attribute_name}} ... some stuff
+</zeek>
+            </textarea>
+            <p>In test & deploy mode : "zeekify" argument should be set at true!</p>
+            <h3>How to create a new structure ?</h3>
+            <p>Push on 'CREATE' button on the left.</p>
+            <h3>How to delete a structure ?</h3>
+            <p>Select the structure to delete.</p>
+            <p>In the new menu displayed, select on 'Remove' button.</p>
+            <h3>Validate</h3>
+            <p>Validate will replace the old structure with the new one.</p>
+            <p>During this process, some data stored can be lost!</p>
+            <button id="structure_validate" class="danger">VALIDATE</button>
+            <h3>Cancel</h3>
+            <p>You can still come back in this configuration mode</p>
+            <p>by clicking on Configuration Menu -> Project structure -> Modify</p>
+            <button id="structure_cancel" class="danger">Cancel</button>
+        </div>
+        <?php } ?>
 	<div id="dynamic" class="menu">
 	    <h2 id="data_set">create new {{name}}</h2>
 	    <div id="data_set">
@@ -201,5 +234,7 @@ include 'default/header.php';
 <script src="js/vendor/jquery.ui.widget.js"></script>
 <script src="js/jquery.iframe-transport.js"></script>
 <script src="js/jquery.fileupload.js"></script>
+<script src='js/spectrum.js'></script>
+<script src='js/JSON.safe.js'></script>
 <script src="js/zeek_home.js"></script>
 <?php include 'default/footer.php'; ?>

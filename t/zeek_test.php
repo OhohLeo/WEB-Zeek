@@ -255,7 +255,7 @@ class TestZeek extends PHPUnit_Framework_TestCase
 
         $this->assertTrue(
     	    $zeek->checkOutput(
-    	        json_encode(array('type_list' => array("abap","actionscript","ada","apache_conf","applescript","asciidoc","assembly_x86","autohotkey","batchfile","c9search","c_cpp","cirru","clojure","cobol","coffee","coldfusion","csharp","css","curly","d","dart","diff","django","dockerfile","dot","eiffel","ejs","elixir","elm","erlang","forth","ftl","gcode","gherkin","gitignore","glsl","golang","groovy","haml","handlebars","haskell","haxe","html","html_ruby","ini","io","jack","jade","java","javascript","json","jsoniq","jsp","jsx","julia","latex","less","liquid","lisp","livescript","logiql","lsl","lua","luapage","lucene","makefile","markdown","matlab","mel","mushcode","mysql","nix","objectivec","ocaml","pascal","perl","pgsql","php","plain_text","powershell","praat","prolog","properties","protobuf","python","r","rdoc","rhtml","ruby","rust","sass","scad","scala","scheme","scss","sh","sjs","smarty","snippets","soy_template","space","sql","stylus","svg","tcl","tex","text","textile","toml","twig","typescript","vala","vbscript","velocity","verilog","vhdl","xml","xquery","yaml")))));
+    	        json_encode(array('type_list' => array("abap","actionscript","ada","apache_conf","applescript","asciidoc","assembly_x86","autohotkey","batchfile","c9search","c_cpp","cirru","clojure","cobol","coffee","coldfusion","csharp","css","curly","d","dart","diff","django","dockerfile","dot","eiffel","ejs","elixir","elm","erlang","forth","ftl","gcode","gherkin","gitignore","glsl","golang","groovy","haml","handlebars","haskell","haxe","html","html_ruby","ini","io","jack","jade","java","javascript","js", "json","jsoniq","jsp","jsx","julia","latex","less","liquid","lisp","livescript","logiql","lsl","lua","luapage","lucene","makefile","markdown","matlab","mel","mushcode","mysql","nix","objectivec","ocaml","pascal","perl","pgsql","php","plain_text","powershell","praat","prolog","properties","protobuf","python","r","rdoc","rhtml","ruby","rust","sass","scad","scala","scheme","scss","sh","sjs","smarty","snippets","soy_template","space","sql","stylus","svg","tcl","tex","text","textile","toml","twig","typescript","vala","vbscript","velocity","verilog","vhdl","xml","xquery","yaml")))));
 
         $this->assertFalse($zeek->file_create(
     	    'type', 'to_to', 'extension', false));
@@ -434,7 +434,73 @@ $success = $("div.success");
         $this->zeek->environment_clean();
     }
 
+    public function test_options()
+    {
+        $zeek = $this->zeek;
 
+        $this->assertTrue(
+            $zeek->connect('test', 'test', 'test'));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
+
+        // create new project
+        $this->assertTrue($zeek->project_create('test'));
+
+        $this->assertTrue(
+            $zeek->checkOutput('{"redirect":"home.php"}'));
+
+        // check the default options are correctly setted
+        $this->assertTrue($zeek->option_get('editor'));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"html":"#FF0000","css":"#00FF00","js":"#0000FF","php":"#000000"}'));
+
+        $this->assertTrue($zeek->option_get('deploy'));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"zeekify":true,"minify_css":true,"minify_js":true}'));
+
+        // check a bad option can not be getted
+        $this->assertFalse($zeek->option_get("error"));
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"error":"No option found with name \'error\'!"}'));
+
+        // check we can set a new option
+        $this->assertTrue($zeek->option_set(
+            "test", json_encode(array("ceci", "est", "un", "test"))));
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"Option \'test\' successfully written!"}'));
+
+        $this->assertTrue($zeek->option_get('test'));
+        $this->assertTrue(
+            $zeek->checkOutput('["ceci","est","un","test"]'));
+
+        // check we can modified an option
+        $this->assertTrue($zeek->option_set(
+            "deploy", json_encode(array("zeekify"    => true,
+                                        "minify_css" => false,
+                                        "minify_js"  => false))));
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"Option \'deploy\' successfully written!"}'));
+
+        $this->assertTrue($zeek->option_get('deploy'));
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"zeekify":true,"minify_css":false,"minify_js":false}'));
+
+        $this->assertTrue($zeek->option_get('test'));
+        $this->assertTrue(
+            $zeek->checkOutput('["ceci","est","un","test"]'));
+
+        $this->zeek->environment_clean();
+    }
 
 }
 ?>

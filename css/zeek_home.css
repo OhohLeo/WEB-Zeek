@@ -171,6 +171,12 @@ div#users_list {
     cursor: pointer;
 }
 
+textarea#structure_explain {
+    width: 550px;
+    resize: none;
+    overflow: hidden;
+}
+
 button#file_create {
     color: #fff;
     background-color: #6f5499;

@@ -3,6 +3,7 @@ $(document).ready(function() {
 
     var $div_menus = $("div.menu");
 
+    var $div_structure = $("div#structure");
     var $div_dynamic = $("div#dynamic");
 
     // we store the dynamic html
@@ -139,12 +140,8 @@ $(document).ready(function() {
 			// add the class
 			$btn.addClass("edit " + $type);
 
-			// we generate the color associated to the button
-			var $letters = '0123456789ABCDEF'.split('');
-			var $color = '#';
-			for (var i = 0; i < 6; i++ ) {
-			    $color += $letters[Math.floor(Math.random() * 16)];
-			}
+			// we get the color associated to the button
+			var $color = $files_type[$type];
 
 			// add the css
 			$btn.css({ "color": "#fff",
@@ -205,8 +202,93 @@ $(document).ready(function() {
 
     var $file_create_html;
     var $file_modify_html;
+    var $files_type = {};
 
     var $table_type_accepted = $("table#file_type_accepted");
+
+    var $option_set_editor;
+
+    var $on_new_editor_type = function($name, $color) {
+
+        // check if the type doesn't already exist
+        if ($files_type[$name]) {
+            return false;
+        }
+
+        $files_type[$name] = $color;
+
+        // othewise add new type
+        var $row = $("<tr>").attr("id", "config_" + $name);
+        $row.append($("<td class=\"editor_type\">").text($name))
+            .append($("<td>").append(
+                "<input id=\"color_" + $name +"\" type=\"text\">"))
+            .append(
+                $("<td>").append(
+                    $("<img>").attr("src", "img/delete.png")
+                              .addClass("file_type_delete")
+                              .on("click", function() {
+                                  $row.remove();
+                              })
+                ));
+
+	$table_type_accepted.append($row);
+
+        $("input#color_" + $name).change($option_set_editor)
+                                 .spectrum({
+            color: $color
+        });
+    };
+
+    // we handle editor options
+    var $option_get_editor = function () {
+        $send_request({
+	    method: "option_get",
+            name: "editor",
+	},
+	function($result) {
+
+	    if ($result == false || $result["error"])
+		return false;
+
+            for (var $name in $result)
+            {
+                $on_new_editor_type($name, $result[$name]);
+            }
+
+            // do not display anything
+	    return -1;
+        });
+    }
+
+    $option_set_editor = function () {
+
+        $files_type = {}
+
+        $("td.editor_type").each(function() {
+            var $name = $(this).text();
+
+            $files_type[$name] = $("input#color_" + $name).spectrum("get")
+                                                          .toHexString();
+        });
+
+        $send_request({
+	    method: "option_set",
+            name: "editor",
+            values: JSON.stringify($files_type),
+	},
+        function($result) {
+
+	    if ($result == false || $result["error"])
+		return false;
+
+            $option_get_editor();
+
+            // do not display anything
+	    return -1;
+        });
+    }
+
+    $option_get_editor();
 
     $send_request(
 	{
@@ -214,33 +296,10 @@ $(document).ready(function() {
 	},
 	function($result) {
 
-	    if ($result == false)
+	    if ($result == false || $result["error"])
 		return false;
 
             var $select_type_proposed = $("select#file_type_proposed");
-
-            var $on_type_accepted = function($name) {
-
-                // check if the type doesn't already exist
-                if ($("tr#config_" + $name).length) {
-                    return false;
-                }
-
-                // othewise add new type
-                var $row = $("<tr>").attr("type", "config_" + $name);
-
-                $row.append($("<td>").text($name))
-                    .append(
-                        $("<td>").append(
-                            $("<img>").attr("src", "img/delete.png")
-                                      .addClass("file_type_delete")
-                                      .on("click", function() {
-                                          $row.remove();
-                                      })
-                        ));
-
-		$table_type_accepted.append($row);
-            };
 
             // display & configure the type of file proposed
 	    $result["type_list"].forEach(function($type) {
@@ -251,8 +310,11 @@ $(document).ready(function() {
 	    });
 
             $select_type_proposed.change(function() {
-                $on_type_accepted(
-                    $("select#file_type_proposed option:selected").val());
+                $on_new_editor_type(
+                    $("select#file_type_proposed option:selected").val(),
+                    "#f00");
+
+                $option_set_editor();
             });
 
             // display & delete the type of file accepted
@@ -274,10 +336,8 @@ $(document).ready(function() {
                 $list.attr("id", "select_type");
                 $list.attr("name", "type");
 
-                $table_type_accepted.children()
-                                    .children()
-                                    .each(function() {
-	            $list.append($("<option>").text($(this).text()));
+                $("td.editor_type").each(function() {
+              	    $list.append($("<option>").text($(this).text()));
                 });
 
                 return "<table><tr><td><b>Type</b></td><td>"
@@ -613,7 +673,8 @@ $(document).ready(function() {
     $ul_structure = $("ul.structure");
 
     // we store the structure
-    var $structure = [];
+    var $structure = {};
+    var $new_structure = $structure;
 
     // we handle the data process
     var $handle_data = function($name)
@@ -787,25 +848,45 @@ $(document).ready(function() {
     };
 
     // we enable/disable the structure configuration
-    var $button_structure_set = $("button#structure_set");
+    var $button_structure_modify = $("button#structure_modify");
 
-    var $reset_structure_set = function() {
-        $button_structure_set.text("MODIFY");
-        $('body').css('background', ' #FFF');
-        $structure_get();
+    var $on_structure_modif = function() {
+        $div_menus.hide();
+        $div_structure.show();
     };
 
     var $append_create_structure = function() {
+
         $("ul#structure").append(
-            '<li class="data">CREATE</li>');
+            '<li id="structure_create" class="data">CREATE</li>');
 
         $("li.data")
              .off("click")
              .on("click", function() {
                  $structure_config($(this).text());
+                 $on_structure_modif();
              });
     };
 
+    $("button#structure_validate").on("click", function() {
+
+        $send_request(
+	    {
+	        "method": "structure_set",
+                "structure": safeJSONStringify($new_structure),
+	    },
+	    function($result)
+	    {
+                $structure_get();
+	    }
+        );
+    });
+
+    $("button#structure_cancel").on("click", function() {
+        $new_structure = $structure;
+        $('body').css('background', ' #FFF');
+        $structure_get();
+    });
 
     var $ul_structure = $("ul#structure");
 
@@ -814,7 +895,7 @@ $(document).ready(function() {
 
     var $structure_config = function($name) {
 
-        var $new_structure = $structure;
+        $new_structure = $structure;
         var $is_new_structure = ($name === "CREATE");
         var $input_structure_name = $("input#structure_name");
 
@@ -833,15 +914,16 @@ $(document).ready(function() {
                 // we set the last attribute if it is defined
                 $("button#new_attribute").trigger("click");
 
-                $new_structure[$structure_name] = [];
+                $new_structure[$structure_name] = {};
 
                 $.each($("tr.attribute"), function($idx, $tr) {
                     var $name = $($tr).children("td.name").text();
                     var $type = $($tr).children("td.type").text();
-                    var $size = $($tr).children("td.size").text();
+                    var $db_type = $($tr).children("td.db_type").text();
+                    var $db_size = $($tr).children("td.size").text();
 
                     $new_structure[$structure_name][$name] =
-                           { "db_type": $type, "db_size": $size };
+                           { "type": $type, "db_type": $db_type, "db_size": $db_size };
                 });
 
                 $structure_set($new_structure);
@@ -982,7 +1064,7 @@ $(document).ready(function() {
         // if the structure is empty : we activate the configuration mode
         if (Object.keys($structure).length == 0)
         {
-            $button_structure_set.trigger("click");
+            $button_structure_modify.trigger("click");
         }
 
 	$li_data = $("li.data");
@@ -993,7 +1075,7 @@ $(document).ready(function() {
 	$li_data.on("click", function() {
 	    var $this = $(this);
 
-            if ($button_structure_set.text() == "VALIDATE")
+            if ($("li#structure_create").length)
             {
                 $structure_config($this.text());
                 return;
@@ -1008,7 +1090,7 @@ $(document).ready(function() {
     }
 
     // we get the database structure
-    $structure_get = function() {
+    var $structure_get = function() {
 
         // we initialise the structure
         $ul_structure.html($html_structure);
@@ -1066,6 +1148,7 @@ $(document).ready(function() {
             });
     };
 
+    // we handle new user
     $("form#user_add").on("submit", function($e) {
         $e.preventDefault();
 
@@ -1079,6 +1162,7 @@ $(document).ready(function() {
             });
     });
 
+    // we handle user password
     $("form#user_change_password").on("submit", function($e) {
         $e.preventDefault();
 
@@ -1088,6 +1172,7 @@ $(document).ready(function() {
         });
     });
 
+    // we handle structure list
     var $select_type_list;
     var $structure_get_list = function() {
         $send_request(
@@ -1097,7 +1182,7 @@ $(document).ready(function() {
 	    },
 	    function($result) {
 
-	        if ($result == false)
+	        if ($result == false || $result["error"])
 		    return false;
 
 	        $select_type_list = $('<select></select>');
@@ -1117,25 +1202,85 @@ $(document).ready(function() {
         $structure_get_list();
     });
 
-    $button_structure_set.on("click", function() {
+    $button_structure_modify.on("click", function() {
         var $this = $(this);
 
-        if ($this.text() == "MODIFY")
-        {
-            if ($select_type_list == null) {
-                $structure_get_list();
-            }
-
-            $this.text("VALIDATE");
-            $('body').css('background', ' #DDD');
-
-            $append_create_structure();
-
-            return;
+        if ($select_type_list == null) {
+            $structure_get_list();
         }
 
-        $reset_structure_set();
+        $on_structure_modif();
+
+        if ($("li#structure_create").length)
+            return;
+
+        $('body').css('background', '#DDD');
+
+        $append_create_structure();
     });
+
+    var $table_options_deploy = $("table#options_deploy");
+
+    var $option_get_deploy;
+
+    var $option_set_deploy = function () {
+
+        var $values = {};
+
+        $("input.option_deploy").each(function() {
+            $values[$(this).attr("name")] = $(this).prop("checked")
+        });
+
+        $send_request({
+	    method: "option_set",
+            name: "deploy",
+            values: JSON.stringify($values),
+	},
+        function($result) {
+
+	    if ($result == false || $result["error"])
+		return false;
+
+            $option_get_deploy();
+
+            // do not display result
+            return -1;
+        });
+    };
+
+    // we handle deploy options
+    $option_get_deploy = function () {
+        $send_request({
+	    method: "option_get",
+            name: "deploy",
+	},
+	function($result) {
+
+	    if ($result == false || $result["error"])
+		return false;
+
+            $table_options_deploy.empty();
+
+            for (var $name in $result)
+            {
+                var $row = $("<tr>").attr("id", "config_" + $name);
+                $row.append($("<td>").text($name))
+                    .append($("<td>").append(
+                        "<input id=\"deploy_" + $name + "\" name=\"" + $name
+                      + "\" class=\"option_deploy\" type=\"checkbox\">"));
+
+                $table_options_deploy.append($row);
+
+                $("input#deploy_" + $name).prop('checked', $result[$name])
+                                          .change($option_set_deploy);
+            }
+
+            // do not display anything
+	    return -1;
+        });
+    }
+
+    $option_get_deploy();
 
 
     // we set the configuration visual effects
@@ -1158,6 +1303,7 @@ $(document).ready(function() {
 	    $boxed.slideUp(200);
         }
     });
+
 
     // we configure the disconnect button
     $("button#disconnect").on("click", function() {

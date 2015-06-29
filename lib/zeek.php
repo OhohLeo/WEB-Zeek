@@ -11,9 +11,10 @@ class Zeek extends ZeekOutput {
     protected $project_id;
     protected $project_name;
     protected $zlib;
+
     private $type_list;
 
-    private $simple_db = array(
+    private $type_simple = array(
         "TITLE"    => array("type" => "VARCHAR"),
         "IMAGE"    => array("type" => "LONGBLOB"),
         "TEXT"     => array("type" => "LONGTEXT"),
@@ -26,7 +27,7 @@ class Zeek extends ZeekOutput {
         "DATETIME" => array("type" => "TIMESTAMP"),
     );
 
-    private $db_to_css = array(
+    private $type_complex = array(
         "TINYINT" => array(
 	    "type" => "number",
 	    "min"  => -128,
@@ -291,11 +292,23 @@ class Zeek extends ZeekOutput {
 	    case 'test':
 	        return $this->test();
 
+	    case 'deploy':
+	        return $this->deploy();
+
+            case 'option_get':
+                return $this->option_get(
+                    strtolower($params['name']));
+
+            case 'option_set':
+                return $this->option_set(
+                    strtolower($params['name']),
+                    $params['values']);
+
             case 'structure_get':
 		return $this->structure_get();
 
             case 'structure_set':
-		return $this->structure_set($new_structure);
+	        return $this->structure_set($params['structure']);
 
             case 'structure_get_list':
 	        return $this->structure_get_list(
@@ -346,6 +359,16 @@ class Zeek extends ZeekOutput {
 
         // we check if the project_name does exist
         $project_id = $zlib->project_get_id($project_name);
+        $projects_path = $zlib->projects_path;
+
+        // if the project path is used, we accept only project name
+        // already defined in this project path
+        if (isset($projects_path)
+            and $zlib->project_check($project_name) == false)
+        {
+            $this->error("Project not defined in projects path!");
+            return false;
+        }
 
         // we check the validity of the login & password
         if ($this->check_string_and_size($project_name, 25)
@@ -362,6 +385,7 @@ class Zeek extends ZeekOutput {
             {
                 $_SESSION["project_name"] = $project_name;
                 $_SESSION["project_id"]   = $project_id;
+                $_SESSION["project_path"] = isset($projects_path);
 
                 $this->project_name = $project_name;
 
@@ -413,6 +437,19 @@ class Zeek extends ZeekOutput {
             // we check if the project_name does not exist
             if ($zlib->project_get_id($project_name) == false)
             {
+                // we set default options
+                if ($options == null)
+                {
+                    $options = array(
+                        "editor" => array("html" => "#FF0000",
+                                          "css"  => "#00FF00",
+                                          "js"   => "#0000FF",
+                                          "php"  => "#000000"),
+                        "deploy" => array("zeekify"    => true,
+                                          "minify_css" => true,
+                                          "minify_js"  => true));
+                }
+
 		// we create the project
 		if ($zlib->project_add($project_name, $options) == false)
 		{
@@ -1080,9 +1117,6 @@ class Zeek extends ZeekOutput {
             return false;
         }
 
-        //"zeekify" => array('html'),
-        //"minify" => array('css', 'javascript')
-
 	$this->output_json(array('href' => $dst . '/index.html'));
         return true;
     }
@@ -1169,6 +1203,69 @@ class Zeek extends ZeekOutput {
 
 
 /**
+ * Return the option wanted or an error if it is invalid or not already existing.
+ *
+ * @method option_get
+ * @params string option name
+ */
+    public function option_get($name)
+    {
+        if ($this->check_string_and_size($name, 25) == false)
+        {
+            $this->error("Invalid option name '$name'!");
+            return false;
+        }
+
+        $options = $this->zlib->option_get($this->project_id);
+
+        if (is_array($options)
+            && array_key_exists($name, $options))
+        {
+            $this->output_json($options[$name]);
+            return true;
+        }
+
+        $this->error("No option found with name '$name'!");
+        return false;
+    }
+
+
+/**
+ * Store the new option created or modified an option that is already existing.
+ *
+ * @method option_set
+ * @params string option name
+ * @params array values associated to the name
+ */
+    public function option_set($name, $values)
+    {
+        if ($this->check_string_and_size($name, 25) == false)
+        {
+            $this->error("Invalid option name '$name'!");
+            return false;
+        }
+
+        // we check that the json is well formated
+        $decode_values = $this->json_decode($values);
+        if ($decode_values == NULL)
+        {
+            $this->error("Invalid option values '$values'!");
+            return false;
+        }
+
+        if ($this->zlib->option_set($this->project_id, $name, $decode_values))
+        {
+            $this->success("Option '$name' successfully written!");
+            return true;
+        }
+
+        $this->error("Error while setting option '$name'!");
+        return false;
+
+    }
+
+
+/**
  * Send the project structure.
  *
  * @param boolean expert mode
@@ -1178,7 +1275,7 @@ class Zeek extends ZeekOutput {
     public function structure_get_list($expert_mode)
     {
 	$this->output_json(array('list' =>
-            array_keys($expert_mode ? $this->db_to_css : $this->simple_db)));
+            array_keys($expert_mode ? $this->type_complex : $this->type_simple)));
 
 	return true;
     }
@@ -1202,7 +1299,7 @@ class Zeek extends ZeekOutput {
 	    foreach ($attribute as $name => $options)
 	    {
 		// we get the css options
-		$css_options = $this->db_to_css[$options['type']];
+		$css_options = $this->type_complex[$options['type']];
 
 		// we set the options with the db type
 		$css_options['db_type'] = $options['type'];
@@ -1234,24 +1331,16 @@ class Zeek extends ZeekOutput {
  * We compare to the previous structure and process the change.
  *
  * @method structure_set
- * @param array new structure
+ * @param array structure to set
  *
- * It has following behavior in expert mode :
+ * It has following behavior :
  *  {
- *    table_name: {
+ *    structure_name: {
  *         attribute_name: {
- *             type: DB_TYPE,
- *             size: DB_SIZE,
+ *             type: TYPE,
+ *             db_type: DB_TYPE,
+ *             db_size: DB_SIZE,
  *         },
- *         ...
- *    },
- *    ...
- *  }
- *
- * It has following behavior in simple mode :
- *  {
- *    table_name: {
- *         attribute_name: ATTRIBUTE_TYPE,
  *         ...
  *    },
  *    ...
@@ -1259,13 +1348,26 @@ class Zeek extends ZeekOutput {
  */
     public function structure_set($new_structure)
     {
+        // if a structure path is defined : structure_set is not allowed
+        if ($this->zlib->projects_path)
+        {
+            $this->error(
+                "Deactivate project path to dynamically modify structure!");
+            return false;
+        }
+
         // we decode the json structure
-        $new_structure = $this->json_decode($new_structure);
+        $decode_structure = $this->json_decode($new_structure);
+        if ($decode_structure == NULL)
+        {
+            $this->error("Invalid structure value '$new_structure'!");
+            return false;
+        }
 
         $structure = array();
 
         // we check if it is valid
-        foreach ($new_structure as $table_name => $attributes)
+        foreach ($decode_structure as $table_name => $attributes)
         {
             if ($this->check_string_and_size($table_name, 25) == false)
             {
@@ -1283,29 +1385,30 @@ class Zeek extends ZeekOutput {
                 }
 
                 // we convert the simple to the expert mode
-                if (is_string($value)
-                    && array_key_exists($value, $this->simple_db))
+                if (array_key_exists('type', $value)
+                    && array_key_exists($value['type'], $this->type_simple))
                 {
-                    $structure[$attribute] = $this->simple_db[$value];
+                    $structure[$attribute] = $this->type_simple[$value];
                     continue;
                 }
 
                 // we check the whole structure
-                if (array_key_exists('type', $value) == false)
+                if (array_key_exists('db_type', $value) == false)
                 {
                     $this->error(
-                        "$table_name : type should be defined in '$attribute'!");
+                        "$table_name : db_type should be defined in '$attribute'!");
                     return false;
                 }
 
-                if (array_key_exists($value['type'], $this->db_to_css) == false)
+                if (array_key_exists(
+                          $value['db_type'], $this->type_complex) == false)
                 {
                     $this->error("$table_name : invalid type in '$attribute'!");
                     return false;
                 }
 
-                if (array_key_exists('size', $value)
-                    && is_numeric($value['size']) == false)
+                if (array_key_exists('db_size', $value)
+                    && is_numeric($value['db_size']) == false)
                 {
                     $this->error(
                         "$table_name : size should be numeric in '$attribute'!");
@@ -1317,8 +1420,14 @@ class Zeek extends ZeekOutput {
         }
 
         // we set the new structure into the database
-        return $this->zlib->structure_set(
-            $this->project_id, $this->project_name, $structure);
+        if ($this->zlib->structure_set(
+            $this->project_id, $this->project_name, $structure))
+        {
+            $this->success("Structure correctly set!");
+            return true;
+        }
+
+        return false;
     }
 
 /**
@@ -1570,7 +1679,8 @@ class Zeek extends ZeekOutput {
  * @param integer maximum size
  */
     private function check_string_and_size($input, $size) {
-        return isset($input) and $input != '' and strlen($input) <= $size;
+        return isset($input) and $input != ''
+           and strlen($input) <= $size;
     }
 }
 ?>
