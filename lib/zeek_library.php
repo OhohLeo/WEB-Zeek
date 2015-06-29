@@ -574,25 +574,26 @@ class ZeekLibrary extends ZeekOutput {
 /**
  * Return the options structure. Return false if the option doesn't exist.
  *
- * @method options_get
+ * @method option_get
  * @param int project id
- * @param string option name
  */
-    public function options_get($project_id, $name)
+    public function option_get($project_id)
     {
         if ($this->options)
-            return $this->options[$name];
+            return $this->options;
 
         $db = $this->db;
 
         $result = $this->db->table_view(
-            'projects', 'options', NULL, 1, 0, $project_id);
+            'project', 'options', NULL, 1, 0, $project_id);
 
         if ($result)
         {
-            $this->options = $db->handle_result($result);
+            $options = $this->value_fetch($result);
 
-            return $this->json_decode($this->options[$name]);
+            $this->options = $this->json_decode($options['options']);
+
+            return $this->options;
         }
 
         return NULL;
@@ -602,23 +603,27 @@ class ZeekLibrary extends ZeekOutput {
  /**
  * Set change on the options structure. Return false if the option doesn't exist.
  *
- * @method options_get
+ * @method option_get
  * @param int project id
  * @param string option name
  * @param array option values
  */
-    public function options_set($project_id, $name, $values)
+    public function option_set($project_id, $name, $values)
     {
-        $this->options[$name] = $this->json_encode($values);
+        if ($this->options == NULL)
+            $this->option_get($project_id);
+
+        $this->options[$name] = $values;
 
         if ($this->db->row_update(
-            'project', $project_id, array('options' => $this->options)))
+            'project', $project_id, array('options' =>
+                $this->json_encode($this->options))))
         {
             return true;
         }
 
-        // if there is an issue : we remove all options
-        $this->options = null;
+        // if there is an issue : we remove this option
+        unset($this->options[$name]);
 
         return false;
     }

@@ -361,21 +361,21 @@ class Zeek extends ZeekOutput {
         $project_id = $zlib->project_get_id($project_name);
         $projects_path = $zlib->projects_path;
 
-        // if the project path is used, we accept only project name
-        // already defined in this project path
-        if (isset($projects_path)
-            and $zlib->project_check($project_name) == false)
-        {
-            $this->error("Project not defined in projects path!");
-            return false;
-        }
-
         // we check the validity of the login & password
         if ($this->check_string_and_size($project_name, 25)
             and $this->check_string_and_size($login, 25)
 	    and $this->check_string_and_size($password, 32)
 	    and $zlib->user_check($project_id, $login, $password))
         {
+            // if the project path is used, we accept only project name
+            // already defined in this project path
+            if (isset($projects_path)
+                and $zlib->project_check($project_name) == false)
+            {
+                $this->error("Project not defined in projects path!");
+                return false;
+            }
+
             // we store the session user
             $_SESSION["login"] = $login;
             $_SESSION["start_ts"] = time();
