@@ -131,6 +131,7 @@ class DataBase extends ZeekOutput {
         return $this->send_query("USE $name", true);
     }
 
+
 /**
  * Check if a database exists
  *
@@ -278,6 +279,53 @@ class DataBase extends ZeekOutput {
     public function table_delete($name)
     {
         return $this->send_query("DROP TABLE IF EXISTS $name", true);
+    }
+
+/**
+ * Show tables associated to the selected database
+ *
+ * @method tables_show
+ * @param string database name
+ */
+    public function tables_show($name)
+    {
+        $result = $this->send_query("SHOW TABLES", false);
+        if ($result == NULL) {
+            return false;
+        }
+
+        $tables = array();
+
+        while ($next_result = $result->fetch(PDO::FETCH_ASSOC))
+        {
+            array_push($tables, $next_result["Tables_in_$name"]);
+        }
+
+        return $tables;
+    }
+
+
+/**
+ * List attribute and type from a table
+ *
+ * @method table_show
+ * @param string table name
+ */
+    public function table_show($name)
+    {
+        $result = $this->send_query("SHOW COLUMNS FROM $name", false);
+        if ($result == NULL) {
+            return false;
+        }
+
+        $attributes =  array();
+
+        while ($next_result = $result->fetch(PDO::FETCH_ASSOC))
+        {
+            $attributes[$next_result["Field"]] = $next_result;
+        }
+
+        return $attributes;
     }
 
 /**

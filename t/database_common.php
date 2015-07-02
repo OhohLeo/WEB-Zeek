@@ -168,7 +168,6 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
             $this->assertTrue($row->id == ++$id);
         }
 
-
         $this->assertTrue(
             $db->row_update('more_attributes', 3,
                                 array('second_element' => 6,
@@ -195,16 +194,121 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
             $this->assertEquals($row->Default, NULL);
         }
 
+        $this->assertEquals(
+            $db->table_show('more_attributes'), array(
+                'id'             => array('Field'   => 'id',
+                                          'Type'    => 'int(11)',
+                                          'Null'    => 'NO',
+                                          'Key'     => 'PRI',
+                                          'Default' => NULL,
+                                          'Extra'   => 'auto_increment'),
+                'first_element'  => array('Field'   => 'first_element',
+                                          'Type'    => 'varchar(30)',
+                                          'Null'    => 'NO',
+                                          'Key'     => '',
+                                          'Default' => NULL,
+                                          'Extra'   => ''),
+                'second_element' => array('Field'   => 'second_element',
+                                          'Type'    => 'int(11)',
+                                          'Null'    => 'NO',
+                                          'Key'     => '',
+                                          'Default' => NULL,
+                                          'Extra'   => ''),
+                'third_element'  => array('Field'   => 'third_element',
+                                          'Type'    => 'text',
+                                          'Null'    => 'NO',
+                                          'Key'     => '',
+                                          'Default' => NULL,
+                                          'Extra'   => '')
+            ));
+
         // we add more attributes (new columns) to the table
         $this->assertTrue(
             $db->table_add_attribute('more_attributes', 'test', 'TEXT'));
+
+        $this->assertEquals(
+            $db->table_show('more_attributes'), array(
+                'id'             => array('Field'   => 'id',
+                                          'Type'    => 'int(11)',
+                                          'Null'    => 'NO',
+                                          'Key'     => 'PRI',
+                                          'Default' => NULL,
+                                          'Extra'   => 'auto_increment'),
+                'first_element'  => array('Field'   => 'first_element',
+                                          'Type'    => 'varchar(30)',
+                                          'Null'    => 'NO',
+                                          'Key'     => '',
+                                          'Default' => NULL,
+                                          'Extra'   => ''),
+                'second_element' => array('Field'   => 'second_element',
+                                          'Type'    => 'int(11)',
+                                          'Null'    => 'NO',
+                                          'Key'     => '',
+                                          'Default' => NULL,
+                                          'Extra'   => ''),
+                'third_element'  => array('Field'   => 'third_element',
+                                          'Type'    => 'text',
+                                          'Null'    => 'NO',
+                                          'Key'     => '',
+                                          'Default' => NULL,
+                                          'Extra'   => ''),
+                'test'           => array('Field'   => 'test',
+                                          'Type'    => 'text',
+                                          'Null'    => 'NO',
+                                          'Key'     => '',
+                                          'Default' => NULL,
+                                          'Extra'   => ''),
+            ));
 
         // we remove an attribute (column) from the table
         $this->assertTrue(
             $db->table_remove_attribute('more_attributes', 'test'));
 
+        $this->assertEquals(
+            $db->table_show('more_attributes'), array(
+                'id'             => array('Field'   => 'id',
+                                          'Type'    => 'int(11)',
+                                          'Null'    => 'NO',
+                                          'Key'     => 'PRI',
+                                          'Default' => NULL,
+                                          'Extra'   => 'auto_increment'),
+                'first_element'  => array('Field'   => 'first_element',
+                                          'Type'    => 'varchar(30)',
+                                          'Null'    => 'NO',
+                                          'Key'     => '',
+                                          'Default' => NULL,
+                                          'Extra'   => ''),
+                'second_element' => array('Field'   => 'second_element',
+                                          'Type'    => 'int(11)',
+                                          'Null'    => 'NO',
+                                          'Key'     => '',
+                                          'Default' => NULL,
+                                          'Extra'   => ''),
+                'third_element'  => array('Field'   => 'third_element',
+                                          'Type'    => 'text',
+                                          'Null'    => 'NO',
+                                          'Key'     => '',
+                                          'Default' => NULL,
+                                          'Extra'   => ''),
+            ));
+
+
+        $this->assertEquals($db->tables_show($this->test_dbname),
+                            array("more_attributes"));
+
+        $this->assertTrue(
+            $db->table_create('just_id', NULL));
+
+        $this->assertEquals($db->tables_show($this->test_dbname),
+                            array("just_id", "more_attributes"));
+
         $this->assertTrue(
             $db->database_delete($this->test_dbname));
+
+        $this->assertFalse($db->tables_show($this->test_dbname));
+
+        $this->assertFalse(
+            $db->table_show('more_attributes'));
 
         $this->assertTrue(
             $db->database_delete($this->test_dbname));

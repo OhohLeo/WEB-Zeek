@@ -527,6 +527,7 @@ class ZeekLibrary extends ZeekOutput {
             'project', $project_id, array('structure' => $json_structure)))
         {
             $this->data_structure[$project_name] = $structure;
+
             return true;
         }
 
@@ -569,6 +570,31 @@ class ZeekLibrary extends ZeekOutput {
         }
 
         return true;
+    }
+
+
+/**
+ * Apply changes on existing table impacted by the new structure.
+ * Return true if the process correctly happens, false otherwise.
+ *
+ * @method struture_compare
+ * @param array structure to apply
+ */
+    public function structure_update($new_structure)
+    {
+        // we get the actual existing tables
+        $tables = $this->db->tables_show($this->db_name);
+        if ($tables == false) {
+	    $this->error("value '$name' is mandatory but not found"
+			. " in type '$table_name'");
+        }
+
+            // we check if existing tables need to be changed
+            foreach ($structure as $table_name => $attributes)
+            {
+            }
+
+
     }
 
 /**
