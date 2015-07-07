@@ -79,12 +79,12 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
 
         $this->assertTrue(
             $db->table_create('more_attributes', array(
-                'first_element'  => array('type' => 'VARCHAR',
+                'first_element'  => array('db_type' => 'VARCHAR',
 					  'size' => 30),
-                'second_element' => array('type' => 'INT',
+                'second_element' => array('db_type' => 'INT',
 					  'size' =>  11,
 					  'default' => 'NOT NULL'),
-                'third_element'  => array('type' => 'TEXT'))));
+                'third_element'  => array('db_type' => 'TEXT'))));
 
         $this->assertTrue(
             $db->table_check('more_attributes'));
@@ -224,7 +224,7 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
 
         // we add more attributes (new columns) to the table
         $this->assertTrue(
-            $db->table_add_attribute('more_attributes', 'test', 'TEXT'));
+            $db->attribute_add('more_attributes', 'test', 'TEXT'));
 
         $this->assertEquals(
             $db->table_show('more_attributes'), array(
@@ -262,7 +262,7 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
 
         // we remove an attribute (column) from the table
         $this->assertTrue(
-            $db->table_remove_attribute('more_attributes', 'test'));
+            $db->attribute_remove('more_attributes', 'test'));
 
         $this->assertEquals(
             $db->table_show('more_attributes'), array(
@@ -390,6 +390,56 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
 	    $db->check_value('DATETIME', '10000-05-13 10:08:21'));
 	$this->assertFalse(
 	    $db->check_value('DATETIME', '1986-05-32 10:08:21'));
+    }
+
+    public function test_attribute()
+    {
+        $db = $this->connect();
+
+        $this->clean();
+
+        $this->assertTrue(
+            $db->database_create($this->test_dbname));
+
+        $this->assertTrue(
+            $db->database_use($this->test_dbname));
+
+        $table_name = 'attributes';
+
+        $this->assertTrue(
+            $db->table_create($table_name, NULL));
+
+        $check = array("TINYINT", "TINYINT_U", "SMALLINT",
+                       "SMALLINT_U", "MEDIUMINT", "MEDIUMINT_U",
+                       "INT", "INT_U", "BIGINT", "BIGINT_U",
+                       "DECIMAL", "INTEGER", "FLOAT",
+                       "DOUBLE", "REAL", "DATE", "TIME",
+                       "TIMESTAMP", "DATETIME", "YEAR",
+                       "CHAR", array(
+                           "db_type" => "VARCHAR",
+                           "size" => 10),
+                       "TINYTEXT", "TEXT", "MEDIUMTEXT",
+                       "LONGTEXT", "TINYBLOB", "BLOB", "MEDIUMBLOB",
+                       "LONGBLOB");
+
+        foreach ($check as $type)
+        {
+            $this->assertTrue($db->attribute_add(
+                $table_name, "test", $type));
+
+            $internal = $db->table_show($table_name);
+
+            $this->assertTrue($db->attribute_check(
+                $internal["test"], $type));
+
+            $this->assertTrue($db->attribute_remove(
+                $table_name, "test"));
+        }
+
+        $this->assertTrue(
+            $db->database_delete($this->test_dbname));
+
+        $this->clean();
     }
 }
 ?>

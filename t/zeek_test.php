@@ -87,6 +87,16 @@ class TestZeek extends PHPUnit_Framework_TestCase
     	$this->assertTrue(
             $zeek->checkOutput('{"list":["TITLE","IMAGE","TEXT","INTEGER","NUMBER","FLOAT","DATE","TIME","YEAR","DATETIME"]}'));
 
+        // we check that it is not possible to dynamically modify the project structure
+        // in this kind of project
+        $this->assertFalse(
+            $zeek->structure_set(
+                '{"console":{"test":{"type":"TITLE","db_type":"","db_size":""}}}'));
+
+    	$this->assertTrue(
+            $zeek->checkOutput(
+                '{"error":"Deactivate project path to dynamically modify structure!"}'));
+
         $zeek->environment_clean();
     }
 

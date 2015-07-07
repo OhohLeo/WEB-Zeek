@@ -870,6 +870,8 @@ $(document).ready(function() {
 
     $("button#structure_validate").on("click", function() {
 
+        console.log($new_structure);
+
         $send_request(
 	    {
 	        "method": "structure_set",

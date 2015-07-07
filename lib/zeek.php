@@ -15,16 +15,16 @@ class Zeek extends ZeekOutput {
     private $type_list;
 
     private $type_simple = array(
-        "TITLE"    => array("type" => "VARCHAR"),
-        "IMAGE"    => array("type" => "LONGBLOB"),
-        "TEXT"     => array("type" => "LONGTEXT"),
-        "INTEGER"  => array("type" => "INTEGER"),
-        "NUMBER"   => array("type" => "BIGINT"),
-        "FLOAT"    => array("type" => "FLOAT"),
-        "DATE"     => array("type" => "DATE"),
-        "TIME"     => array("type" => "TIME"),
-        "YEAR"     => array("type" => "YEAR"),
-        "DATETIME" => array("type" => "TIMESTAMP"),
+        "TITLE"    => array("db_type" => "VARCHAR", "size" => 100),
+        "IMAGE"    => array("db_type" => "LONGBLOB"),
+        "TEXT"     => array("db_type" => "LONGTEXT"),
+        "INTEGER"  => array("db_type" => "INTEGER"),
+        "NUMBER"   => array("db_type" => "BIGINT"),
+        "FLOAT"    => array("db_type" => "FLOAT"),
+        "DATE"     => array("db_type" => "DATE"),
+        "TIME"     => array("db_type" => "TIME"),
+        "YEAR"     => array("db_type" => "YEAR"),
+        "DATETIME" => array("db_type" => "TIMESTAMP"),
     );
 
     private $type_complex = array(
@@ -1292,17 +1292,19 @@ class Zeek extends ZeekOutput {
 	$structure = $this->zlib->structure_get($this->project_id,
                                                 $this->project_name);
 
-	// we go through all domains
+        // we go through all domains
 	foreach ($structure as $domain => $attribute)
 	{
 	    // we go through all attribute of each domain
 	    foreach ($attribute as $name => $options)
 	    {
+                $db_type = $options['db_type'];
+
 		// we get the css options
-		$css_options = $this->type_complex[$options['type']];
+		$css_options = $this->type_complex[$db_type];
 
 		// we set the options with the db type
-		$css_options['db_type'] = $options['type'];
+		$css_options['db_type'] = $db_type;
 
 		// we check that it doesn't exist a specific value
 		foreach ($options as $type => $value)
@@ -1367,7 +1369,7 @@ class Zeek extends ZeekOutput {
         $structure = array();
 
         // we check if it is valid
-        foreach ($decode_structure as $table_name => $attributes)
+        foreach ($decode_structure as $table_name => $domain)
         {
             if ($this->check_string_and_size($table_name, 25) == false)
             {
@@ -1375,7 +1377,7 @@ class Zeek extends ZeekOutput {
                 return false;
             }
 
-            foreach ($attributes as $attribute => $value)
+            foreach ($domain as $attribute => $value)
             {
                 if ($this->check_string_and_size($attribute, 25) == false)
                 {
@@ -1388,7 +1390,14 @@ class Zeek extends ZeekOutput {
                 if (array_key_exists('type', $value)
                     && array_key_exists($value['type'], $this->type_simple))
                 {
-                    $structure[$attribute] = $this->type_simple[$value];
+
+                    if (array_key_exists($table_name, $structure) == false) {
+                        $structure[$table_name] = array();
+                    }
+
+                    $structure[$table_name][$attribute] = $this->type_simple[
+                        $value['type']];
+
                     continue;
                 }
 

@@ -27,7 +27,7 @@ class DataBase extends ZeekOutput {
         "DECIMAL",
         "INTEGER",
         "FLOAT",
-	"DOUBLEPRECISION",
+	"DOUBLE",
 	"REAL",
 
         "DATE",      # YYYY-MM-DD
@@ -150,89 +150,6 @@ class DataBase extends ZeekOutput {
         return false;
     }
 
-/**
- * Return attribute parameters request
- *
- * @method attribute_add
- * @param string attribute name
- * @param array/string detail parameter
- */
-    private function attribute_add($name, $type)
-    {
-        $request = "$name  ";
-
-        $vartype = NULL;
-        $size = NULL;
-        $default = NULL;
-
-        /* we validate the type at first */
-        if (is_array($type)) {
-
-            /* 1st element is the vartype */
-            $vartype = $type["type"];
-
-	    if (array_key_exists("size", $type))
-		$size = $type["size"];
-
-	    if (array_key_exists("default", $type))
-		$default = $type["default"];
-
-        } else {
-            $vartype = $type;
-        }
-
-        /* the vartype should be defined */
-        if ($vartype == NULL) {
-            $this->error(
-                "Unknown attribute type for value '$value'"
-              . " when creating table '$name'");
-            return false;
-        }
-
-        /* the vartype should be valid */
-        if ($this->check_type($vartype)) {
-
-            /* we add the unsigned flag */
-            if (preg_match('/^([A-Z]+)_U$/', $vartype, $result)) {
-                $vartype = $result[1] . ' UNSIGNED ';
-            }
-
-            $request .= "$vartype";
-        } else {
-            $this->error(
-                "Unexpected attribute type '$vartype'"
-              . " when creating table '$name'");
-
-            return false;
-        }
-
-        /* 2nd element is the size */
-        if (isset($size)) {
-            if (is_numeric($size)) {
-                $request .= "($size) ";
-            } else {
-                $this->error(
-                    "Unexpected attribute size '$size' on type "
-                  . "'$vartype' when creating table '$name'");
-                return false;
-            }
-        }
-
-        /* 3rd element is or the default value or the 'NULL' /
-         * 'NOT NULL' */
-        if (isset($default)) {
-            if ($default == "NOT NULL" or $default == "NULL") {
-                $request .= " $default ";
-            } else {
-                $request .= " NOT NULL DEFAULT '$default' ";
-            }
-        } else {
-            /* by default the value is NOT NULL */
-            $request .= " NOT NULL ";
-        }
-
-        return $request;
-    }
 
 /**
  * Create a new table
@@ -256,7 +173,7 @@ class DataBase extends ZeekOutput {
 
             foreach ($attributes as $name => $type) {
 
-                $attribute_request = $this->attribute_add($name, $type);
+                $attribute_request = $this->attribute_get($name, $type);
 
                 if ($attribute_request == false)
                     return false;
@@ -296,9 +213,12 @@ class DataBase extends ZeekOutput {
 
         $tables = array();
 
+        $name = "Tables_in_$name";
+
         while ($next_result = $result->fetch(PDO::FETCH_ASSOC))
         {
-            array_push($tables, $next_result["Tables_in_$name"]);
+            if (array_key_exists($name, $next_result))
+                array_push($tables, $next_result[$name]);
         }
 
         return $tables;
@@ -328,36 +248,6 @@ class DataBase extends ZeekOutput {
         return $attributes;
     }
 
-/**
- * Add the attribute of the table
- *
- * @method table_add_attribute
- * @param string table name
- * @param string attribute name
- * @param type type associated to the attribute
- */
-    public function table_add_attribute($table_name, $attribute_name, $type)
-    {
-        $attribute_request = $this->attribute_add($attribute_name, $type);
-
-        if ($attribute_request == false)
-            return false;
-
-        return $this->send_query(
-            "ALTER TABLE $table_name ADD COLUMN $attribute_request", true);
-    }
-
-/**
- * Remove an attribute of the table
- *
- * @method table_add_column
- * @param string attribute name
- */
-    public function table_remove_attribute($table_name, $attribute_name)
-    {
-        return $this->send_query(
-            "ALTER TABLE $table_name DROP COLUMN $attribute_name", true);
-    }
 
 /**
  * Check if a table exists
@@ -529,6 +419,201 @@ class DataBase extends ZeekOutput {
 
 
 /**
+ * Add the attribute of the table
+ *
+ * @method attribute_add
+ * @param string table name
+ * @param string attribute name
+ * @param type type associated to the attribute
+ */
+    public function attribute_add($table_name, $attribute_name, $type)
+    {
+        $attribute_request = $this->attribute_get($attribute_name, $type);
+
+        if ($attribute_request == false)
+            return false;
+
+        return $this->send_query(
+            "ALTER TABLE $table_name ADD COLUMN $attribute_request", true);
+    }
+
+/**
+ * Remove an attribute of the table
+ *
+ * @method attribute_remove
+ * @param string table name
+ * @param string attribute name
+ */
+    public function attribute_remove($table_name, $attribute_name)
+    {
+        return $this->send_query(
+            "ALTER TABLE $table_name DROP COLUMN $attribute_name", true);
+    }
+
+/**
+ * Return attribute parameters request
+ *
+ * @method attribute_get
+ * @param string attribute name
+ * @param array/string detail parameter
+ */
+    private function attribute_get($name, $type)
+    {
+        $request = "$name  ";
+
+        $vartype = NULL;
+        $size = NULL;
+        $default = NULL;
+
+        /* we validate the type at first */
+        if (is_array($type)
+            && array_key_exists("db_type", $type)) {
+
+            /* 1st element is the vartype */
+            $vartype = $type["db_type"];
+
+	    if (array_key_exists("size", $type))
+		$size = $type["size"];
+
+	    if (array_key_exists("default", $type))
+		$default = $type["default"];
+
+        } else {
+            $vartype = $type;
+        }
+
+        /* the vartype should be defined */
+        if ($vartype == NULL) {
+            $this->error(
+                "Unknown attribute type '"
+              . json_encode($type)
+              . "' in table '$name'");
+            return false;
+        }
+
+        /* the vartype should be valid */
+        if ($this->check_type($vartype)) {
+
+            /* we add the unsigned flag */
+            if (preg_match('/^([A-Z]+)_U\z/', $vartype, $result)) {
+                $vartype = $result[1] . ' UNSIGNED ';
+            }
+
+            $request .= "$vartype";
+        } else {
+            $this->error(
+                "Unexpected attribute type '$vartype'"
+              . " when creating table '$name'");
+
+            return false;
+        }
+
+        /* 2nd element is the size */
+        if (isset($size)) {
+            if (is_numeric($size)) {
+                $request .= "($size) ";
+            } else {
+                $this->error(
+                    "Unexpected attribute size '$size' on type "
+                  . "'$vartype' when creating table '$name'");
+                return false;
+            }
+        }
+
+        /* 3rd element is or the default value or the 'NULL' /
+         * 'NOT NULL' */
+        if (isset($default)) {
+            if ($default == "NOT NULL" or $default == "NULL") {
+                $request .= " $default ";
+            } else {
+                $request .= " NOT NULL DEFAULT '$default' ";
+            }
+        } else {
+            /* by default the value is NOT NULL */
+            $request .= " NOT NULL ";
+        }
+
+        return $request;
+    }
+
+/**
+ * Return true if the attributes parameter are similarly, return false otherwise.
+ * Return -1 if there is an error detected.
+ *
+ * Internal format is [ "Type" => "type(\d+)", "Default" => "Value" ]
+ *
+ * External format is [ "type" => "TYPE(_U)", size => "\d+", default => "Value"]
+ *
+ * @method attribute_check
+ * @param array internal detail parameter
+ * @param array/string external detail parameter
+ */
+    public function attribute_check($internal, $external)
+    {
+        // find type & size inside internal format
+        if (preg_match('/^([a-z]+)(\((\d+)(,\d+)?\))?( unsigned)?\z/',
+                       $internal["Type"], $result)) {
+            $itype = $result[1];
+
+            if (isset($result[3]))
+                $isize = (int) $result[3];
+
+            if (isset($result[5]))
+                $iunsigned = substr($result[5], 1);
+
+            $idefault = $internal["Default"];
+        }
+        else
+        {
+            $this->error("Unexpected internal attribute type '"
+                       . $internal["Type"] . "'");
+            return -1;
+        }
+
+        /* we validate the external type at first */
+        if (is_array($external)) {
+
+            /* 1st element is the vartype */
+            $etype = $external["db_type"];
+
+	    if (array_key_exists("size", $external))
+		$esize = $external["size"];
+
+	    if (array_key_exists("default", $external))
+		$edefault = $external["default"];
+
+        } else {
+            $etype = $external;
+        }
+
+        if ($this->check_type($etype) == false) {
+            $this->error("Unkown attribute type '$etype'");
+            return -1;
+        }
+
+        // find external type format
+        if (preg_match('/^([A-Z]+)_U\z/', $etype, $result)) {
+            $etype = $result[1];
+            $eunsigned = "unsigned";
+        }
+
+        // Correct some external types
+        if ($etype === "INTEGER")
+            $etype = "INT";
+        else if ($etype === "REAL")
+            $etype = "DOUBLE";
+
+        if ($itype !== strtolower($etype)
+            || (isset($esize) && $isize !== $esize)
+            || (isset($eunsigned) && $iunsigned !== $eunsigned)
+            || (isset($edefault) && $idefault !== $edefault))
+            return false;
+
+        return true;
+    }
+
+
+/**
  * Check if the type of a value exist.
  *
  * @method check_type
@@ -611,7 +696,6 @@ class DataBase extends ZeekOutput {
 
 	return false;
     }
-
 
     /**
      * Check integer values before storing in database.

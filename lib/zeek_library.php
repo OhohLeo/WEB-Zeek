@@ -72,6 +72,11 @@ class ZeekLibrary extends ZeekOutput {
             $this->data_structure =
 		$this->projects_get($this->projects_path);
         }
+        else if (is_array($_SESSION)
+                 && array_key_exists("data_structure", $_SESSION))
+        {
+            $this->data_structure = $_SESSION["data_structure"];
+        }
 
         $check_environment = ($this->db_use_specific)
             ? !($db->table_check('project') || $db->table_check('user'))
@@ -80,7 +85,7 @@ class ZeekLibrary extends ZeekOutput {
       /* We check if the database already exists */
         if ($check_environment) {
                return $this->environment_setup(
-                $this->db_name, $this->db_login, $this->db_password);
+                   $this->db_name, $this->db_login, $this->db_password);
         }
 
         /* We will use only this database */
@@ -112,23 +117,25 @@ class ZeekLibrary extends ZeekOutput {
         /* we use this database */
         $db->database_use($name);
 
+        $this->db_name = $name;
+
         /* we create the project table */
         $db->table_create('project', array(
-            'name'        => array('type' => 'VARCHAR',
+            'name'        => array('db_type' => 'VARCHAR',
 				   'size' => 25),
-            'since'       => array('type' => 'DATE'),
-            'structure'   => array('type' => 'VARCHAR',
+            'since'       => array('db_type' => 'DATE'),
+            'structure'   => array('db_type' => 'VARCHAR',
 				   'size' => 2000),
-	    'options'     => array('type' => 'VARCHAR',
+	    'options'     => array('db_type' => 'VARCHAR',
 				   'size' => 2000)));
 
         /* we create the user table */
         $db->table_create('user', array(
-            'name'       => array('type' => 'VARCHAR',
+            'name'       => array('db_type' => 'VARCHAR',
 				  'size' => 25),
-            'password'   => array('type' => 'CHAR',
+            'password'   => array('db_type' => 'CHAR',
 				  'size' => 32),
-            'project_id' => array('type' => 'INT',
+            'project_id' => array('db_type' => 'INT',
 				  'size' => 11)));
 
         /* we add the actual user */
@@ -490,24 +497,31 @@ class ZeekLibrary extends ZeekOutput {
         $db = $this->db;
 
         $result = $this->db->table_view(
-            'projects', 'structure', NULL, 1, 0, $project_id);
+            'project', 'structure', NULL, 1, 0, $project_id);
 
         if ($result)
         {
-            $structure = $this->json_decode(
-                $db->handle_result($result));
+            $get = $this->value_fetch($result);
+
+            if (array_key_exists("structure", $get))
+                $structure = $this->json_decode($get["structure"]);
+
+            if ($structure == NULL)
+                return array();
 
             $this->data_structure[$project_name] = $structure;
+
+            // we store the data structure in the session
+            $_SESSION["data_structure"] = $this->data_structure;
 
             return $structure;
         }
 
-	return array();
+        return array();
     }
 
 /**
- * Return the whole structure if it exists otherwise return
- * NULL.
+ * Return the whole structure if it exists otherwise return NULL.
  *
  * @method struture_get
  * @param integer project id
@@ -528,14 +542,16 @@ class ZeekLibrary extends ZeekOutput {
         {
             $this->data_structure[$project_name] = $structure;
 
-            return true;
+            // we store the data structure in the session
+            $_SESSION["data_structure"] = $this->data_structure;
+
+            return $this->structure_update($structure);
         }
 
         // if there is an issue : we remove the structure
         unset($this->data_structure[$project_name]);
 	return false;
     }
-
 
 /**
  * Compare the structure to the existing one. Return true if the structure are
@@ -544,7 +560,7 @@ class ZeekLibrary extends ZeekOutput {
  * @method struture_compare
  * @param array structure to compare
  */
-    public function structure_compare($project_name, $structure)
+    public function structure_compare($project_name, $new_structure)
     {
         // we check if there are some modifications between each structure
         if (array_key_exists($project_name, $this->data_structure) == false)
@@ -552,12 +568,12 @@ class ZeekLibrary extends ZeekOutput {
 
         $structure_stored = $this->data_structure[$project_name];
 
-        foreach ($new_structure as $table_name => $attributes)
+        foreach ($new_structure as $table_name => $domain)
         {
             if (array_key_exists($table_name, $structure_stored) == false)
                 return false;
 
-            foreach ($attributes as $attribute => $value)
+            foreach ($domain as $attribute => $value)
             {
                 if (array_key_exists(
                     $attribute, $structure_stored[$table_name]) == false)
@@ -572,7 +588,6 @@ class ZeekLibrary extends ZeekOutput {
         return true;
     }
 
-
 /**
  * Apply changes on existing table impacted by the new structure.
  * Return true if the process correctly happens, false otherwise.
@@ -582,19 +597,96 @@ class ZeekLibrary extends ZeekOutput {
  */
     public function structure_update($new_structure)
     {
+        $db = $this->db;
+
         // we get the actual existing tables
-        $tables = $this->db->tables_show($this->db_name);
+        $tables = $db->tables_show($this->db_name);
         if ($tables == false) {
-	    $this->error("value '$name' is mandatory but not found"
-			. " in type '$table_name'");
+	    $this->error("Impossible to see the current tables!");
+            return false;
         }
 
-            // we check if existing tables need to be changed
-            foreach ($structure as $table_name => $attributes)
+        // we check if existing tables need to be changed
+        foreach ($tables as $table_name)
+        {
+            // we ignore the not concerned tables
+            if ($table_name === "project" || $table_name === "user")
+                continue;
+
+            $reel_table_name = substr($table_name, 1);
+
+            // we remove the project id at the beginning of the name
+            // we check that the table name still exists
+            if (array_key_exists($reel_table_name, $new_structure))
             {
+                $this->attributes_update($table_name,
+                                         $new_structure[$reel_table_name]);
             }
+            // otherwise we remove the stored table from the database
+            else if ($db->table_delete($name))
+            {
+                continue;
+            }
+            // impossible to delete the table : error
+            else
+            {
+                $this->error("Error while deleting '$table_name'!");
+                return false;
+            }
+        }
 
+        // we updated all the databases
+        return true;
+    }
 
+ /**
+  * Check and alter table if needed. Return false if an error has been
+  * detected, otherwise return true
+  *
+  * @method attributes_update
+  * @param string name of the table containing the attributes list
+  * @param array new attributes list
+  */
+    public function attributes_update($table_name, $new_attributes)
+    {
+        $db = $this->db;
+
+        // we get the attributes of the actual existing table
+        $attributes = $db->table_show($table_name);
+
+        foreach ($attributes as $attribute => $value)
+        {
+            // we ignore "id" tables automatically created
+            if ($attribute === "id")
+                continue;
+
+            // we check if the attribute is similar
+            if (array_key_exists($attribute, $new_attributes)
+                && $db->attribute_check($value, $new_attributes[$attribute]))
+            {
+                unset($new_attributes[$attribute]);
+            }
+            // otherwise we remove the attribute altered
+            else if ($db->attribute_remove($table_name, $attribute) == false)
+            {
+                $this->error(
+                    "Error removing the attribute '$attribute' in '$table_name'!");
+                return false;
+            }
+        }
+
+        // we add remaining new attributes that could exist
+        foreach ($new_attributes as $attribute => $value)
+        {
+            if ($db->attribute_add($table_name, $attribute, $value))
+                continue;
+
+            $this->error(
+                "Error setting the attribute '$attribute' in '$table_name'!");
+            return false;
+        }
+
+        return true;
     }
 
 /**
@@ -1488,10 +1580,12 @@ class ZeekLibrary extends ZeekOutput {
 	    }
 
 	    // we check that the defined values have expected type
-	    if ($this->db->check_value($expected_format["type"], $value) == false)
+	    if ($this->db->check_value($expected_format["db_type"], $value) == false)
 	    {
 		$this->error("invalid value '$value' for '$name'"
-			   . " in type '$table_name'");
+			   . " with type '"
+                           . $expected_format["db_type"]
+                           . "' in '$table_name'");
 		return false;
 	    }
 	}

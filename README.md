@@ -22,13 +22,15 @@ using following
  - finish the configuration & get_and_set visual functionnalities
  - insert data beetween old ones
  - add piwik functionalities
- - test/deploy functionalities : minimize css & zeekify & configuration
  - save & restore database functionnalities
- - setup help methods
  - deployment tool (for 1&1)
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+08/05/2015 Leo
+ * 1st anniversary of Zeek!!
+ * work on dynamic structure
+
 30/06/2015 Leo
  * finish configuration editor & deploy options
  * work on project structure to handle dynamic changes

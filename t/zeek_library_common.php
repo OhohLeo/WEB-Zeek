@@ -146,45 +146,45 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 			    array(
 	    "test" => array(
 		"artist" => array(
-		    "name"      => array("type" => "VARCHAR", "size" => 100),
-		    "surname"   => array("type" => "VARCHAR", "size" => 100),
-		    "age"       => array("type" => "INT_U"),
-		    "subtitle"  => array("type" => "VARCHAR", "size" => 300),
-		    "biography" => array("type" => "TEXT", "size" => 1000),
-		    "skill"     => array("type" => "VARCHAR", "size" => 100)),
+		    "name"      => array("db_type" => "VARCHAR", "size" => 100),
+		    "surname"   => array("db_type" => "VARCHAR", "size" => 100),
+		    "age"       => array("db_type" => "INT_U"),
+		    "subtitle"  => array("db_type" => "VARCHAR", "size" => 300),
+		    "biography" => array("db_type" => "TEXT", "size" => 1000),
+		    "skill"     => array("db_type" => "VARCHAR", "size" => 100)),
 		"show"   => array(
-		    "name"      => array("type" => "VARCHAR", "size" => 100),
-		    "date"      => array("type" => "DATE"),
-		    "hour"      => array("type" => "TIME"),
-		    "location"  => array("type" => "VARCHAR", "size" => 300)),
+		    "name"      => array("db_type" => "VARCHAR", "size" => 100),
+		    "date"      => array("db_type" => "DATE"),
+		    "hour"      => array("db_type" => "TIME"),
+		    "location"  => array("db_type" => "VARCHAR", "size" => 300)),
 		"news"   => array(
-		    "name"      => array("type" => "VARCHAR", "size" => 100),
-		    "date"      => array("type" => "DATE"),
-		    "comments"  => array("type" => "VARCHAR", "size" => 100)),
+		    "name"      => array("db_type" => "VARCHAR", "size" => 100),
+		    "date"      => array("db_type" => "DATE"),
+		    "comments"  => array("db_type" => "VARCHAR", "size" => 100)),
 		"album"  => array(
-		    "name"      => array("type" => "VARCHAR", "size" => 100),
-		    "duration"  => array("type" => "INT_U"),
-		    "comments"  => array("type" => "TEXT", "size" => 1000)),
+		    "name"      => array("db_type" => "VARCHAR", "size" => 100),
+		    "duration"  => array("db_type" => "INT_U"),
+		    "comments"  => array("db_type" => "TEXT", "size" => 1000)),
 		"music"  => array(
-		    "name"      => array("type" => "VARCHAR", "size" => 100),
-		    "date"      => array("type" => "DATE"),
-		    "duration"  => array("type" => "INT_U"),
-		    "comments"  => array("type" => "TEXT", "size" => 1000)),
+		    "name"      => array("db_type" => "VARCHAR", "size" => 100),
+		    "date"      => array("db_type" => "DATE"),
+		    "duration"  => array("db_type" => "INT_U"),
+		    "comments"  => array("db_type" => "TEXT", "size" => 1000)),
 		"video"  => array(
-		    "name"      => array("type" => "VARCHAR", "size" => 100),
-		    "date"      => array("type" => "DATE"),
-		    "duration"  => array("type" => "INT_U"),
-		    "comments"  => array("type" => "TEXT", "size" => 1000)),
+		    "name"      => array("db_type" => "VARCHAR", "size" => 100),
+		    "date"      => array("db_type" => "DATE"),
+		    "duration"  => array("db_type" => "INT_U"),
+		    "comments"  => array("db_type" => "TEXT", "size" => 1000)),
 		"media"  => array(
-		    "name"      => array("type" => "VARCHAR", "size" => 100),
-		    "date"      => array("type" => "DATE"),
-		    "comments"  => array("type" => "TEXT", "size" => 1000))),
+		    "name"      => array("db_type" => "VARCHAR", "size" => 100),
+		    "date"      => array("db_type" => "DATE"),
+		    "comments"  => array("db_type" => "TEXT", "size" => 1000))),
 	    "test2" => array(
 		"test1" => array(
-		    "name"      => array("type" => "VARCHAR", "size" => 25),
-		    "since"     => array("type" => "DATE"),
-		    "subtitle"  => array("type" => "VARCHAR", "size" => 300),
-		    "biography" => array("type" => "TEXT", "size" => 1000)))));
+		    "name"      => array("db_type" => "VARCHAR", "size" => 25),
+		    "since"     => array("db_type" => "DATE"),
+		    "subtitle"  => array("db_type" => "VARCHAR", "size" => 300),
+		    "biography" => array("db_type" => "TEXT", "size" => 1000)))));
 
 	$wrong_tests = array(
 	    't/projects/no_project_name.ini',
@@ -479,6 +479,224 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	    case "LONGBLOB":
 		return array("turlututu \n chapeau poitu!!");
 	}
+    }
+
+    public function test_structure()
+    {
+	$zlib = $this->zlib;
+
+        $this->assertTrue(
+            $zlib->connect_to_database());
+
+        $zlib->environment_clean($this->db_name);
+
+        $this->assertTrue(
+            $zlib->environment_setup($this->db_name, 'test', 'test'));
+
+        $project_name = "test";
+        $project_id = 1;
+
+        $this->assertTrue(
+            $zlib->project_add($project_name));
+
+        $this->assertEquals(
+            $zlib->structure_get($project_id, $project_name), array(
+                'artist' => array(
+                    'name' => array(
+                        'db_type' => "VARCHAR",
+                        'size' => 100
+                    ),
+                    'surname' => array(
+                        'db_type' => "VARCHAR",
+                        'size' => 100
+                    ),
+                    'age' => array(
+                        'db_type' => "INT_U"
+                    ),
+                    'subtitle' => array(
+                        'db_type' => "VARCHAR",
+                        'size' => 300
+                    ),
+                    'biography' => array(
+                        'db_type' => "TEXT",
+                        'size' => 1000
+                    ),
+                    'skill' => array(
+                        'db_type' => "VARCHAR",
+                        'size' => 100
+                    ),
+                ),
+                'show' => array(
+                    'name' => array(
+                        'db_type' => "VARCHAR",
+                        'size' => 100
+                    ),
+                    'date' => array(
+                        'db_type' => "DATE",
+                    ),
+                    'hour' => array(
+                        'db_type' => "TIME",
+                    ),
+                    'location' => array(
+                        'db_type' => "VARCHAR",
+                        'size' => 300
+                    ),
+                ),
+                'news' => array(
+                    'name' => array(
+                        'db_type' => "VARCHAR",
+                        'size' => 100
+                    ),
+                    'date' => array(
+                        'db_type' => "DATE",
+                    ),
+                    'comments' => array(
+                        'db_type' => "VARCHAR",
+                        'size' => 100
+                    ),
+                ),
+                'album' => array(
+                    'name' => array(
+                        'db_type' => "VARCHAR",
+                        'size' => 100
+                    ),
+                    'duration' => array(
+                        'db_type' => "INT_U",
+                    ),
+                    'comments' => array(
+                        'db_type' => "TEXT",
+                        'size' => 1000
+                    ),
+                ),
+                'music' => array(
+                    'name' => array(
+                        'db_type' => "VARCHAR",
+                        'size' => 100
+                    ),
+                    'date' => array(
+                        'db_type' => "DATE",
+                    ),
+                    'duration' => array(
+                        'db_type' => "INT_U",
+                    ),
+                    'comments' => array(
+                        'db_type' => "TEXT",
+                        'size' => 1000
+                    ),
+                ),
+                'video' => array(
+                    'name' => array(
+                        'db_type' => "VARCHAR",
+                        'size' => 100,
+                    ),
+                    'date' => array(
+                        'db_type' => "DATE",
+                    ),
+                    'duration' => array(
+                        'db_type' => "INT_U",
+                    ),
+                    'comments' => array(
+                        'db_type' => "TEXT",
+                        'size' => 1000,
+                    ),
+                ),
+                'media' => array(
+                    'name' => array(
+                        'db_type' => "VARCHAR",
+                        'size' => 100,
+                    ),
+                    'date' => array(
+                        'db_type' => "DATE"
+                    ),
+                    'comments' => array(
+                        'db_type' => "TEXT",
+                        'size' => 1000,
+                    ),
+                )));
+
+        // we create simplify this project
+        $this->assertTrue(
+            $zlib->structure_set(
+                $project_id, $project_name,
+                array(
+                    'artist' => array(
+                        'name' => array(
+                            'db_type' => "VARCHAR",
+                            'size' => 100
+                        ),
+                        'surname' => array(
+                            'db_type' => "VARCHAR",
+                            'size' => 100
+                        ),
+                    ),
+                    'show' => array(
+                        'name' => array(
+                            'db_type' => "VARCHAR",
+                            'size' => 100
+                        )))));
+
+        $this->assertEquals(
+            $zlib->structure_get($project_id, $project_name),
+            array(
+                'artist' => array(
+                    'name' => array(
+                        'db_type' => "VARCHAR",
+                        'size' => 100
+                    ),
+                    'surname' => array(
+                        'db_type' => "VARCHAR",
+                        'size' => 100
+                    ),
+                ),
+                'show' => array(
+                    'name' => array(
+                        'db_type' => "VARCHAR",
+                        'size' => 100
+                    ))));
+
+        // we insert new elements in this project
+	$this->assertTrue(
+	    $zlib->value_insert(
+		$project_id, 'artist',
+                array('name'      => 'test_name',
+		      'surname'   => 'test_surname')));
+
+	$result = $zlib->value_get($project_id, 'artist');
+	$row = $zlib->value_fetch($result);
+	$this->assertEquals(
+            $row, array("id"     => 1,
+                        "name"   => 'test_name',
+                        "surname"=> 'test_surname'));
+
+        // we alter the "artist" table
+        $this->assertTrue(
+            $zlib->structure_set(
+                $project_id, $project_name,
+                array(
+                    'artist' => array(
+                        'name' => array(
+                            'db_type' => "VARCHAR",
+                            'size' => 100
+                        ),
+                        'age' => array(
+                            'db_type' => "INT_U"
+                        ),
+                    ),
+                    'show' => array(
+                        'name' => array(
+                            'db_type' => "VARCHAR",
+                            'size' => 100
+                        )))));
+
+        // we check how is modified the project
+	$result = $zlib->value_get($project_id, 'artist');
+	$row = $zlib->value_fetch($result);
+	$this->assertEquals(
+            $row, array("id"   => 1,
+                        "name" => 'test_name',
+                        "age"  => '0'));
+
+        $zlib->environment_clean($this->db_name);
     }
 
 

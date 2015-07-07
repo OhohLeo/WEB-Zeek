@@ -178,7 +178,7 @@ include 'default/header.php';
             <h3>What is a Zeek structure ?</h3>
             <p>A structure defines the way datas will be stored.</p>
             <p>It could be seen as a table in database representation.</p>
-            <p>A structure has a unique name and some attributes linked with the structure.</p>
+            <p>A structure has a unique name and some attributes linked with.</p>
             <p>The attributes could be seen as each column of the table.</p>
             <h3>How to use a structure ?</h3>
             <p>A structure could be used in all type of files.</p>
