@@ -146,45 +146,45 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 			    array(
 	    "test" => array(
 		"artist" => array(
-		    "name"      => array("db_type" => "VARCHAR", "size" => 100),
-		    "surname"   => array("db_type" => "VARCHAR", "size" => 100),
+		    "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
+		    "surname"   => array("db_type" => "VARCHAR", "db_size" => 100),
 		    "age"       => array("db_type" => "INT_U"),
-		    "subtitle"  => array("db_type" => "VARCHAR", "size" => 300),
-		    "biography" => array("db_type" => "TEXT", "size" => 1000),
-		    "skill"     => array("db_type" => "VARCHAR", "size" => 100)),
+		    "subtitle"  => array("db_type" => "VARCHAR", "db_size" => 300),
+		    "biography" => array("db_type" => "TEXT", "db_size" => 1000),
+		    "skill"     => array("db_type" => "VARCHAR", "db_size" => 100)),
 		"show"   => array(
-		    "name"      => array("db_type" => "VARCHAR", "size" => 100),
+		    "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
 		    "date"      => array("db_type" => "DATE"),
 		    "hour"      => array("db_type" => "TIME"),
-		    "location"  => array("db_type" => "VARCHAR", "size" => 300)),
+		    "location"  => array("db_type" => "VARCHAR", "db_size" => 300)),
 		"news"   => array(
-		    "name"      => array("db_type" => "VARCHAR", "size" => 100),
+		    "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
 		    "date"      => array("db_type" => "DATE"),
-		    "comments"  => array("db_type" => "VARCHAR", "size" => 100)),
+		    "comments"  => array("db_type" => "VARCHAR", "db_size" => 100)),
 		"album"  => array(
-		    "name"      => array("db_type" => "VARCHAR", "size" => 100),
+		    "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
 		    "duration"  => array("db_type" => "INT_U"),
-		    "comments"  => array("db_type" => "TEXT", "size" => 1000)),
+		    "comments"  => array("db_type" => "TEXT", "db_size" => 1000)),
 		"music"  => array(
-		    "name"      => array("db_type" => "VARCHAR", "size" => 100),
+		    "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
 		    "date"      => array("db_type" => "DATE"),
 		    "duration"  => array("db_type" => "INT_U"),
-		    "comments"  => array("db_type" => "TEXT", "size" => 1000)),
+		    "comments"  => array("db_type" => "TEXT", "db_size" => 1000)),
 		"video"  => array(
-		    "name"      => array("db_type" => "VARCHAR", "size" => 100),
+		    "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
 		    "date"      => array("db_type" => "DATE"),
 		    "duration"  => array("db_type" => "INT_U"),
-		    "comments"  => array("db_type" => "TEXT", "size" => 1000)),
+		    "comments"  => array("db_type" => "TEXT", "db_size" => 1000)),
 		"media"  => array(
-		    "name"      => array("db_type" => "VARCHAR", "size" => 100),
+		    "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
 		    "date"      => array("db_type" => "DATE"),
-		    "comments"  => array("db_type" => "TEXT", "size" => 1000))),
+		    "comments"  => array("db_type" => "TEXT", "db_size" => 1000))),
 	    "test2" => array(
 		"test1" => array(
-		    "name"      => array("db_type" => "VARCHAR", "size" => 25),
+		    "name"      => array("db_type" => "VARCHAR", "db_size" => 25),
 		    "since"     => array("db_type" => "DATE"),
-		    "subtitle"  => array("db_type" => "VARCHAR", "size" => 300),
-		    "biography" => array("db_type" => "TEXT", "size" => 1000)))));
+		    "subtitle"  => array("db_type" => "VARCHAR", "db_size" => 300),
+		    "biography" => array("db_type" => "TEXT", "db_size" => 1000)))));
 
 	$wrong_tests = array(
 	    't/projects/no_project_name.ini',
@@ -504,32 +504,32 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
                 'artist' => array(
                     'name' => array(
                         'db_type' => "VARCHAR",
-                        'size' => 100
+                        'db_size' => 100
                     ),
                     'surname' => array(
                         'db_type' => "VARCHAR",
-                        'size' => 100
+                        'db_size' => 100
                     ),
                     'age' => array(
                         'db_type' => "INT_U"
                     ),
                     'subtitle' => array(
                         'db_type' => "VARCHAR",
-                        'size' => 300
+                        'db_size' => 300
                     ),
                     'biography' => array(
                         'db_type' => "TEXT",
-                        'size' => 1000
+                        'db_size' => 1000
                     ),
                     'skill' => array(
                         'db_type' => "VARCHAR",
-                        'size' => 100
+                        'db_size' => 100
                     ),
                 ),
                 'show' => array(
                     'name' => array(
                         'db_type' => "VARCHAR",
-                        'size' => 100
+                        'db_size' => 100
                     ),
                     'date' => array(
                         'db_type' => "DATE",
@@ -539,39 +539,39 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
                     ),
                     'location' => array(
                         'db_type' => "VARCHAR",
-                        'size' => 300
+                        'db_size' => 300
                     ),
                 ),
                 'news' => array(
                     'name' => array(
                         'db_type' => "VARCHAR",
-                        'size' => 100
+                        'db_size' => 100
                     ),
                     'date' => array(
                         'db_type' => "DATE",
                     ),
                     'comments' => array(
                         'db_type' => "VARCHAR",
-                        'size' => 100
+                        'db_size' => 100
                     ),
                 ),
                 'album' => array(
                     'name' => array(
                         'db_type' => "VARCHAR",
-                        'size' => 100
+                        'db_size' => 100
                     ),
                     'duration' => array(
                         'db_type' => "INT_U",
                     ),
                     'comments' => array(
                         'db_type' => "TEXT",
-                        'size' => 1000
+                        'db_size' => 1000
                     ),
                 ),
                 'music' => array(
                     'name' => array(
                         'db_type' => "VARCHAR",
-                        'size' => 100
+                        'db_size' => 100
                     ),
                     'date' => array(
                         'db_type' => "DATE",
@@ -581,13 +581,13 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
                     ),
                     'comments' => array(
                         'db_type' => "TEXT",
-                        'size' => 1000
+                        'db_size' => 1000
                     ),
                 ),
                 'video' => array(
                     'name' => array(
                         'db_type' => "VARCHAR",
-                        'size' => 100,
+                        'db_size' => 100,
                     ),
                     'date' => array(
                         'db_type' => "DATE",
@@ -597,20 +597,20 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
                     ),
                     'comments' => array(
                         'db_type' => "TEXT",
-                        'size' => 1000,
+                        'db_size' => 1000,
                     ),
                 ),
                 'media' => array(
                     'name' => array(
                         'db_type' => "VARCHAR",
-                        'size' => 100,
+                        'db_size' => 100,
                     ),
                     'date' => array(
                         'db_type' => "DATE"
                     ),
                     'comments' => array(
                         'db_type' => "TEXT",
-                        'size' => 1000,
+                        'db_size' => 1000,
                     ),
                 )));
 
@@ -622,17 +622,17 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
                     'artist' => array(
                         'name' => array(
                             'db_type' => "VARCHAR",
-                            'size' => 100
+                            'db_size' => 100
                         ),
                         'surname' => array(
                             'db_type' => "VARCHAR",
-                            'size' => 100
+                            'db_size' => 100
                         ),
                     ),
                     'show' => array(
                         'name' => array(
                             'db_type' => "VARCHAR",
-                            'size' => 100
+                            'db_size' => 100
                         )))));
 
         $this->assertEquals(
@@ -641,17 +641,17 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
                 'artist' => array(
                     'name' => array(
                         'db_type' => "VARCHAR",
-                        'size' => 100
+                        'db_size' => 100
                     ),
                     'surname' => array(
                         'db_type' => "VARCHAR",
-                        'size' => 100
+                        'db_size' => 100
                     ),
                 ),
                 'show' => array(
                     'name' => array(
                         'db_type' => "VARCHAR",
-                        'size' => 100
+                        'db_size' => 100
                     ))));
 
         // we insert new elements in this project
@@ -676,7 +676,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
                     'artist' => array(
                         'name' => array(
                             'db_type' => "VARCHAR",
-                            'size' => 100
+                            'db_size' => 100
                         ),
                         'age' => array(
                             'db_type' => "INT_U"
@@ -685,7 +685,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
                     'show' => array(
                         'name' => array(
                             'db_type' => "VARCHAR",
-                            'size' => 100
+                            'db_size' => 100
                         )))));
 
         // we check how is modified the project

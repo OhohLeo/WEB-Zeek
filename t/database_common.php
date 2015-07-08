@@ -80,10 +80,10 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
         $this->assertTrue(
             $db->table_create('more_attributes', array(
                 'first_element'  => array('db_type' => 'VARCHAR',
-					  'size' => 30),
+					  'db_size' => 30),
                 'second_element' => array('db_type' => 'INT',
-					  'size' =>  11,
-					  'default' => 'NOT NULL'),
+					  'db_size' =>  11,
+					  'db_default' => 'NOT NULL'),
                 'third_element'  => array('db_type' => 'TEXT'))));
 
         $this->assertTrue(
@@ -417,7 +417,7 @@ class TestDataBaseCommon extends PHPUnit_Framework_TestCase
                        "TIMESTAMP", "DATETIME", "YEAR",
                        "CHAR", array(
                            "db_type" => "VARCHAR",
-                           "size" => 10),
+                           "db_size" => 10),
                        "TINYTEXT", "TEXT", "MEDIUMTEXT",
                        "LONGTEXT", "TINYBLOB", "BLOB", "MEDIUMBLOB",
                        "LONGBLOB");

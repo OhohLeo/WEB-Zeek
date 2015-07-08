@@ -674,7 +674,6 @@ $(document).ready(function() {
 
     // we store the structure
     var $structure = {};
-    var $new_structure = $structure;
 
     // we handle the data process
     var $handle_data = function($name)
@@ -870,23 +869,26 @@ $(document).ready(function() {
 
     $("button#structure_validate").on("click", function() {
 
-        console.log($new_structure);
+
+        var $json_structure = safeJSONStringify($structure);
+        console.log($json_structure);
 
         $send_request(
 	    {
 	        "method": "structure_set",
-                "structure": safeJSONStringify($new_structure),
+                "structure": $json_structure,
 	    },
 	    function($result)
 	    {
+	        if ($result == false || $result["error"])
+		    return false;
+
                 $structure_get();
 	    }
         );
     });
 
     $("button#structure_cancel").on("click", function() {
-        $new_structure = $structure;
-        $('body').css('background', ' #FFF');
         $structure_get();
     });
 
@@ -897,7 +899,6 @@ $(document).ready(function() {
 
     var $structure_config = function($name) {
 
-        $new_structure = $structure;
         var $is_new_structure = ($name === "CREATE");
         var $input_structure_name = $("input#structure_name");
 
@@ -907,7 +908,7 @@ $(document).ready(function() {
             },
 	    "Validate": function() {
                 var $structure_name = $is_new_structure ?
-                    $input_structure_name.val() : $name;
+                    $("input#structure_name").val() : $name;
 
                 if ($structure_name == "") {
                     return;
@@ -916,19 +917,19 @@ $(document).ready(function() {
                 // we set the last attribute if it is defined
                 $("button#new_attribute").trigger("click");
 
-                $new_structure[$structure_name] = {};
+                $structure[$structure_name] = {};
 
                 $.each($("tr.attribute"), function($idx, $tr) {
                     var $name = $($tr).children("td.name").text();
-                    var $type = $($tr).children("td.type").text();
+                    var $sp_type = $($tr).children("td.sp_type").text();
                     var $db_type = $($tr).children("td.db_type").text();
-                    var $db_size = $($tr).children("td.size").text();
+                    var $db_size = $($tr).children("td.db_size").text();
 
-                    $new_structure[$structure_name][$name] =
-                           { "type": $type, "db_type": $db_type, "db_size": $db_size };
+                    $structure[$structure_name][$name] =
+                           { "sp_type": $sp_type, "db_type": $db_type, "db_size": $db_size };
                 });
 
-                $structure_set($new_structure);
+                $structure_set($structure);
                 $append_create_structure();
                 $modal.dialog("close");
 	    },
@@ -937,8 +938,8 @@ $(document).ready(function() {
         if ($is_new_structure == false)
         {
             $buttons["Remove"] = function() {
-                delete $new_structure[$name];
-                $structure_set($new_structure);
+                delete $structure[$name];
+                $structure_set($structure);
                 $append_create_structure();
                 $modal.dialog("close");
             };
@@ -951,7 +952,10 @@ $(document).ready(function() {
                     ($is_new_structure ? "New" :
                      "Modify '" + $name + "'") + " structure");
 
-	        var $data = $new_structure[$name];
+
+                var $is_expert_mode = $("input#expert_mode").prop('checked');
+
+	        var $data = $structure[$name];
 
                 var $setup = "<table id=\"new_attribute\">";
 
@@ -959,7 +963,7 @@ $(document).ready(function() {
                 if ($name === "CREATE") {
                     $setup +=
                     "<tr><td><b>Structure name:</b></td>"
-                  + "<td><input id=\"structure_name\" type=\"text\"/></td></tr>";
+                  + '<td><input id="structure_name" type="text"/></td></tr>';
                 }
 
                 var $delete_attribute = $("<td>").append(
@@ -974,14 +978,21 @@ $(document).ready(function() {
 
                 var $display_attribute = function($attribute, $type, $size)
                 {
-                    $size += ($size != null && $size.length != 0)
-                        ? "<td class=\"size\">" + $size + "</td>" : "";
+                    if ($is_expert_mode)
+                    {
+                        $content = "<td class=\"db_type\">" + $type + "</td>"
+                                 + ($size != null && $size.length != 0)
+                            ? "<td class=\"db_size\">" + $size + "</td>" : "";
+                    }
+                    else
+                    {
+                        $content = "<td class=\"sp_type\">" + $type + "</td>";
+                    }
 
                     return "<tr class=\"attribute\">"
                          + "<td class=\"name\"><b>" + $attribute + "</b></td>"
-                         + "<td class=\"type\">" + $type + "</td>"
-                         + $size + "<td>" + $delete_attribute
-                         + "</td><td></td></tr>";
+                         + $content
+                         + "<td>" + $delete_attribute + "</td><td></td></tr>";
                 };
 
                 if ($data != null)
@@ -989,9 +1000,17 @@ $(document).ready(function() {
                     // we display the attributes already existing
                     for (var $attribute in $data)
 	            {
+                        var $type = "db_type";
+
+                        if ($is_expert_mode == false
+                            && $data[$attribute]["sp_type"] != null)
+                        {
+                            $type = "sp_type";
+                        }
+
                         $setup += $display_attribute(
                             $attribute,
-                            $data[$attribute]["db_type"],
+                            $data[$attribute][$type],
                             $data[$attribute]["db_size"]);
 	            }
                 }
@@ -1006,7 +1025,7 @@ $(document).ready(function() {
                     + "</td></tr>";
 
                 // if we are in expert mode : we ask for the type
-                if ($("input#expert_mode").prop('checked'))
+                if ($is_expert_mode)
                 {
                     $new_attribute +=
                     "<tr class=\"add_attribute\"><td><b>Size</b></td>"
@@ -1103,16 +1122,22 @@ $(document).ready(function() {
 	    },
 	    function($result)
 	    {
+	        if ($result == false || $result["error"])
+		    return false;
+
+                $('body').css('background', ' #FFF');
+
 	        // we store the structure
 	        $structure = $result["structure"];
 
 	        if ($structure)
 	        {
                     $structure_set($structure);
-		    return true;
+		    return -1;
 	        }
 
                 $("li#structure_loading").text('Error!');
+                return -1;
 	    }
         );
     };

@@ -122,21 +122,21 @@ class ZeekLibrary extends ZeekOutput {
         /* we create the project table */
         $db->table_create('project', array(
             'name'        => array('db_type' => 'VARCHAR',
-				   'size' => 25),
+				   'db_size' => 25),
             'since'       => array('db_type' => 'DATE'),
             'structure'   => array('db_type' => 'VARCHAR',
-				   'size' => 2000),
+				   'db_size' => 2000),
 	    'options'     => array('db_type' => 'VARCHAR',
-				   'size' => 2000)));
+				   'db_size' => 2000)));
 
         /* we create the user table */
         $db->table_create('user', array(
             'name'       => array('db_type' => 'VARCHAR',
-				  'size' => 25),
+				  'db_size' => 25),
             'password'   => array('db_type' => 'CHAR',
-				  'size' => 32),
+				  'db_size' => 32),
             'project_id' => array('db_type' => 'INT',
-				  'size' => 11)));
+				  'db_size' => 11)));
 
         /* we add the actual user */
         $db->row_insert('user', array(

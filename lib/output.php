@@ -25,6 +25,7 @@ class ZeekOutput {
  */
     public function output_json($input) {
        $this->output($this->json_encode($input));
+        return true;
     }
 
 /**

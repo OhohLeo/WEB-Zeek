@@ -472,11 +472,11 @@ class DataBase extends ZeekOutput {
             /* 1st element is the vartype */
             $vartype = $type["db_type"];
 
-	    if (array_key_exists("size", $type))
-		$size = $type["size"];
+	    if (array_key_exists("db_size", $type))
+		$size = $type["db_size"];
 
-	    if (array_key_exists("default", $type))
-		$default = $type["default"];
+	    if (array_key_exists("db_default", $type))
+		$default = $type["db_default"];
 
         } else {
             $vartype = $type;

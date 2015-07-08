@@ -15,7 +15,7 @@ class Zeek extends ZeekOutput {
     private $type_list;
 
     private $type_simple = array(
-        "TITLE"    => array("db_type" => "VARCHAR", "size" => 100),
+        "TITLE"    => array("db_type" => "VARCHAR", "db_size" => 100),
         "IMAGE"    => array("db_type" => "LONGBLOB"),
         "TEXT"     => array("db_type" => "LONGTEXT"),
         "INTEGER"  => array("db_type" => "INTEGER"),
@@ -1306,14 +1306,18 @@ class Zeek extends ZeekOutput {
 		// we set the options with the db type
 		$css_options['db_type'] = $db_type;
 
-		// we check that it doesn't exist a specific value
-		foreach ($options as $type => $value)
-		{
-		    // we avoid the option type
-		    if ($type === "type")
-			continue;
+		if (array_key_exists('sp_type', $options))
+                    $css_options['sp_type'] = $options['sp_type'];
 
-		    $css_options[$type] = $value;
+
+		if (array_key_exists('db_size', $options))
+                {
+                    $css_options['db_size'] = $options['db_size'];
+
+                    if (array_key_exists('size', $css_options))
+                    {
+                        $css_options['size'] = $options['db_size'];
+                    }
                 }
 
 		// we set the css options before sending the data
@@ -1339,8 +1343,8 @@ class Zeek extends ZeekOutput {
  *  {
  *    structure_name: {
  *         attribute_name: {
- *             type: TYPE,
- *             db_type: DB_TYPE,
+ *             sp_type: SP_TYPE, # used in simple mode
+ *             db_type: DB_TYPE, # used in expert mode
  *             db_size: DB_SIZE,
  *         },
  *         ...
@@ -1387,17 +1391,18 @@ class Zeek extends ZeekOutput {
                 }
 
                 // we convert the simple to the expert mode
-                if (array_key_exists('type', $value)
-                    && array_key_exists($value['type'], $this->type_simple))
+                if (array_key_exists('sp_type', $value)
+                    && array_key_exists($value['sp_type'], $this->type_simple))
                 {
 
                     if (array_key_exists($table_name, $structure) == false) {
                         $structure[$table_name] = array();
                     }
 
-                    $structure[$table_name][$attribute] = $this->type_simple[
-                        $value['type']];
+                    $type_simple = $this->type_simple[$value['sp_type']];
+                    $type_simple['sp_type'] = $value['sp_type'];
 
+                    $structure[$table_name][$attribute] = $type_simple;
                     continue;
                 }
 
