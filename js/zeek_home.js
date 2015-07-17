@@ -1260,7 +1260,7 @@ $(document).ready(function() {
 
         $send_request({
 	    method: "option_set",
-            name: "deploy",
+            name: "files",
             values: JSON.stringify($values),
 	},
         function($result) {
@@ -1279,7 +1279,7 @@ $(document).ready(function() {
     $option_get_deploy = function () {
         $send_request({
 	    method: "option_get",
-            name: "deploy",
+            name: "files",
 	},
 	function($result) {
 

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Zeek : all the function to handle the website & the backoffice.
  *
@@ -12,6 +11,7 @@ class Zeek extends ZeekOutput {
     protected $project_name;
     protected $zlib;
 
+    private $plugins_list;
     private $type_list;
 
     private $type_simple = array(
@@ -166,6 +166,10 @@ class Zeek extends ZeekOutput {
             return false;
 
 	$this->zlib = $zlib;
+
+        // we initialize the plugins
+        $this->plugins_init();
+
 	return true;
     }
 
@@ -440,14 +444,21 @@ class Zeek extends ZeekOutput {
                 // we set default options
                 if ($options == null)
                 {
+                    // zeekify plugins is always here
+                    $plugin_files = array("zeekify" => true);
+
+                    // we activate all plugins by default
+                    foreach ($this->plugins_get_list("files") as $plugin_name)
+                    {
+                        $plugin_files[$plugin_name] = true;
+                    }
+
                     $options = array(
                         "editor" => array("html" => "#FF0000",
                                           "css"  => "#00FF00",
                                           "js"   => "#0000FF",
                                           "php"  => "#000000"),
-                        "deploy" => array("zeekify"    => true,
-                                          "minify_css" => true,
-                                          "minify_js"  => true));
+                        "files"  => $plugin_files);
                 }
 
 		// we create the project
@@ -886,7 +897,7 @@ class Zeek extends ZeekOutput {
 
 	if ($get)
 	{
-	    $this->output_json(array('get' => $get,
+	    $this->output_json(array('get' => stripslashes($get),
 				     'type' => $zlib->file_get_type($name)));
 	    return true;
 	}
@@ -912,7 +923,7 @@ class Zeek extends ZeekOutput {
         //{
         //
         //}
-        //
+
 	if ($zlib->file_set($this->project_id, $user, $name, $data))
 	{
 	    $this->success(
@@ -924,12 +935,74 @@ class Zeek extends ZeekOutput {
 	return false;
     }
 
+/**
+ * Method that instantiate all the plugins.
+ *
+ * @method plugins_init
+ */
+    public function plugins_init()
+    {
+        $this->plugins_list = array();
+
+        // we get the plugin list
+        $plugins_list = $this->zlib->plugins_get_list();
+
+        foreach ($plugins_list as $plugin)
+        {
+            require_once $plugin["path"] . "/" . $plugin["name"];
+
+            $plugin_type = $plugin["directory"];
+            $plugin_name = $plugin["filename"];
+
+            if (isset($this->plugins_list[$plugin_type]) == false)
+            {
+                $this->plugins_list[$plugin_type] = array();
+            }
+
+            // we get the class name
+            $offset = 0;
+
+            while ($idx = strpos($plugin_name, '_', $offset))
+            {
+                $plugin_name = ucfirst(substr($plugin_name, $offset, $idx))
+                             . ucfirst(substr($plugin_name, $idx + 1));
+
+                $offset = $idx + 1;
+            }
+
+            // we instantiate each plugin
+            $this->plugins_list[$plugin_type][$plugin_name] = new $plugin_name();
+        }
+    }
+
+/**
+ * Method that returns the list of plugins.
+ *
+ * @method plugins_get_list
+ * @param string type of the plugin
+ */
+    public function plugins_get_list($type)
+    {
+        if (array_key_exists($type, $this->plugins_list))
+        {
+            $result = array();
+
+            foreach ($this->plugins_list[$type] as $plugin_name => $plugin_obj)
+            {
+                array_push($result, $plugin_name);
+            }
+
+            return $result;
+        }
+
+        return array();
+    }
 
  /**
   * Method that replace inside a string <zeek></zeek> content with
   * data stored in databases.
   *
-  * @method zeekify
+  * @method on_input
   * @param string input to zeekify
   *
   * @return string zeekified output
@@ -955,23 +1028,14 @@ class Zeek extends ZeekOutput {
 
             if ($start_idx >= $offset && $end_idx + 7 > $offset)
             {
-                $xml = @simplexml_load_string(
+                $options = $this->zeekify_get_options(
                     substr($input, $start_idx, $end_idx + 7 - $start_idx));
 
-                if ($xml)
-                {
-                    $options = array();
+                $start_idx = strpos($input, '>', $start_idx) + 1;
 
-                    foreach($xml->attributes() as $key => $value) {
-                        $options[$key] = $value->__toString();
-                    }
-
-                    $start_idx = strpos($input, '>', $start_idx) + 1;
-
-                    $output .= $this->zeekify_one_by_one(
-                        substr($input, $start_idx, $end_idx - $start_idx),
-                        $options);
-                }
+                $output .= $this->zeekify_one_by_one(
+                    substr($input, $start_idx, $end_idx - $start_idx),
+                    $options);
 
                 $offset += $end_idx + 7 - $offset;
             }
@@ -980,6 +1044,51 @@ class Zeek extends ZeekOutput {
         $output .= substr($input, $offset, strlen($input) - $offset);
 
         return $output;
+    }
+
+    private function zeekify_get_options($input)
+    {
+        $options = array();
+
+        // Get attributes string : <zeek ... >
+        $end_idx = strpos($input, '>');
+
+        // Get each attribute [ toto="tutu", titi="tata" ]
+        $list = preg_split("/ +/", substr($input, 6, $end_idx - 6),
+                           NULL, PREG_SPLIT_NO_EMPTY);
+
+        // Error detected : empty options
+        if ($list == false)
+            return $options;
+
+
+        $valid = array("name"   => "[a-z]+",
+                       "offset" => "\d+",
+                       "size"   => "\d+");
+
+        // Separate each toto = tutu and check the attribute values
+        foreach ($list as $attribute)
+        {
+            $type_idx = strpos($attribute, '=');
+
+            $attr_type = substr($attribute, 0, $type_idx);
+            $attr_value = substr($attribute, $type_idx + 1);
+
+            if (array_key_exists($attr_type, $valid)
+                && preg_match("/^\"(" . $valid[$attr_type] .  ")\"\z/",
+                              $attr_value, $result))
+            {
+                $attr_value = $result[1];
+
+                // numérifie les chaînes
+                if (is_numeric($result[1]))
+                    $attr_value = intval($result[1]);
+
+                $options[$attr_type] = $attr_value;
+            }
+        }
+
+        return $options;
     }
 
   /**
@@ -1002,13 +1111,13 @@ class Zeek extends ZeekOutput {
         $zlib = $this->zlib;
 
         // we check mandatory option : table
-        if (array_key_exists('table', $options) == false)
-            return "Table name should be defined!";
+        if (array_key_exists('name', $options) == false)
+            return "Zeek name should be defined!";
 
-        $table_name = $options['table'];
+        $table_name = $options['name'];
 
         if (is_string($table_name) == false)
-            return "Invalid table name '$table_name'!";
+            return "Invalid zeek name '$table_name'!";
 
         // we check the optional option : offset
         $offset = array_key_exists('offset', $options) ? $options['offset'] : 0;
@@ -1025,7 +1134,7 @@ class Zeek extends ZeekOutput {
         $structure = $zlib->type_get($this->project_name, $table_name);
 
         if ($structure == false)
-            return "Table '$table_name' not found!";
+            return "Zeek '$table_name' not found!";
 
         $result = $zlib->value_get(
             $this->project_id, $table_name, array('id' => 'DEC'), $size, $offset);
@@ -1048,7 +1157,6 @@ class Zeek extends ZeekOutput {
 
                 if ($end_idx == 0)
                     break;
-
                 $output .= substr($input, $offset, $start_idx - $offset);
 
                 if ($start_idx >= $offset && $end_idx + 2 > $offset)
@@ -1075,31 +1183,6 @@ class Zeek extends ZeekOutput {
         return $output;
     }
 
- /**
-  * Method that minify js & css files.
-  *
-  * @method minify
-  * @param string input to minify
-  * @param string type (css|js)
-  *
-  * @return string minified output
-  */
-    public function minify($input, $type)
-    {
-        switch ($type)
-        {
-            case 'css':
-            require_once($this->global_path . "extends/cssmin/CssMin.php");
-            return CssMin::minify($input);
-
-            case 'javascript':
-            case 'js':
-            require_once($this->global_path . "extends/JShrink/src/JShrink/Minifier.php");
-            return \JShrink\Minifier::minify($input);
-        }
-
-        return $input;
-    }
 
  /**
   * Method to zeekify all the code & deploy the test platform
@@ -1111,7 +1194,8 @@ class Zeek extends ZeekOutput {
         $dst = 'projects/' . $this->project_id
 	     . '/TEST_' . $_SESSION['login'];
 
-        if ($this->deploy_files($dst, array()) == false)
+        if ($this->deploy_files(
+            $dst, array("zeekify" => array("html"))) == false)
         {
             $this->error("Impossible to deploy files!");
             return false;
@@ -1136,6 +1220,8 @@ class Zeek extends ZeekOutput {
 	$this->output_json(
 	    array('href' => 'projects/' . $this->project_id
 			. '/deploy/index.html'));
+
+        // we handle "deploy" plugins functionalities
     }
 
 /**
@@ -1182,7 +1268,18 @@ class Zeek extends ZeekOutput {
             // we handle the options
             foreach ($options as $option => $types_concerned)
             {
-                if (in_array($file['type'], $types_concerned))
+                // we handle 'files' plugin here
+                if (array_key_exists($option, $this->plugins_list['files']))
+                {
+                    $plugin_obj = $this->plugins_list['files'][$option];
+
+                    if (in_array($file['type'], $plugin_obj->accept_files) == false)
+                        continue;
+
+                    $input = $plugin_obj->on_input($input);
+                }
+                // otherwise we handle the file handler here as method
+                else
                     $input = $this->$option($input, $file['type']);
 
                 if ($input == null)
@@ -1217,7 +1314,6 @@ class Zeek extends ZeekOutput {
         }
 
         $options = $this->zlib->option_get($this->project_id);
-
         if (is_array($options)
             && array_key_exists($name, $options))
         {
@@ -1555,12 +1651,16 @@ class Zeek extends ZeekOutput {
 	$params = array();
 	parse_str($values_str, $params);
 
-        if ($this->zlib->value_insert($this->project_id, $type, $params)) {
-            $this->success("Value correctly inserted!");
-            return true;
+        if ($this->zlib->value_insert(
+                 $this->project_id, $type, $params) == false) {
+            return false;
         }
 
-        return false;
+        // we handle "data" plugins functionnalities
+
+        $this->success("Value correctly inserted!");
+
+        return true;
     }
 
 /**

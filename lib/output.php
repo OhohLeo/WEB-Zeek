@@ -98,14 +98,15 @@ class ZeekOutput {
     protected function json_encode($input)
     {
         /* la version php de free est obsolète et ne propose pas le json */
-        if (!defined('PHP_VERSION_ID')) {
+        if (!function_exists('json_encode'))
+        {
             require_once $this->global_path . "extends/json.php";
-
-            $json = new Services_JSON();
+            $json = new Services_JSON;
             return $json->encode($input);
         }
 
-        return json_encode($input);
+
+        return json_encode($input, JSON_UNESCAPED_SLASHES);
     }
 
 /**
@@ -117,14 +118,44 @@ class ZeekOutput {
     protected function json_decode($input)
     {
         /* la version php de free est obsolète et ne propose pas le json */
-        if (!defined('PHP_VERSION_ID')) {
+        if (!function_exists('json_decode'))
+        {
             require_once $this->global_path . "extends/json.php";
 
-            $json = new Services_JSON();
-            return $json->decode($input, true);
+            $json = new Services_JSON(SERVICES_JSON_LOOSE_TYPE);
+
+            return $json->decode(stripslashes($input));
         }
 
         return json_decode($input, true);
+    }
+
+
+/**
+ * Convert object structure to array structure.
+ *
+ * @method object_to_array
+ * @param array structure
+ */
+    protected function object_to_array($obj)
+    {
+	if (is_object($obj))
+	    $obj = (array) $obj;
+
+	if (is_array($obj))
+	{
+            $new = array();
+            foreach($obj as $key => $val)
+	    {
+		$new[$key] = $this->object_to_array($val);
+            }
+	}
+	else
+	{
+	    $new = $obj;
+	}
+
+	return $new;
     }
 }
 

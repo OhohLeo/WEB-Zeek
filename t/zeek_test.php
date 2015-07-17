@@ -286,16 +286,66 @@ class TestZeek extends PHPUnit_Framework_TestCase
     					     'projects/test/css/toto.css'));
         $this->assertTrue(
     	    $zeek->checkOutput(
-    	        '{"success":"file \'projects\/test\/css\/toto.css\' stored as \'tutu.css\' with type \'css\' created!"}'));
+    	        '{"success":"file \'projects/test/css/toto.css\' stored as \'tutu.css\' with type \'css\' created!"}'));
 
         $this->assertTrue($zeek->file_delete('css/tutu.css'));
         $this->assertTrue(
     	    $zeek->checkOutput(
-    	        '{"success":"The file \'css\/tutu.css\' successfully deleted!"}'));
+    	        '{"success":"The file \'css/tutu.css\' successfully deleted!"}'));
 
         $zeek->environment_clean();
     }
 
+    public function test_deploy()
+    {
+        $zeek = $this->zeek;
+
+        $this->assertTrue(
+            $zeek->connect('test', 'test', 'test'));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
+
+        // create new project
+        $this->assertTrue($zeek->project_create('test'));
+
+        $this->assertTrue(
+            $zeek->checkOutput('{"redirect":"home.php"}'));
+
+        // create toto.css
+        $this->assertTrue($zeek->file_create('html', 'index', 'html', true));
+        $this->assertTrue(
+    	    $zeek->checkOutput(
+    	        '{"success":"file \'index.html\' with type \'html\' created!"}'));
+
+        // create css/tutu.css
+        $this->assertTrue($zeek->file_create('css', 'test', 'css', false));
+        $this->assertTrue(
+    	    $zeek->checkOutput(
+    	        '{"success":"file \'test.css\' with type \'css\' created!"}'));
+
+        // check test functionality
+        $zeek->test();
+        $this->assertTrue(
+            $zeek->checkOutput('{"href":"projects/1/TEST_test/index.html"}'));
+
+        // check the files have been correctly set & deploy
+        $this->assertTrue($zeek->file_get('TEST_test', 'index.html'));
+        $this->assertTrue(
+            $zeek->checkOutput('{"get":"<!DOCTYPE html>\n<html>\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>Generic</title>\n    <link rel=\"stylesheet\" href=\"generic.css\">\n  </head>\n  <body>\n      <!-- now you play!  -->\n  </body>\n</html>\n","type":"html"}'));
+
+        $this->assertTrue($zeek->file_get('TEST_test', 'css/test.css'));
+        $this->assertTrue(
+            $zeek->checkOutput('{"get":"body {\n    /* now you play! */\n}\n","type":"css"}'));
+
+        // delete project
+        $this->assertTrue($zeek->project_delete('test'));
+        $this->assertTrue(
+    	    $zeek->checkOutput('{"success":"Project \'test\' correctly deleted!"}'));
+
+        $zeek->environment_clean();
+    }
 
     public function test_zeekify()
     {
@@ -338,89 +388,13 @@ class TestZeek extends PHPUnit_Framework_TestCase
         $this->assertTrue(
             $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
 
-        $this->assertEquals($zeek->zeekify(
-            'begin <zeek  tutu=""    >hey!</zeek> middle '
-          . '<zeek table="toto"  toto=""    >hoy!</zeek>'
-          . ' Here is the list of albums: '
-          . '<zeek table="album" offset="1" size="2"><p>album {{name}} ({{duration}}): {{comment}}</p></zeek> end'), "begin Table name should be defined! middle Table 'toto' not found! Here is the list of albums: <p>album tuto (111): Attribute 'comment' not found!</p><p>album titi (321): Attribute 'comment' not found!</p> end");
-
-        $zeek->environment_clean();
-    }
-
-    public function test_deploy()
-    {
-        $zeek = $this->zeek;
-
-        $this->assertTrue(
-            $zeek->connect('test', 'test', 'test'));
-
-        $this->assertTrue(
-            $zeek->checkOutput(
-                '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
-
-        // create new project
-        $this->assertTrue($zeek->project_create('test'));
-
-        $this->assertTrue(
-            $zeek->checkOutput('{"redirect":"home.php"}'));
-
-        // create toto.css
-        $this->assertTrue($zeek->file_create('html', 'index', 'html', true));
-        $this->assertTrue(
-    	    $zeek->checkOutput(
-    	        '{"success":"file \'index.html\' with type \'html\' created!"}'));
-
-        // create css/tutu.css
-        $this->assertTrue($zeek->file_create('css', 'test', 'css', false));
-        $this->assertTrue(
-    	    $zeek->checkOutput(
-    	        '{"success":"file \'test.css\' with type \'css\' created!"}'));
-
-        // check test functionality
-        $zeek->test();
-        $this->assertTrue(
-            $zeek->checkOutput('{"href":"projects\/1\/TEST_test\/index.html"}'));
-
-        // check the files have been correctly set & deploy
-        $this->assertTrue($zeek->file_get('TEST_test', 'index.html'));
-        $this->assertTrue(
-            $zeek->checkOutput('{"get":"<!DOCTYPE html>\n<html>\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>Generic<\/title>\n    <link rel=\"stylesheet\" href=\"generic.css\">\n  <\/head>\n  <body>\n      <!-- now you play!  -->\n  <\/body>\n<\/html>\n","type":"html"}'));
-
-        $this->assertTrue($zeek->file_get('TEST_test', 'css/test.css'));
-        $this->assertTrue(
-            $zeek->checkOutput('{"get":"body {\n    \/* now you play! *\/\n}\n","type":"css"}'));
-
-        // delete project
-        $this->assertTrue($zeek->project_delete('test'));
-        $this->assertTrue(
-    	    $zeek->checkOutput('{"success":"Project \'test\' correctly deleted!"}'));
-
-        $zeek->environment_clean();
-    }
-
-    public function test_minify()
-    {
-        $zeek = $this->zeek;
-
-        $this->assertEquals($zeek->minify('
-body {
-    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-    font-size: 16px;
-}
-p.message {
-    border-color: #EEE;
-    border-radius: 3px;
-}', 'js'), 'body{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:16px;}
-p.message{border-color:#EEE;border-radius:3px;}');
-
-        $this->assertEquals($zeek->minify('
-$alert = $("div.alert");
-$alert.hide();
-
-$danger = $("div.error");
-$success = $("div.success");
-', 'js'), '$alert=$("div.alert");$alert.hide();$danger=$("div.error");$success=$("div.success");'
-        );
+        $this->assertEquals(
+            "begin Zeek name should be defined! middle Zeek 'toto' not found! Here is the list of albums: <p>album tuto (111): Attribute 'comment' not found!</p><p>album titi (321): Attribute 'comment' not found!</p> end",
+            $zeek->zeekify(
+                'begin <zeek  tutu=""    >hey!</zeek> middle '
+              . '<zeek name="toto"  toto=""    >hoy!</zeek>'
+              . ' Here is the list of albums: '
+              . '<zeek name="album" offset="1" size="2"><p>album {{name}} ({{duration}}): {{comment}}</p></zeek> end'));
 
         $zeek->environment_clean();
     }
@@ -442,6 +416,15 @@ $success = $("div.success");
         $this->assertEquals($result->success, 'toto');
 
         $this->zeek->environment_clean();
+    }
+
+    public function test_plugins()
+    {
+        $zeek = $this->zeek;
+
+        $this->assertEquals(
+            array("MinifyCss", "MinifyJs"),
+            $zeek->plugins_get_list('files'));
     }
 
     public function test_options()
@@ -468,11 +451,11 @@ $success = $("div.success");
             $zeek->checkOutput(
                 '{"html":"#FF0000","css":"#00FF00","js":"#0000FF","php":"#000000"}'));
 
-        $this->assertTrue($zeek->option_get('deploy'));
+        $this->assertTrue($zeek->option_get('files'));
 
         $this->assertTrue(
             $zeek->checkOutput(
-                '{"zeekify":true,"minify_css":true,"minify_js":true}'));
+                '{"zeekify":true,"MinifyCss":true,"MinifyJs":true}'));
 
         // check a bad option can not be getted
         $this->assertFalse($zeek->option_get("error"));
@@ -493,17 +476,17 @@ $success = $("div.success");
 
         // check we can modified an option
         $this->assertTrue($zeek->option_set(
-            "deploy", json_encode(array("zeekify"    => true,
-                                        "minify_css" => false,
-                                        "minify_js"  => false))));
+            "files", json_encode(array("zeekify"    => true,
+                                       "MinifyCss" => false,
+                                       "MinifyJs"  => false))));
         $this->assertTrue(
             $zeek->checkOutput(
-                '{"success":"Option \'deploy\' successfully written!"}'));
+                '{"success":"Option \'files\' successfully written!"}'));
 
-        $this->assertTrue($zeek->option_get('deploy'));
+        $this->assertTrue($zeek->option_get('files'));
         $this->assertTrue(
             $zeek->checkOutput(
-                '{"zeekify":true,"minify_css":false,"minify_js":false}'));
+                '{"zeekify":true,"MinifyCss":false,"MinifyJs":false}'));
 
         $this->assertTrue($zeek->option_get('test'));
         $this->assertTrue(

@@ -725,7 +725,8 @@ class ZeekLibrary extends ZeekOutput {
  * @param int project id
  * @param string option name
  * @param array option values
- */
+  */
+
     public function option_set($project_id, $name, $values)
     {
         if ($this->options == NULL)
@@ -891,12 +892,12 @@ class ZeekLibrary extends ZeekOutput {
 
 	    foreach ($files as $file)
 	    {
+                // we ignore the files finishing with ~ and 'extends' filename
 		if ($file == "."
                           || $file == ".."
+                          || $file == "extends"
                           || preg_match("/[~]+\z/", $file))
 		    continue;
-
-                // we ignore the files finishing with ~
 
 		if (filetype($path."/".$file) == "dir")
 		{
@@ -927,7 +928,18 @@ class ZeekLibrary extends ZeekOutput {
 		}
 		else
 		{
-		    array_push($list, $file);
+                    $directory_idx = strrpos($path, '/');
+                    $extension_idx = strrpos($file, '.');
+
+		    array_push($list, array(
+                        'path'      => $path,
+                        'directory' =>
+                                $directory_idx ? substr($path, $directory_idx + 1) : $path,
+                        'extension' =>
+                                $extension_idx ? substr($file, $extension_idx + 1) : '',
+                        'filename'  =>
+                                $extension_idx ? substr($file, 0, $extension_idx) : $file,
+                        'name'      => $file));
 		}
 	    }
 	}
@@ -1403,6 +1415,20 @@ class ZeekLibrary extends ZeekOutput {
 	return false;
     }
 
+/**
+ * Return the list of plugins.
+ *
+ * @method plugins_get_list
+ */
+    public function plugins_get_list()
+    {
+	$rsp = array();
+
+	if ($this->directory_scan($this->global_path . "plugins", $rsp, -1))
+	    return $rsp;
+
+	return false;
+    }
 
 /**
  * Check if a table exists otherwise automatically create if this
@@ -1647,32 +1673,6 @@ class ZeekLibrary extends ZeekOutput {
         return $this->object_to_array($this->db->handle_result($result));
     }
 
-/**
- * Convert object structure to array structure.
- *
- * @method object_to_array
- * @param array structure
- */
-    private function object_to_array($obj)
-    {
-	if (is_object($obj))
-	    $obj = (array) $obj;
-
-	if (is_array($obj))
-	{
-            $new = array();
-            foreach($obj as $key => $val)
-	    {
-		$new[$key] = $this->object_to_array($val);
-            }
-	}
-	else
-	{
-	    $new = $obj;
-	}
-
-	return $new;
-    }
 }
 
 ?>
