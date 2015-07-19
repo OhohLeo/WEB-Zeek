@@ -154,6 +154,9 @@ class Zeek extends ZeekOutput {
 
 	$this->global_path = $global_path;
 
+        // we initialise using $php_errormgs
+        ini_set('track_errors', 1);
+
 	// we create de zeek_library object
 	require_once $global_path . "lib/zeek_library.php";
 
@@ -294,10 +297,11 @@ class Zeek extends ZeekOutput {
 		    $params['data']);
 
 	    case 'test':
-	        return $this->test();
+	    return $this->test($params['options']);
 
 	    case 'deploy':
-	        return $this->deploy();
+	    return $this->deploy($params['dst'],
+                                 $params['options']);
 
             case 'option_get':
                 return $this->option_get(
@@ -306,7 +310,7 @@ class Zeek extends ZeekOutput {
             case 'option_set':
                 return $this->option_set(
                     strtolower($params['name']),
-                    $params['values']);
+                    $params['options']);
 
             case 'structure_get':
 		return $this->structure_get();
@@ -390,6 +394,7 @@ class Zeek extends ZeekOutput {
                 $_SESSION["project_name"] = $project_name;
                 $_SESSION["project_id"]   = $project_id;
                 $_SESSION["project_path"] = isset($projects_path);
+                $_SESSION["project_dst"]  = $this->global_path;
 
                 $this->project_name = $project_name;
 
@@ -1188,18 +1193,26 @@ class Zeek extends ZeekOutput {
   * Method to zeekify all the code & deploy the test platform
   *
   * @method test
+  * @params string options associated
   */
-    public function test()
+    public function test($options)
     {
+        // we check that the json is well formated
+        $decode_options = $this->json_decode($options);
+        if ($decode_options == NULL)
+        {
+            $this->error("Invalid option values '$options'!");
+            return false;
+        }
+
         $dst = 'projects/' . $this->project_id
 	     . '/TEST_' . $_SESSION['login'];
 
+
+        // we deploy the files & apply all the data plugins
         if ($this->deploy_files(
-            $dst, array("zeekify" => array("html"))) == false)
-        {
-            $this->error("Impossible to deploy files!");
+            $this->global_path . $dst, $decode_options) == false)
             return false;
-        }
 
 	$this->output_json(array('href' => $dst . '/index.html'));
         return true;
@@ -1208,20 +1221,36 @@ class Zeek extends ZeekOutput {
 /**
  * Method to call to deploy the project on his final directory
  *
- * @method
- * @param
+ * @method deploy
+ * @param string destination to deploy files
+ * @param string options for the deployment
  */
-    public function deploy()
+    public function deploy($dst, $options)
     {
-	// we copy the whole user directory in the deploy directory
-        $dst = 'projects/' . $this->project_id . '/DEPLOY_';
+        // if the destination is not set : we get from the database
 
-	// we send back the deploy URL
-	$this->output_json(
-	    array('href' => 'projects/' . $this->project_id
-			. '/deploy/index.html'));
+        // if the destination doesn't begin with '/':
+        // we add the global path before the destination
+        //$dst
 
-        // we handle "deploy" plugins functionalities
+        // if the options are not set : we get them from the database
+
+        // we check that the json is well formated
+        $decode_options = $this->json_decode($options);
+        if ($decode_options == NULL)
+        {
+            $this->error("Invalid option values '$options'!");
+            return false;
+        }
+
+        // we deploy the files & apply all the plugins
+        if ($this->deploy_files($dst, $decode_options) == false)
+            return false;
+
+        // we apply all the deploy plugins
+
+	$this->success("Successfully deployed!");
+        return true;
     }
 
 /**
@@ -1238,12 +1267,16 @@ class Zeek extends ZeekOutput {
 
         $files = $zlib->file_get_list($project_id) ;
 
-        if ($files == false)
+        if ($files == false) {
+            $this->error("No files to deploy!");
+            return false;
+        }
+
+        // we clean all files in the destination
+        if ($zlib->directory_remove($destination) == false)
             return false;
 
-        $destination = $this->global_path . $destination;
-
-        // check if the main directory exist
+        // we start from clean directory
         if ($zlib->directory_create($destination) == false)
             return false;
 
@@ -1262,18 +1295,24 @@ class Zeek extends ZeekOutput {
             $input = $zlib->file_get($project_id,
                                      $file['user'],
                                      $file['name']);
-            if ($input == false)
+            if ($input == false) {
+                $this->error("No file found : " + $file['user']
+                    + " " + $file['name'] + "!");
                 return false;
+            }
 
             // we handle the options
-            foreach ($options as $option => $types_concerned)
+            foreach ($options as $option => $is_activated)
             {
+                if ($is_activated == false)
+                    continue;
+
                 // we handle 'files' plugin here
                 if (array_key_exists($option, $this->plugins_list['files']))
                 {
                     $plugin_obj = $this->plugins_list['files'][$option];
 
-                    if (in_array($file['type'], $plugin_obj->accept_files) == false)
+                    if (in_array($file['type'], $plugin_obj->accept_files()) == false)
                         continue;
 
                     $input = $plugin_obj->on_input($input);

@@ -8,6 +8,7 @@ $project_name = $_SESSION["project_name"];
 $project_id   = $_SESSION["project_id"];
 $start_ts     = $_SESSION["start_ts"];
 $project_path = $_SESSION["project_path"];
+$project_dst  =  $_SESSION["project_dst"];
 
 /* if one field is not define : do not authorize to display the
  * page */
@@ -47,6 +48,7 @@ include 'default/header.php';
 	<h1 id="title"><?php echo "$project_name";?></h1>
 	<ul>
 	    <li id="home" class="menu">Home</li>
+	    <li id="images" class="menu">Images</li>
 	    <li id="edit" class="menu">Edit</li>
 	    <li id="test" class="menu">Test</a></li>
 	    <li id="deploy" class="menu">Deploy</li>
@@ -92,7 +94,17 @@ include 'default/header.php';
 	    </div>
 	</div>
 	<div id="test" class="menu"></div>
-	<div id="deploy" class="menu"></div>
+	<div id="deploy" class="menu">
+            <h3>Project destination</h3>
+	    <input id="deploy_dst"
+                   type="text"
+		   class="form-control"
+		   name="deploy_dst"
+		   value=<?php echo $project_dst; ?>>
+            <h3>Project options</h3>
+            <table class="center" id="options_deploy"></table>
+            <button id="deploy_validate" class="danger">DEPLOY</button>
+        </div>
 	<div id="configuration" class="menu">
 	    <div class="config">
 		<h3 id="user">Add new user</h3>
@@ -141,17 +153,17 @@ include 'default/header.php';
 	    <hr>
             <?php } ?>
 	    <div class="config">
-		<h3>Modify editor</h3>
+		<h3>Edit configuration</h3>
 		<div class="config-group danger-zone">
                     <select id="file_type_proposed"></select>
-                    <table id="file_type_accepted"></table>
+                    <table class="center" id="file_type_accepted"></table>
 		</div>
 	    </div>
 	    <hr>
 	    <div class="config">
-		<h3>Deploy options</h3>
+		<h3>Test configuration</h3>
 		<div class="config-group danger-zone">
-                    <table id="options_deploy"></table>
+                    <table class="center" id="options_test"></table>
                 </div>
 	    </div>
 	    <hr>

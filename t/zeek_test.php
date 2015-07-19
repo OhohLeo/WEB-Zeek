@@ -326,7 +326,7 @@ class TestZeek extends PHPUnit_Framework_TestCase
     	        '{"success":"file \'test.css\' with type \'css\' created!"}'));
 
         // check test functionality
-        $zeek->test();
+        $zeek->test('{"zeekify":true,"MinifyCss":false,"MinifyJs":true}');
         $this->assertTrue(
             $zeek->checkOutput('{"href":"projects/1/TEST_test/index.html"}'));
 

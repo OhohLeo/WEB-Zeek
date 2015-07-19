@@ -803,7 +803,12 @@ class ZeekLibrary extends ZeekOutput {
 
 	try
 	{
-	    mkdir($path, 0776, true);
+	    if (mkdir($path, 0776, true) == false)
+            {
+                $this->error(
+		    "Error when creating '$path': $php_errormsg!");
+                return false;
+            }
 	}
 	catch (Exception $e)
 	{
@@ -825,10 +830,13 @@ class ZeekLibrary extends ZeekOutput {
 * @method directory_remove
 * @param string path
 */
-    private function directory_remove($path)
+    public function directory_remove($path)
     {
+        // we check if the directory exists
 	if (!is_dir($path))
             return true;
+
+        // we check if we have the rights to handle the directory
 
 	try
 	{
@@ -1413,6 +1421,34 @@ class ZeekLibrary extends ZeekOutput {
 	   return true;
 
 	return false;
+    }
+
+/**
+ * Return the list of images.
+ *
+ * @method images_get_list
+ * @param integer project_id
+ */
+    public function images_get_list($project_id)
+    {
+	$rsp = array();
+
+	if ($this->directory_scan($this->global_path . "projects/$project_id/img", $rsp, -1))
+	    return $rsp;
+
+	return false;
+    }
+
+/**
+ * Write a new image
+ *
+ * @method image_set
+ * @param integer project_id
+ * @param string name of the file
+ * @param string content of the image
+ */
+    public function image_set($project_id, $name, $data)
+    {
     }
 
 /**

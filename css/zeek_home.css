@@ -131,6 +131,11 @@ h2#data_set {
    cursor: pointer;
 }
 
+table.center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .table {
     width: 100%;
     max-width: 100%;

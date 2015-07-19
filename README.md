@@ -27,7 +27,12 @@ using following
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
-08/05/2015 Leo
+20/07/2015 Leo
+ * setup plugins to shrink js & css files
+ * setup test & deploy functionalities
+ * correct bug on update database datas
+
+08/07/2015 Leo
  * 1st anniversary of Zeek!!
  * work on dynamic structure
 

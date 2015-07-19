@@ -632,9 +632,17 @@ $(document).ready(function() {
 
 	if ($id == 'test')
 	{
+            // we get all options choosed from the configuratio
+            var $options = {};
+
+            $("input.option_test").each(function() {
+                $options[$(this).attr("name")] = $(this).prop("checked")
+            });
+
 	    $send_request(
 		{
 		    method: "test",
+                    options: JSON.stringify($options),
 		},
 		function($result) {
                     if ($result['href'])
@@ -774,6 +782,14 @@ $(document).ready(function() {
 
 	$data_update = function() {
 	    var $id = $(this).attr("item");
+
+            // we set all actual values in <input>
+            var $content = $(this).parents("tr").children();
+
+            $div_modal.children("input").each(function() {
+                $(this).val($content.eq(0).text());
+                $content = $content.next();
+            });
 
 	    $modal.dialog({
 		open: function() {
@@ -1247,21 +1263,22 @@ $(document).ready(function() {
     });
 
     var $table_options_deploy = $("table#options_deploy");
+    var $table_options_test   = $("table#options_test");
 
     var $option_get_deploy;
 
     var $option_set_deploy = function () {
 
-        var $values = {};
+        var $options = {};
 
         $("input.option_deploy").each(function() {
-            $values[$(this).attr("name")] = $(this).prop("checked")
+            $options[$(this).attr("name")] = $(this).prop("checked")
         });
 
         $send_request({
 	    method: "option_set",
             name: "files",
-            values: JSON.stringify($values),
+            options: JSON.stringify($options),
 	},
         function($result) {
 
@@ -1275,6 +1292,19 @@ $(document).ready(function() {
         });
     };
 
+
+    var $option_get_row = function ($name, $type) {
+
+        var $row = $("<tr>").attr("id", "config_" + $name);
+
+        $row.append($("<td>").text($name))
+            .append($("<td>").append(
+                "<input id=\"" + $type + "_" + $name + "\" name=\"" + $name
+              + "\" class=\"option_" + $type + "\" type=\"checkbox\">"));
+
+        return $row;
+    }
+
     // we handle deploy options
     $option_get_deploy = function () {
         $send_request({
@@ -1287,19 +1317,18 @@ $(document).ready(function() {
 		return false;
 
             $table_options_deploy.empty();
+            $table_options_test.empty();
 
             for (var $name in $result)
             {
-                var $row = $("<tr>").attr("id", "config_" + $name);
-                $row.append($("<td>").text($name))
-                    .append($("<td>").append(
-                        "<input id=\"deploy_" + $name + "\" name=\"" + $name
-                      + "\" class=\"option_deploy\" type=\"checkbox\">"));
-
-                $table_options_deploy.append($row);
+                $table_options_deploy.append($option_get_row($name, "deploy"));
 
                 $("input#deploy_" + $name).prop('checked', $result[$name])
                                           .change($option_set_deploy);
+
+                $table_options_test.append($option_get_row($name, "test"));
+
+                $("input#test_" + $name).prop('checked', $result[$name]);
             }
 
             // do not display anything
@@ -1309,6 +1338,23 @@ $(document).ready(function() {
 
     $option_get_deploy();
 
+    $("button#deploy_validate").on("click", function() {
+
+        // we get all options choosed from the configuratio
+        var $options = {};
+
+        $("input.option_deploy").each(function() {
+            $options[$(this).attr("name")] = $(this).prop("checked")
+        });
+
+	$send_request(
+	    {
+		method: "deploy",
+                dst: $("input#deploy_dst").val(),
+                options: JSON.stringify($options),
+	    });
+
+    });
 
     // we set the configuration visual effects
     $div = $("div.config-group");
