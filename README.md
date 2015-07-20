@@ -28,6 +28,8 @@ using following
 
 #### Git Log :
 20/07/2015 Leo
+ * add file exportation on client side
+ * correct bug on adding/deleting/modifying file behavior
  * setup plugins to shrink js & css files
  * setup test & deploy functionalities
  * correct bug on update database datas
