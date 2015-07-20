@@ -911,8 +911,15 @@ class ZeekLibrary extends ZeekOutput {
 		{
 		    $this->directory_scan(
 			$path."/".$file, $list, $len_to_remove);
+                    continue;
 		}
-		else if ($len_to_remove > 0)
+
+                $filename = $path . "/" . $file;
+
+                // we get the content type
+                $mime = mime_content_type($filename);
+
+                if ($len_to_remove > 0)
 		{
 		    // the path doesn't exist : we get the type of the
 		    // file from the extension
@@ -929,26 +936,36 @@ class ZeekLibrary extends ZeekOutput {
                     }
 
 		    array_push($list,
-			       array('user' => $user,
+			       array('mime' => $mime,
+                                     'user' => $user,
 				     'type' => $type,
 				     'name' => $file,
                                      'in_main_directory' => $in_main_directory));
+                    continue;
 		}
-		else
-		{
-                    $directory_idx = strrpos($path, '/');
-                    $extension_idx = strrpos($file, '.');
 
-		    array_push($list, array(
-                        'path'      => $path,
-                        'directory' =>
-                                $directory_idx ? substr($path, $directory_idx + 1) : $path,
-                        'extension' =>
-                                $extension_idx ? substr($file, $extension_idx + 1) : '',
-                        'filename'  =>
-                                $extension_idx ? substr($file, 0, $extension_idx) : $file,
-                        'name'      => $file));
-		}
+                $directory_idx = strrpos($path, '/');
+                $extension_idx = strrpos($file, '.');
+
+                $result = array(
+                    'mime'      => $mime,
+                    'path'      => $path,
+                    'directory' =>
+                    $directory_idx ? substr($path, $directory_idx + 1) : $path,
+                    'extension' =>
+                    $extension_idx ? substr($file, $extension_idx + 1) : '',
+                    'filename'  =>
+                    $extension_idx ? substr($file, 0, $extension_idx) : $file,
+                    'name'      => $file);
+
+                // we detect if it is an image
+                if (preg_match("/^image\//", $mime))
+                {
+                    list($result["width"],
+                         $result["height"]) = getimagesize($filename);
+                }
+
+		array_push($list, $result);
 	    }
 	}
 	catch (Exception $e)
@@ -1433,7 +1450,8 @@ class ZeekLibrary extends ZeekOutput {
     {
 	$rsp = array();
 
-	if ($this->directory_scan($this->global_path . "projects/$project_id/img", $rsp, -1))
+	if ($this->directory_scan(
+            $this->global_path . "projects/$project_id/img", $rsp, -1))
 	    return $rsp;
 
 	return false;

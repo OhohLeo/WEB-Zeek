@@ -13,6 +13,30 @@ $(document).ready(function() {
     $div_menus.hide();
     $("div#home").show();
 
+
+    // we configure images menu
+    var $nav_images = $("nav#images");
+
+    var $images_update = function() {
+ 	$send_request(
+	    {
+		"method": "images_get_list",
+	    },
+	    function($result) {
+
+                if ($result == false || !("get_list" in $result))
+		    return false;
+
+		var $get_list = $result["get_list"];
+
+                $nav_edit.empty();
+
+		$get_list.forEach(function($obj) {
+
+                });
+            });
+    };
+
     // we configure edit menu
     var $nav_edit = $("nav#edit");
     var $div_edition = $("div#edition");
@@ -135,8 +159,6 @@ $(document).ready(function() {
 		var $get_list = $result["get_list"];
 
 		var $store_by_type = new Array();
-
-                var $btn_file_create = $("button#file_create");
 
                 $nav_edit.empty();
 
@@ -681,6 +703,10 @@ $(document).ready(function() {
     var $li_menu = $("li.menu");
 
     $li_menu.on("click", function() {
+
+        // remove displayed alerts
+        $clean_alert();
+
 	var $this = $(this);
 	var $id = $this.attr("id");
 
@@ -708,6 +734,11 @@ $(document).ready(function() {
 
 	    return;
 	}
+
+        if ($id == 'images')
+        {
+            $images_update();
+        }
 
 	if ($id == 'edit')
 	{

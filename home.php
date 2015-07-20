@@ -79,9 +79,11 @@ include 'default/header.php';
 		       value=<?php echo $project_name; ?>>
 	    </label>
 	</div>
+	<div id="images" class="menu">
+	    <nav id="images"></nav>
+        </div>
 	<div id="edit" class="menu">
-	    <nav id="edit">
-	    </nav>
+	    <nav id="edit"></nav>
 	    <select id="edit">
 		<option>No file found!</option>
 	    </select>

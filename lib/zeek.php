@@ -257,6 +257,22 @@ class Zeek extends ZeekOutput {
 		return $this->user_change_password(
 		    $project_id, $email, $password_old, $password_new);
 
+            case 'images_add':
+		return $this->images_add(
+                    $project_id, $params["directory"], $params["name"], $params["data"]);
+
+            case 'images_move':
+		return $this->images_update(
+                    $project_id, $params["old_directory"], $params["old_name"],
+                    $params["directory"], $params["name"]);
+
+            case 'images_delete':
+		return $this->images_delete(
+                    $project_id, $params["directory"], $params["name"]);
+
+            case 'images_get_list':
+		return $this->images_get_list($project_id);
+
 	    case 'file_create':
 	        return $this->file_create(
 		    strtolower($params["type"]),
@@ -671,6 +687,64 @@ class Zeek extends ZeekOutput {
         return mail($destination, $title, $message);
     }
 
+
+/**
+ * Add new image to the current project or rewrite existing one
+ *
+ * @method images_add
+ * @param integer project id
+ * @param string directory name
+ * @param string file name
+ */
+    public function images_add($project_id, $directory, $name)
+    {
+    }
+
+/**
+ * Move existing image to another directory/name
+ *
+ * @method images_move
+ * @param integer project id
+ * @param string old directory name
+ * @param string old file name
+ * @param string new directory name
+ * @param string new file name
+ */
+    public function images_move($project_id, $old_directory, $old_name,
+                                $directory, $name)
+    {
+    }
+
+/**
+ * Delete existing image
+ *
+ * @method images_delete
+ * @param integer project id
+ * @param string directory name
+ * @param string file name
+ */
+    public function images_delete($project_id, $directory, $name)
+    {
+    }
+
+/**
+ * Give the complete list of images
+ *
+ * @method images_get_list
+ */
+    public function images_get_list()
+    {
+	$get_list = $this->zlib->images_get_list($this->project_id);
+
+	if (is_array($get_list) && count($get_list) > 0)
+	{
+	    $this->output_json(array('get_list' => $get_list));
+	    return true;
+	}
+
+        $this->error("No files found!");
+	return false;
+    }
 
 /**
  * Initialise the files associated to the project.
