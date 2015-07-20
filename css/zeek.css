@@ -17,9 +17,13 @@ p.success {
     border-left-color: #D9534F;
 }
 
-button {
-    padding: 6px 10%;
-    margin: 20px;
+input {
+    padding: 6px 5%;
+}
+
+button, input.btn-block {
+    padding: 6px 50px;
+    margin: 10px 20px;
     font-size: 16px;
     font-weight: 400;
     line-height: 2;

@@ -109,13 +109,13 @@ class Zeek extends ZeekOutput {
 	    "type" => "text",
 	    "size" => 255),
         "TEXT" => array(
-	    "type" => "text",
+	    "type" => "textarea",
 	    "size" => 65535),
         "MEDIUMTEXT" => array(
-	    "type" => "text",
+	    "type" => "textarea",
 	    "size" => 16777215),
         "LONGTEXT" => array(
-	    "type" => "text",
+	    "type" => "textarea",
 	    "size" => 4294967295),
         "TINYBLOB" => array(
 	    "type" => "text",

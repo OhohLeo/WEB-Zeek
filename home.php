@@ -72,12 +72,11 @@ include 'default/header.php';
 	    <div class="error"></div>
 	</div>
 	<div id="home" class="menu">
-	    <label>Project name
-		<input type="text"
-		       class="form-control"
-		       name="project_name"
-		       value=<?php echo $project_name; ?>>
-	    </label>
+	    <h3>Project name</h3>
+	    <input type="text"
+		   class="form-control"
+		   name="project_name"
+		   value=<?php echo $project_name; ?>>
 	</div>
 	<div id="images" class="menu">
 	    <nav id="images"></nav>
