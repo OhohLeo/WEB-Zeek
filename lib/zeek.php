@@ -274,9 +274,6 @@ class Zeek extends ZeekOutput {
 		    "projects/" . $project_id . "/"
                                 . $user . "/". $params["src"]);
 
-	    case 'file_export':
-	        return $this->file_export(strtolower($params['name']));
-
 	    case 'file_delete':
 	        return $this->file_delete(strtolower($params['name']));
 
@@ -783,22 +780,6 @@ class Zeek extends ZeekOutput {
         $this->error($msg);
     }
 
-
-/**
- * Export the file specified
- *
- * @method file_export()
- * @param string file path
- */
-    public function file_export($name)
-    {
-	$zlib = $this->zlib;
-
-	// we check that the file exist
-	if ($zlib->file_check($this->project_id, $_SESSION["login"], $name))
-	{
-	}
-    }
 
 /**
  * Delete the file specified

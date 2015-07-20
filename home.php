@@ -81,15 +81,17 @@ include 'default/header.php';
 	</div>
 	<div id="edit" class="menu">
 	    <nav id="edit">
-		<button id="file_create" class="edit">Create</button>
 	    </nav>
 	    <select id="edit">
 		<option>No file found!</option>
 	    </select>
 	    <div id="edition">
 		<div id="editor"></div>
+		<button id="file_save">Save</button>
 		<button id="file_modify">Modify</button>
-		<button id="file_export">Export</button>
+                <button id="file_export">
+                    <a href="#">Export</a>
+                </button>
 		<button id="file_delete" class="danger">Delete</button>
 	    </div>
 	</div>

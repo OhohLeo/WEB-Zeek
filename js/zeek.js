@@ -4,6 +4,12 @@ $alert.hide();
 $danger = $("div.error");
 $success = $("div.success");
 
+$clean_alert = function() {
+    $success.hide();
+    $danger.hide();
+    $alert.hide();
+}
+
 $generic_rsp = function($result) {
 
     $success.hide();

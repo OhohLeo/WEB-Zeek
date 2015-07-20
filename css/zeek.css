@@ -77,3 +77,8 @@ div.error {
     background-color: #F2DEDE;
     border-color: #EBCCD1;
 }
+
+a {
+    color: #000;
+    text-decoration: none;
+}

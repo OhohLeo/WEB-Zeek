@@ -52,6 +52,7 @@ $(document).ready(function() {
 		$editor.setValue($result["get"]);
 		$session.setMode("ace/mode/" + $result["type"]);
 		$div_edition.show();
+
 	    });
     };
 
@@ -65,7 +66,10 @@ $(document).ready(function() {
 
 	// we set the file unless something has changed
 	if ($actual_data === $actual_file["previous"])
+        {
+            $clean_alert();
 	    return;
+        }
 
 	$send_request(
 	    {
@@ -79,6 +83,9 @@ $(document).ready(function() {
 		$actual_file["previous"] = $actual_data;
 	    });
     }
+
+    // we configure save button
+    $("button#file_save").on("click", $file_set);
 
     // we configure save command
     $editor.commands.addCommand({
@@ -113,9 +120,10 @@ $(document).ready(function() {
 
     $select_edit.change($on_selected);
 
+    var $file_create_on_click;
     var $last_edit_btn_type = "";
 
-    var $edit_update = function() {
+    var $edit_update = function($type, $user, $name) {
  	$send_request(
 	    {
 		"method": "file_get_list",
@@ -128,7 +136,12 @@ $(document).ready(function() {
 
 		var $store_by_type = new Array();
 
+                var $btn_file_create = $("button#file_create");
+
+                $nav_edit.empty();
+
 		$get_list.forEach(function($obj) {
+
 		    var $type = $obj["type"];
 
 		    // we create the type button
@@ -194,6 +207,27 @@ $(document).ready(function() {
 
 		    $store_by_type[$type].push($obj);
 		});
+
+                // we click on the type file button
+                if ($type != null)
+                    $("button." + $type).click();
+
+                // we select the file created or updated
+                if ($user != null && $name != null)
+                    $select_edit.click(function() {
+                        $(this).children().filter(function() {
+                            return $(this).attr("user") === $user
+                            && $(this).attr("name") === $name
+                        }).click();
+                    });
+
+                var $button_file_create = $("<button>")
+                         .attr("id", "file_create")
+                         .attr("class", "edit")
+                         .text("Create")
+                         .on("click", $file_create_on_click);
+
+                $nav_edit.append($button_file_create);
 
                 // do not display anything
 		return -1;
@@ -450,7 +484,7 @@ $(document).ready(function() {
         return $filename;
     }
 
-    $("button#file_create").on("click", function() {
+    $file_create_on_click = function() {
 
 	// we check that the type is here
 	if ($file_create_html == null) {
@@ -502,7 +536,6 @@ $(document).ready(function() {
 		    done: function($e, $data) {
 		        $send_request($filename, function($result) {
 				 $last_edit_btn_type = "";
-				 $select_edit.empty();
 
 				 $modal.dialog("close");
 				 $edit_update();
@@ -523,17 +556,20 @@ $(document).ready(function() {
 
                         $send_request($filename, function($result) {
 			    $last_edit_btn_type = "";
-			    $select_edit.empty();
+
+                            console.log();
 
 			    $modal.dialog("close");
-			    $edit_update();
+			    $edit_update($filename["extension"],
+                                         $filename["user"],
+                                         $filename["name"]);
 			});
                     }
 		}
 	    }});
 
 	$modal.dialog("open");
-    });
+    };
 
     $("button#file_modify").on("click", function() {
 
@@ -574,7 +610,9 @@ $(document).ready(function() {
 			    $select_edit.empty();
 
 			    $modal.dialog("close");
-			    $edit_update();
+			    $edit_update($filename["extension"],
+                                         $filename["user"],
+                                         $filename["name"]);
 			});
                     }
 		}
@@ -582,6 +620,25 @@ $(document).ready(function() {
 
         $modal.dialog("open");
     });
+
+    // the file exportation is only from client side
+    $("button#file_export").on("click", function() {
+
+        // the actual file should be defined
+        if ($actual_file == null)
+            return;
+
+        // we get the current state of the editor
+        var $actual_data = $editor.getValue();
+
+        $(this).children()
+               .attr('href', 'data:text/'
+                     + $actual_file["type"]
+                     + ';charset=utf-8,'
+                     + encodeURIComponent($actual_data))
+               .attr('download', $actual_file["name"])
+               .click();
+       });
 
 
     $("button#file_delete").on("click", function() {
@@ -609,7 +666,7 @@ $(document).ready(function() {
 			    $select_edit.empty();
 
 			    $modal.dialog("close");
-			    $edit_update();
+			    $edit_update($actual_file["type"]);
 			});
 		}
 	    }
@@ -618,9 +675,6 @@ $(document).ready(function() {
 	$modal.dialog("open");
     });
 
-    $("button#file_export").on("click", function() {
-	console.log("export!");
-    });
 
     // we set clickable action menu
     var $li_data;
@@ -885,9 +939,7 @@ $(document).ready(function() {
 
     $("button#structure_validate").on("click", function() {
 
-
         var $json_structure = safeJSONStringify($structure);
-        console.log($json_structure);
 
         $send_request(
 	    {
@@ -1068,10 +1120,8 @@ $(document).ready(function() {
                     }
 
                     if ($size != null
-                        && ($size.length == 0
-                                         || $.isNumeric($size) == false)) {
-                                             console.log($size);
-                                             return;
+                        && ($size.length == 0 || $.isNumeric($size) == false)) {
+                            return;
                     }
 
                     $("tr.add_attribute").remove();
