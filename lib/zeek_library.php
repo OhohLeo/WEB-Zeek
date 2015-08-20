@@ -801,6 +801,8 @@ class ZeekLibrary extends ZeekOutput {
 	if (is_dir($path))
             return true;
 
+        global $php_errormsg;
+
 	try
 	{
 	    if (mkdir($path, 0776, true) == false)
@@ -882,7 +884,8 @@ class ZeekLibrary extends ZeekOutput {
 * @param array ref of list of elements
 * @param integer size to remove
 */
-    private function directory_scan($path, &$list, $len_to_remove=0)
+    private function directory_scan($path, &$list, $len_to_remove=0,
+                                    $filter_directories=null)
     {
 	try
 	{
@@ -896,7 +899,7 @@ class ZeekLibrary extends ZeekOutput {
 
 	    $user = $idx ? substr($start, 0, $idx) : $start;
 
-	    $type = $idx ? substr($start, $idx + 1) : '';
+	    $get_type = $idx ? substr($start, $idx + 1) : '';
 
 	    foreach ($files as $file)
 	    {
@@ -907,31 +910,37 @@ class ZeekLibrary extends ZeekOutput {
                           || preg_match("/[~]+\z/", $file))
 		    continue;
 
-		if (filetype($path."/".$file) == "dir")
+                $filepath = $path . "/" . $file;
+
+		if (filetype($filepath) == "dir")
 		{
+                    if (is_array($filter_directories)
+                        && in_array($file, $filter_directories, true)){
+                        continue;
+                    }
+
 		    $this->directory_scan(
-			$path."/".$file, $list, $len_to_remove);
+			$filepath, $list, $len_to_remove, $filter_directories);
                     continue;
 		}
 
-                $filename = $path . "/" . $file;
-
                 // we get the content type
-                $mime = mime_content_type($filename);
+                $mime = ""; //mime_content_type($filepath);
 
                 if ($len_to_remove > 0)
 		{
 		    // the path doesn't exist : we get the type of the
 		    // file from the extension
-		    if ($type == "")
+		    if ($get_type == "")
 		    {
-			$idx = strrpos($file, '.');
+                        $idx = strrpos($file, '.');
 			$type = substr($file, $idx + 1);
                         $in_main_directory = true;
 		    }
 		    else
 		    {
-			$file = "$type/$file";
+			$file = "$get_type/$file";
+                        $type = $get_type;
                         $in_main_directory = false;
                     }
 
@@ -962,7 +971,7 @@ class ZeekLibrary extends ZeekOutput {
                 if (preg_match("/^image\//", $mime))
                 {
                     list($result["width"],
-                         $result["height"]) = getimagesize($filename);
+                         $result["height"]) = getimagesize($filepath);
                 }
 
 		array_push($list, $result);
@@ -1280,11 +1289,23 @@ class ZeekLibrary extends ZeekOutput {
 	// otherwise we pickup the extension of the file
 	else
 	{
-	    $type = substr($name, strpos($name, '.') + 1);
+	    $type = $this->file_get_extension($name);
 	}
 
 	return $type;
     }
+
+/**
+* Return file extension.
+*
+* @method file_get_extension
+* @param string name
+ */
+    public function file_get_extension($name)
+    {
+        return substr($name, strpos($name, '.') + 1);
+    }
+
 
 /**
 * We create the file copied from generic type files stored in 'default' directory
@@ -1395,14 +1416,14 @@ class ZeekLibrary extends ZeekOutput {
     }
 
 
-    public function file_get_list($project_id)
+    public function file_get_list($project_id, $filter_directories=null)
     {
 	$rsp = array();
 
 	// on récupère le path
 	$path = $this->global_path . "projects/$project_id";
 
-	if ($this->directory_scan($path, $rsp, strlen($path) + 1))
+	if ($this->directory_scan($path, $rsp, strlen($path) + 1, $filter_directories))
 	    return $rsp;
 
 	return false;
@@ -1441,32 +1462,39 @@ class ZeekLibrary extends ZeekOutput {
     }
 
 /**
- * Return the list of images.
+ * Return true if the directory received is valid, otherwise return false
+ * If the boolean "$has_to_exist" is true, we create this directory if it
+ * doesn't already exist.
  *
- * @method images_get_list
+ * @method content_check_directory
+ * @param string directory path
+ * @param boolean ask to create the directory
+ */
+    public function content_check_directory($directory, $has_to_exist=false)
+    {
+        // we get the "content_types" list
+
+        // we get the directory name
+
+        // we create the directory if needed
+    }
+
+/**
+ * Return the list of contents.
+ *
+ * @method contents_get_list
  * @param integer project_id
  */
-    public function images_get_list($project_id)
+    public function contents_get_list($project_id, $username, $directory_name)
     {
 	$rsp = array();
 
 	if ($this->directory_scan(
-            $this->global_path . "projects/$project_id/img", $rsp, -1))
+            $this->global_path . "projects/$project_id/$username/$directory_name",
+            $rsp, -1))
 	    return $rsp;
 
 	return false;
-    }
-
-/**
- * Write a new image
- *
- * @method image_set
- * @param integer project_id
- * @param string name of the file
- * @param string content of the image
- */
-    public function image_set($project_id, $name, $data)
-    {
     }
 
 /**

@@ -13,29 +13,458 @@ $(document).ready(function() {
     $div_menus.hide();
     $("div#home").show();
 
+    // we configure contents menu
+    var $content_types = {};
+    var $div_content_directory = $("div#content_directory");
 
-    // we configure images menu
-    var $nav_images = $("nav#images");
+    $div_content_directory.hide();
 
-    var $images_update = function() {
+    var $button_contents_create = $("button#contents_create");
+    var $table_content_type = $("table#content_type_accepted");
+    var $on_new_content_type;
+
+    // we store the current list of types
+    var $contents_set_type = function($name, $directory, $mime, $color) {
+
+        $send_request(
+	    {
+	        method: "contents_set_type",
+                name: $name,
+                directory: $directory,
+                mime: $mime,
+                options: $color,
+	    },
+	    function($result) {
+
+	        if ($result == false || $result["error"])
+		    return false;
+
+                $content_get_type_list();
+            });
+    };
+
+    // we store the current list of types
+    var $contents_unset_type = function($name, $row) {
+
+        $send_request(
+	    {
+	        method: "contents_unset_type",
+                name: $name,
+	    },
+	    function($result) {
+
+	        if ($result == false || $result["error"])
+		    return false;
+
+                $row.remove();
+                $content_get_type_list();
+            });
+    };
+
+    $("form#content_type_add").on("submit", function($e) {
+        $e.preventDefault();
+
+        var $options = {};
+
+        $(this).children("p")
+               .children("input")
+               .each(function() {
+                   $options[$(this).attr("name")] = $(this).val()
+               });
+
+        if ($options["content_name"] === ""
+            || $options["content_directory"] === "")
+            return false;
+
+        if ($options["content_mime"] === "")
+            $options["content_mime"] = "*/*";
+
+        $contents_set_type(
+            $options["content_name"],
+            $options["content_directory"],
+            $options["content_mime"],
+            "#F0F8FF")
+    });
+
+    $on_new_content_type = function($name, $directory, $mime, $color) {
+
+        // check if the content type with same name doesn't already exist
+        if ($content_types[$name]) {
+            return false;
+        }
+
+        // otherwise add new content type
+        $content_types[$name] = [ $directory, $mime, $color ];
+
+        var $row = $("<tr>").attr("class", "config_contents");
+        $row.append($("<td class=\"content_name\">").text($name))
+            .append($("<td class=\"content_directory\">").text($directory))
+            .append($("<td class=\"content_mime\">").text($mime))
+            .append($("<td>").append(
+                "<input id=\"content_color_" + $name +"\" type=\"text\">"))
+            .append(
+                $("<td>").append(
+                    $("<img>").attr("src", "img/delete.png")
+                              .addClass("file_type_delete")
+                              .on("click", function() {
+                                  $contents_unset_type($name, $row);
+                              })
+                ));
+
+	$table_content_type.append($row);
+
+        $("input#content_color_" + $name).change(function() {
+            $contents_set_type($name, $directory, $mime, $color)
+        })
+                                         .spectrum({
+                                             color: $color
+                                         });
+
+    };
+
+    var $content_get_type_list = function() {
+        $send_request(
+	    {
+	        method: "contents_get_type_list",
+	    },
+	    function($result) {
+
+	        if ($result == false || ("content_types" in $result) == false)
+		    return false;
+
+                $result = $result["content_types"];
+
+	        for ($name in $result) {
+
+                    var $array = $result[$name];
+
+                    if ($array.length != 3)
+                        continue;
+
+                    $on_new_content_type(
+                        $name, $array[0], $array[1], $array[2]);
+                }
+
+                return -1;
+            });
+    };
+
+    $content_get_type_list();
+
+    var $content_add = function($directory, $name) {
+
+    };
+
+    var $contents_update = function() {
+
  	$send_request(
 	    {
-		"method": "images_get_list",
+		"method": "contents_get_list",
 	    },
 	    function($result) {
 
                 if ($result == false || !("get_list" in $result))
 		    return false;
 
-		var $get_list = $result["get_list"];
 
-                $nav_edit.empty();
 
-		$get_list.forEach(function($obj) {
+                var $get_list = $result["get_list"];
 
-                });
+		for (var $directory in $get_list) {
+                    $list = $get_list[$directory];
+
+                    $contents_handle_directory($list["infos"]);
+                    delete $list["infos"];
+                };
+
+                return -1;
             });
     };
+
+    // Disable auto discover for all elements:
+    Dropzone.autoDiscover = false;
+
+    var $dropzone = new Dropzone("form#dropzone", {
+        url: "upload.php",
+        maxFilesize: 3, // MB
+        acceptedFiles: 'image/*',
+        ignoreHiddenFiles: true,
+        autoProcessQueue: true,
+        createImageThumbnails: true,
+        maxThumbnailFilesize: 10,
+        thumbnailWidth: 100,
+        thumbnailHeight: 100,
+        clickable: true,
+        autoQueue: true,
+        addRemoveLinks: false,
+        paramName: "files[]",
+        parallelUploads: 1,
+        dictDefaultMessage: "Drop file here or click to upload.",
+        dictFallbackMessage: "Your browser does not support drag'n'drop file uploads.",
+        dictFallbackText: "Please use the fallback form below to upload your files like in the olden days.",
+        dictFileTooBig: "File is too big ({{filesize}}MiB). Max filesize: {{maxFilesize}}MiB.",
+        dictInvalidFileType: "You can't upload files of this type.",
+        dictResponseError: "Server responded with {{statusCode}} code.",
+        dictCancelUpload: "Cancel upload",
+        dictCancelUploadConfirmation: "Are you sure you want to cancel this upload?",
+        dictRemoveFile: "Remove file",
+        dictRemoveFileConfirmation: null,
+        dictMaxFilesExceeded: "You can not upload any more files.",
+        init: function () {
+            this.on("complete", function ($file) {
+
+                // when all uploads are over
+                if (this.getUploadingFiles().length === 0
+                    && this.getQueuedFiles().length === 0) {
+
+                        if ($actual_content_directory == null) {
+                            return false;
+                        }
+
+                        $send_request({
+		            "method": "content_add",
+                            "directory": $actual_content_directory.text(),
+                            "name": $file["name"],
+	                });
+                }
+            });
+        },
+    });
+
+    $dropzone.on("complete", function($file) {
+        $dropzone.removeFile($file);
+    });
+
+    var $dropzone_empty = function () {
+        $dropzone.removeAllFiles()
+    };
+
+    var $actual_content_directory;
+
+    var $contents_handle_directory = function($input) {
+
+        console.log($input);
+
+        var $type = $input["type"];
+        var $name = $type + "-" + $input["name"];
+
+        // we check if the name already exists
+        if ($("button#contents_" + $name).length > 0) {
+            return false;
+        }
+
+        // we create the directory button
+        var $btn = $("<button>")
+            .attr("id", "contents_" + $name)
+            .addClass("content_directory")
+            .text($input["dst"])
+            .on("click", function () {
+
+                // we display the selected border
+                $("button.content_directory").removeClass("select");
+                $(this).addClass("select");
+
+                // we empty the dropzone
+                $dropzone_empty();
+
+                $actual_content_directory = $(this);
+
+                $div_content_directory.show();
+            });
+
+        if ($content_types[$type] != undefined) {
+
+            // we get the color associated to the button
+	    var $color = $content_types[$type][2];
+
+            // add the css
+	    $btn.css({ "color": "#fff",
+		       "background-color": $color });
+
+            /* if ($.isPlainObject($input)) {
+               for (var $key in $input) {
+               $content_directory.attr($key, $input[$key]);
+               };
+               } */
+        }
+
+        $button_contents_create.before($btn);
+        return true;
+    }
+
+    $button_contents_create.on("click", function () {
+
+        $dropzone_empty();
+
+        var $selected_content_type;
+        var $list = $('<select></select>');
+        $list.attr("id", "content_types");
+        $list.attr("name", "type");
+
+        var $generate_name = function() {
+            var $name = $("input#content_name").val();
+
+            if ($name != "") {
+                $name = "/" + $name
+            }
+
+            var $dst = $content_types[$selected_content_type][0] + $name;
+
+            $("td#final_content").text($dst);
+
+            return $dst;
+        };
+
+        var $on_selected = function() {
+            var $selection = $("select#content_types option:selected");
+
+            $selected_content_type = $selection.val();
+
+            var $tr_contents = $("tr.contents");
+            $tr_contents.filter(".opt").hide();
+            $tr_contents.filter("." + $selected_content_type).show();
+
+            $generate_name();
+        };
+
+        for ($name in $content_types) {
+            $list.append($("<option>").text($name));
+        }
+
+        var $array =  [
+	    { name: "Name",
+	      input: 'id="content_name" name="name" type="text" required',
+              class: "contents"},
+	    { name: "Max Size",
+	      input: 'name="max_size" type="integer" placeholder="optional"',
+              class: "contents"},
+            { name: "Image Type",
+	      input: 'name="img_type" type="text" placeholder="optional"',
+              class: 'contents images opt'},
+            { name: "Image Height",
+	      input: 'class="contents opt images" name="img_height" type="number" step="1" placeholder="optional"',
+              class: "contents images opt"},
+	    { name: "Image Width",
+	      input: 'class="contents opt images" name="img_width" type="number" step="1" placeholder="optional"',
+              class: 'contents images opt'},
+        ];
+
+        $div_modal.html(Mustache.to_html(
+            "<table><tr><td><b>Type</b></td><td>"
+          + $("<div></div>").append($list).html() + "</td></tr>"
+          + "{{#foreach}}<tr class=\"{{class}}\"><td><b>{{name}}</b></td>"
+          + "<td><input {{{input}}}/></td></tr>{{/foreach}}",
+	    { foreach: $array })
+          + "<tr><td><b>Destination</b></td>"
+          + '<td id="final_content">Press enter to see the result!</td></tr></table>');
+
+        $("select#content_types").change($on_selected);
+        $on_selected();
+
+        $("input#content_name").change($generate_name);
+
+        $modal.dialog({
+	    minWidth: 400,
+	    open: function() {
+		$(this).dialog("option", "title",
+                               "Create new directory");
+            },
+	    buttons: {
+		"Create": {
+		    text: "Create",
+		    click: function() {
+
+                        $on_selected();
+
+                        var $contents_opt = {};
+
+	                $("#modal :input").each(function() {
+	                    var $name = $(this).attr("name");
+	                    var $value = $(this).val();
+
+	                    if ($value) {
+	                        $contents_opt[$name] = $value;
+                            }
+	                });
+
+                        if ($.isEmptyObject($contents_opt)) {
+                            return;
+                        }
+
+                        var $directory = $generate_name();
+
+                        $contents_opt["dst"] = $directory;
+
+                        // TODO: validate options
+                        if ($contents_opt["img_type"]
+                         || $contents_opt["img_height"]
+                         || $contents_opt["img_width"]) {
+                        }
+
+                        // we send the command to store the new directory
+                        $send_request({
+		            "method": "content_add_directory",
+                            "directory": $directory,
+                            "options": JSON.stringify($contents_opt),
+	                }, function ($result) {
+                            if ($result == false) {
+                                return false;
+                            }
+
+                            $contents_handle_directory($contents_opt);
+
+                            $modal.dialog("close");
+                        });
+                    }
+		}
+	    }});
+
+	$modal.dialog("open");
+    });
+
+    $("button#content_directory_remove").on("click", function() {
+
+        if ($actual_content_directory == null) {
+            return false;
+        }
+
+        $directory = $actual_content_directory.text();
+
+	$div_modal.html("<p>Do you still want to delete <b>"
+                      + $directory + "</b> ?</p>");
+
+	$modal.dialog({
+	    open: function() {
+		$(this).dialog("option", "title", "Confirm");
+	    },
+	    buttons: {
+		"Delete": function() {
+
+                    $send_request({
+                        "method": "content_remove_directory",
+                        "directory": $directory
+                    }, function ($result) {
+                        if ($result == false) {
+                            return false;
+                        }
+
+                        // Hide directory elements
+                        $div_content_directory.hide();
+
+                        // Remove all actual buttons
+                        $("button.content_directory").remove();
+
+                        // Get actual content list
+                        $contents_update();
+
+                        $modal.dialog("close");
+                    });
+                }
+            }
+        });
+
+        $modal.dialog("open");
+    });
 
     // we configure edit menu
     var $nav_edit = $("nav#edit");
@@ -180,8 +609,7 @@ $(document).ready(function() {
 
 			// add the css
 			$btn.css({ "color": "#fff",
-				   "background-color": $color,
-				   "border-color": $color });
+				   "background-color": $color });
 
 			// we set clickable edit button
 			$btn.on("click", function() {
@@ -189,6 +617,10 @@ $(document).ready(function() {
 
 			    if ($last_edit_btn_type === $type)
 				return;
+
+                            // we handle select border
+                            $("button.edit").removeClass("select");
+                            $(this).addClass("select");
 
 			    $last_edit_btn_type = $type;
 
@@ -245,7 +677,7 @@ $(document).ready(function() {
 
                 var $button_file_create = $("<button>")
                          .attr("id", "file_create")
-                         .attr("class", "edit")
+                         .attr("class", "validate")
                          .text("Create")
                          .on("click", $file_create_on_click);
 
@@ -271,9 +703,9 @@ $(document).ready(function() {
             return false;
         }
 
+        // othewise add new type
         $files_type[$name] = $color;
 
-        // othewise add new type
         var $row = $("<tr>").attr("id", "config_" + $name);
         $row.append($("<td class=\"editor_type\">").text($name))
             .append($("<td>").append(
@@ -318,7 +750,7 @@ $(document).ready(function() {
 
     $option_set_editor = function () {
 
-        $files_type = {}
+        $files_type = {};
 
         $("td.editor_type").each(function() {
             var $name = $(this).text();
@@ -330,7 +762,7 @@ $(document).ready(function() {
         $send_request({
 	    method: "option_set",
             name: "editor",
-            values: JSON.stringify($files_type),
+            options: JSON.stringify($files_type),
 	},
         function($result) {
 
@@ -352,7 +784,8 @@ $(document).ready(function() {
 	},
 	function($result) {
 
-	    if ($result == false || $result["error"])
+	    if ($result == false
+                || ("type_list" in $result) == false)
 		return false;
 
             var $select_type_proposed = $("select#file_type_proposed");
@@ -465,7 +898,7 @@ $(document).ready(function() {
         }
 
         // the extension is not set
-	if ($filename["extension"].length == 0)
+	if ($filename["extension"] || $filename["extension"].length == 0)
 	    $filename["extension"] = $filename["type"];
         // otherwise we check that the extension exists
         else
@@ -556,12 +989,12 @@ $(document).ready(function() {
 	                $alert.show();
 		    },
 		    done: function($e, $data) {
-		        $send_request($filename, function($result) {
-				 $last_edit_btn_type = "";
+		        /* $send_request($filename, function($result) {
+			   $last_edit_btn_type = "";
 
-				 $modal.dialog("close");
-				 $edit_update();
-			 });
+			   $modal.dialog("close");
+			   $edit_update();
+			   }); */
 		    },
 		   });
 	    },
@@ -735,9 +1168,9 @@ $(document).ready(function() {
 	    return;
 	}
 
-        if ($id == 'images')
+        if ($id == 'contents')
         {
-            $images_update();
+            $contents_update();
         }
 
 	if ($id == 'edit')
@@ -1346,9 +1779,9 @@ $(document).ready(function() {
     var $table_options_deploy = $("table#options_deploy");
     var $table_options_test   = $("table#options_test");
 
-    var $option_get_deploy;
+    var $option_get_files;
 
-    var $option_set_deploy = function () {
+    var $option_set_files = function () {
 
         var $options = {};
 
@@ -1366,7 +1799,7 @@ $(document).ready(function() {
 	    if ($result == false || $result["error"])
 		return false;
 
-            $option_get_deploy();
+            $option_get_files();
 
             // do not display result
             return -1;
@@ -1387,7 +1820,7 @@ $(document).ready(function() {
     }
 
     // we handle deploy options
-    $option_get_deploy = function () {
+    $option_get_files = function () {
         $send_request({
 	    method: "option_get",
             name: "files",
@@ -1405,7 +1838,7 @@ $(document).ready(function() {
                 $table_options_deploy.append($option_get_row($name, "deploy"));
 
                 $("input#deploy_" + $name).prop('checked', $result[$name])
-                                          .change($option_set_deploy);
+                                          .change($option_set_files);
 
                 $table_options_test.append($option_get_row($name, "test"));
 
@@ -1417,7 +1850,7 @@ $(document).ready(function() {
         });
     }
 
-    $option_get_deploy();
+    $option_get_files();
 
     $("button#deploy_validate").on("click", function() {
 

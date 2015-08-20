@@ -41,6 +41,7 @@ include 'default/header.php';
 <link rel="stylesheet" href="css/jquery.fileupload.css">
 <link rel="stylesheet" href="css/jquery.fileupload-ui.css">
 <link rel='stylesheet' href='css/spectrum.css' />
+<link rel='stylesheet' href='css/dropzone.min.css' />
 <link rel="stylesheet" href="css/zeek_home.css">
 </head>
 <body>
@@ -48,8 +49,8 @@ include 'default/header.php';
 	<h1 id="title"><?php echo "$project_name";?></h1>
 	<ul>
 	    <li id="home" class="menu">Home</li>
-	    <li id="images" class="menu">Images</li>
 	    <li id="edit" class="menu">Edit</li>
+            <li id="contents" class="menu">Contents</li>
 	    <li id="test" class="menu">Test</a></li>
 	    <li id="deploy" class="menu">Deploy</li>
 	    <li id="configuration" class="menu">Configuration</li>
@@ -78,8 +79,14 @@ include 'default/header.php';
 		   name="project_name"
 		   value=<?php echo $project_name; ?>>
 	</div>
-	<div id="images" class="menu">
-	    <nav id="images"></nav>
+	<div id="contents" class="menu">
+            <nav id="contents">
+                <button id="contents_create" class="validate">Create</button>
+            </nav>
+            <div id="content_directory">
+                <form action="files[]" class="dropzone" id="dropzone"></form>
+                <button id="content_directory_remove" class="danger">Remove</button>
+            </div>
         </div>
 	<div id="edit" class="menu">
 	    <nav id="edit"></nav>
@@ -116,7 +123,7 @@ include 'default/header.php';
 		    <form id="user_add" role="form">
 			<p><input type="email" class="form-control" name="email"
 			          placeholder="enter new e-mail adress"></input></p>
-			<input type="submit" class="btn-block btn-success">
+			<input type="submit" class="btn-block btn-success validate">
 		    </form>
 		</div>
 	    </div>
@@ -128,16 +135,15 @@ include 'default/header.php';
 			<p><input type="password"
 			          class="form-control"
 			          name="password_old"
-			          placeholder="enter old password"></input></p>
+			          placeholder="old password"></input></p>
 			<p><input type="password"
 			          class="form-control"
 			          name="password_new"
-			          placeholder="enter new password"></input></p>
+			          placeholder="new password"></input></p>
 			<p><input type="password"
 			          class="form-control"
 			          placeholder="retape new password"></input></p>
-			<input type="submit"
-			       class="btn-block btn-success">
+			<input type="submit" class="btn-block btn-success validate">
 		    </form>
 		</div>
 	    </div>
@@ -160,6 +166,26 @@ include 'default/header.php';
 		<div class="config-group danger-zone">
                     <select id="file_type_proposed"></select>
                     <table class="center" id="file_type_accepted"></table>
+		</div>
+	    </div>
+	    <hr>
+	    <div class="config">
+		<h3>Contents configuration</h3>
+		<div class="config-group danger-zone">
+                    <table class="center" id="content_type_accepted"></table>
+                    <h3>Add new content</h3>
+                    <form id="content_type_add">
+                        <p><input type="text"
+			          name="content_name"
+			          placeholder="content name"></input></p>
+                        <p><input type="text"
+			          name="content_directory"
+			          placeholder="directory name"></input></p>
+                        <p><input type="text"
+			          name="content_mime"
+			          placeholder="content mime"></input></p>
+                        <input type="submit" class="btn-block btn-success validate">
+                    </form>
 		</div>
 	    </div>
 	    <hr>
@@ -251,5 +277,6 @@ include 'default/header.php';
 <script src="js/jquery.fileupload.js"></script>
 <script src='js/spectrum.js'></script>
 <script src='js/JSON.safe.js'></script>
+<script src='js/dropzone.min.js'></script>
 <script src="js/zeek_home.js"></script>
 <?php include 'default/footer.php'; ?>

@@ -13,6 +13,9 @@ class Zeek extends ZeekOutput {
 
     private $plugins_list;
     private $type_list;
+    private $content_type_list;
+    private $content_directory_list;
+    private $mime_validator;
 
     private $type_simple = array(
         "TITLE"    => array("db_type" => "VARCHAR", "db_size" => 100),
@@ -257,21 +260,40 @@ class Zeek extends ZeekOutput {
 		return $this->user_change_password(
 		    $project_id, $email, $password_old, $password_new);
 
-            case 'images_add':
-		return $this->images_add(
-                    $project_id, $params["directory"], $params["name"], $params["data"]);
+            case 'content_add_directory':
+		return $this->content_add_directory(
+                    $params["directory"], $params["options"]);
 
-            case 'images_move':
-		return $this->images_update(
-                    $project_id, $params["old_directory"], $params["old_name"],
+            case 'content_remove_directory':
+	        return $this->content_remove_directory(
+                    $params["directory"]);
+
+            case 'content_add':
+		return $this->content_add(
                     $params["directory"], $params["name"]);
 
-            case 'images_delete':
-		return $this->images_delete(
-                    $project_id, $params["directory"], $params["name"]);
+            case 'content_move':
+		return $this->content_update(
+                    $params["old_directory"], $params["old_name"],
+                    $params["new_directory"], $params["new_name"]);
 
-            case 'images_get_list':
-		return $this->images_get_list($project_id);
+            case 'content_delete':
+		return $this->content_delete(
+                    $params["directory"], $params["name"]);
+
+            case 'contents_get_list':
+	        return $this->contents_get_list($project_id);
+
+            case 'contents_get_type_list':
+	        return $this->contents_get_type_list($project_id);
+
+            case 'contents_set_type':
+                return $this->contents_set_type(
+                    $params["name"], $params["directory"], $params["mime"],
+                    $params["options"]);
+
+            case 'contents_unset_type':
+                return $this->contents_unset_type($params["name"]);
 
 	    case 'file_create':
 	        return $this->file_create(
@@ -472,11 +494,17 @@ class Zeek extends ZeekOutput {
                     }
 
                     $options = array(
-                        "editor" => array("html" => "#FF0000",
-                                          "css"  => "#00FF00",
-                                          "js"   => "#0000FF",
-                                          "php"  => "#000000"),
-                        "files"  => $plugin_files);
+                        'editor' => array('html' => '#FF0000',
+                                          'css'  => '#00FF00',
+                                          'js'   => '#0000FF',
+                                          'php'  => '#000000'),
+                        'content_types' => array(
+                            'images'      => array('img',   'image/*', '#FF0000'),
+                            'audio'       => array('audio', 'audio/*', '#00FF00'),
+                            'video'       => array('video', 'video/*', '#0000FF'),
+                            'application' => array('app',   'application/*', '#000000'),
+                        ),
+                        'files' => $plugin_files);
                 }
 
 		// we create the project
@@ -687,62 +715,449 @@ class Zeek extends ZeekOutput {
         return mail($destination, $title, $message);
     }
 
+/**
+ * Get content type list from database
+ *
+ * @method refresh_content_type_list
+ */
+    private function refresh_content_type_list()
+    {
+        if ($this->content_type_list != null)
+            return $this->content_type_list;
+
+        $options = $this->zlib->option_get($this->project_id);
+
+        if (is_array($options) == false
+            || array_key_exists('content_types', $options) == false)
+        {
+            $this->error("Impossible to get list of current content types!");
+            return false;
+        }
+
+        $this->content_type_list = $options['content_types'];
+        return true;
+    }
+
+/**
+ * Return the list of actual content
+ *
+ * @method contents_get_type_list
+ */
+    public function contents_get_type_list()
+    {
+        if ($this->refresh_content_type_list() == false)
+            return false;
+
+        $this->output_json(
+            array('content_types' => $this->content_type_list));
+
+        return true;
+    }
+
+/**
+ * Return true if the directory is present or return false
+ *
+ * @method content_has_directory
+ */
+    private function content_has_directory($directory_name)
+    {
+        foreach ($this->content_type_list as $type_name => $array)
+        {
+            if ($directory_name === $array[0])
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+/**
+ * Return true if the content is correctly added, otherwise return false.
+ *
+ * @method contents_set_type
+ * @param string name of the content type
+ * @param string name of the main directory
+ * @param string mime filter
+ * @param string options added (color)
+ */
+    public function contents_set_type($name, $directory_name, $mime, $options)
+    {
+        if ($this->refresh_content_type_list() == false)
+            return false;
+
+        // Check that the name doesn't already exist
+        if (array_key_exists($name, $this->content_type_list))
+        {
+            $this->error("Content type name '$name' already exists!");
+            return false;
+        }
+
+        // Check that the directory doesn't already exist
+        if ($this->content_has_directory($directory_name))
+        {
+            $this->error(
+                "Content type directory name '$directory_name' already exists!");
+            return false;
+        }
+
+        // Valid the mime filter
+        if ($this->mime_validator == null)
+        {
+            // we create de zeek_mime object
+	    require_once $this->global_path . "lib/mime.php";
+
+            $this->mime_validator = new ZeekMime();
+        }
+
+        if ($this->mime_validator->validate_mime_type($mime) == false)
+        {
+            $this->error("Invalid mime '$mime'!");
+            return false;
+        }
+
+        // Valid options parameters as string
+        if ($options != null
+            && $this->check_string_and_size($options, 100) == false)
+        {
+            $this->error("Invalid or too big options '$options'!");
+            return false;
+        }
+
+        // Add the new valid content type
+        $this->content_type_list[$name] = [ $directory_name, $mime, $options ];
+
+        // And write all the values in database
+        if ($this->zlib->option_set($this->project_id,
+                                    "content_types",
+                                    $this->content_type_list) == false)
+        {
+            $this->error("Error while writing 'content_types' options!");
+            return false;
+        }
+
+        $this->success("Content type correctly added!");
+        return true;
+    }
+
+/**
+ * Return true if the content is correctly deleted, otherwise return false.
+ *
+ * @method contents_unset_type
+ * @param string name of the content type
+ */
+    public function contents_unset_type($name)
+    {
+        if ($this->refresh_content_type_list() == false)
+            return false;
+
+        // Check that the name doesn't already exist
+        if (array_key_exists($name, $this->content_type_list) == false)
+        {
+            $this->error("Content type name '$name' doesn't exist!");
+            return false;
+        }
+
+        unset($this->content_type_list[$name]);
+
+        // And write all the values in database
+        if ($this->zlib->option_set($this->project_id,
+                                    "content_types",
+                                    $this->content_type_list) == false)
+        {
+            $this->error("Error while writing 'content_types' options!");
+            return false;
+        }
+
+        $this->success("Content type correctly deleted!");
+        return true;
+    }
+
+/**
+ * Get content directory list from database
+ *
+ * @method refresh_content_directory_list
+ */
+    private function refresh_content_directory_list()
+    {
+        if ($this->content_directory_list != null)
+            return $this->content_directory_list;
+
+        $options = $this->zlib->option_get($this->project_id);
+
+        if (is_array($options) == false)
+        {
+            $this->error("Impossible to get list of current content types!");
+            return false;
+        }
+
+        if (array_key_exists('content_directories', $options))
+        {
+            $this->content_directory_list = $options['content_directories'];
+        }
+        else
+        {
+            $this->content_directory_list = array();
+        }
+
+        return true;
+    }
+
+/**
+ * Add new content directory
+ *
+ * @method content_add_directory
+ * @param string directory name
+ * @param string json options associated to the directory
+ */
+    public function content_add_directory($directory_name, $options)
+    {
+        if ($this->refresh_content_type_list() == false
+            || $this->refresh_content_directory_list() == false)
+            return false;
+
+        // Check if the directory doesn't already exists
+        if (array_key_exists($directory_name, $this->content_directory_list))
+        {
+            $this->error("Already existing directory '$directory_name'!");
+            return false;
+        }
+
+        // Valid the directory name
+        $index = strrpos($directory_name, "/");
+        $directory_path =
+        $index > 0 ? substr($directory_name, 0, $index) : $directory_name;
+
+        if ($this->content_has_directory($directory_path) == false)
+        {
+            $this->error("Not valid directory path '$directory_path'!");
+            return false;
+        }
+
+        if ($options != null
+            && $this->check_string_and_size($options, 100) == false)
+        {
+            $this->error("Too long options for '$directory_name'!");
+            return false;
+        }
+
+        // Update database content directories
+        $this->content_directory_list[$directory_name] =
+            $this->json_decode($options);
+
+        if ($this->zlib->option_set($this->project_id, "content_directories",
+                                    $this->content_directory_list) == false)
+        {
+            $this->error("Error while writing 'content_directories' options!");
+            return false;
+        }
+
+        $this->success("Content directory '$directory_name' correctly added!");
+        return true;
+    }
+
+
+/**
+ * Remove the content directory
+ *
+ * @method content_remove_directory
+ * @param string directory name
+ */
+    public function content_remove_directory($directory_name)
+    {
+        if ($this->content_valid_directory($directory_name) == false)
+            return false;
+
+        $zlib = $this->zlib;
+
+        // Remove the destination directory
+        if ($zlib->directory_remove(
+            $this->global_path . "projects/" . $this->project_id
+          . "/". $_SESSION["login"] . "/$directory_name") == false)
+              return false;
+
+        unset($this->content_directory_list[$directory_name]);
+
+        // Update the datase content directories
+        if ($zlib->option_set($this->project_id,
+                              "content_directories",
+                              $this->content_directory_list) == false)
+        {
+            $this->error("Error while writing 'content_directories' options!");
+            return false;
+        }
+
+        $this->success("Content directory '$directory_name' correctly removed!");
+        return true;
+    }
+
+/**
+ * Valid the content directory
+ *
+ * @method content_valid_directory
+ * @param string directory name
+ */
+    private function content_valid_directory($directory_name)
+    {
+        if ($this->refresh_content_directory_list() == false)
+            return false;
+
+        // Valid the directory name
+        if (array_key_exists($directory_name, $this->content_directory_list)
+            == false)
+        {
+            $this->error("No directory '$directory_name' found!");
+            return false;
+        }
+
+        return true;
+    }
 
 /**
  * Add new image to the current project or rewrite existing one
  *
- * @method images_add
- * @param integer project id
+ * @method content_add
  * @param string directory name
+ * @param string file input
  * @param string file name
  */
-    public function images_add($project_id, $directory, $name)
+    public function content_add($directory_name, $input, $name=null)
     {
+        if ($this->content_valid_directory($directory_name) == false)
+            return false;
+
+        // Get the uploaded files
+        $uploaded = "files/" . $input;
+
+        if ($name == null)
+            $name = $input;
+
+        $zlib = $this->zlib;
+
+        // Get the extension of the content
+        $extension = $zlib->file_get_extension($input);
+
+        // Remove the extension of the destination name
+        if ($zlib->file_get_extension($name) === $extension)
+            $name = substr($name, 0, strpos($name, '.'));
+
+        // Move source file to destination file
+        $result = false;
+
+	if ($zlib->file_modify(
+	    $this->project_id, $_SESSION["login"], $uploaded,
+            $directory_name, $name, $extension))
+	{
+	    $this->success(
+		"content '$uploaded' stored as "
+	      . "'$directory_name/$name.$extension'!");
+
+	    $result = true;
+	}
+
+        $this->zlib->uploaded_files_delete();
+        return $result;
     }
 
 /**
  * Move existing image to another directory/name
  *
- * @method images_move
- * @param integer project id
+ * @method content_move
  * @param string old directory name
  * @param string old file name
  * @param string new directory name
  * @param string new file name
  */
-    public function images_move($project_id, $old_directory, $old_name,
-                                $directory, $name)
+    public function content_move($old_directory, $old_name,
+                                 $new_directory, $name)
     {
+        if ($this->content_valid_directory($old_directory) == false)
+            return false;
+
+        if ($this->content_valid_directory($new_directory) == false)
+            return false;
+
+        $zlib = $this->zlib;
+
+        $file_to_move =  "projects/" . $this->project_id
+                       . "/". $_SESSION["login"]
+                       . "/$old_directory/$old_name";
+
+        // Get the extension of the content
+        $extension = $zlib->file_get_extension($old_name);
+
+        // Remove the extension of the destination name
+        if ($zlib->file_get_extension($name) === $extension)
+            $name = substr($name, 0, strpos($name, '.'));
+
+        // Move source file to destination file
+        $result = false;
+
+	if ($zlib->file_modify(
+	    $this->project_id, $_SESSION["login"], $file_to_move,
+            $new_directory, $name, $extension))
+	{
+	    $this->success(
+		"content '$file_to_move' stored as '$new_directory/$name.$extension'!");
+
+	    $result = true;
+	}
+
+        $this->zlib->uploaded_files_delete();
+        return $result;
     }
 
 /**
  * Delete existing image
  *
- * @method images_delete
- * @param integer project id
+ * @method content_delete
  * @param string directory name
  * @param string file name
  */
-    public function images_delete($project_id, $directory, $name)
+    public function content_delete($directory_name, $name)
     {
+        if ($this->content_valid_directory($directory_name) == false)
+            return false;
+
+        if ($this->zlib->file_delete($this->project_id, $_SESSION["login"],
+                                     $directory_name . "/" . $name))
+        {
+	    $this->success(
+		"content '$directory_name/$name' correctly removed!");
+
+            return true;
+        }
+
+        return false;
     }
 
 /**
- * Give the complete list of images
+ * Give the complete list of contents
  *
- * @method images_get_list
+ * @method contents_get_list
  */
-    public function images_get_list()
+    public function contents_get_list()
     {
-	$get_list = $this->zlib->images_get_list($this->project_id);
+        if ($this->refresh_content_directory_list() == false)
+            return false;
 
-	if (is_array($get_list) && count($get_list) > 0)
+        $get_list = array();
+
+        foreach ($this->content_directory_list as $name => $options)
+        {
+            $get_list[$name] = $this->zlib->contents_get_list(
+                $this->project_id, $_SESSION["login"], $name);
+
+            $get_list[$name]["infos"] = $options;
+        }
+
+	if (count($get_list) > 0)
 	{
 	    $this->output_json(array('get_list' => $get_list));
 	    return true;
 	}
 
-        $this->error("No files found!");
+        $this->error("No contents found!");
 	return false;
     }
 
@@ -796,14 +1211,6 @@ class Zeek extends ZeekOutput {
 				$in_main_directory, $uploaded = null)
     {
 	$zlib = $this->zlib;
-
-	// we check that the name should be valid
-	if (ctype_alnum($name) == false)
-	{
-	    $this->clean_upload_on_error(
-		"The filename '$name' should only contains letters & numbers!");
-            return false;
-	}
 
 	// we check that the file type is valid
 	if ($this->type_list == null)
@@ -880,7 +1287,18 @@ class Zeek extends ZeekOutput {
  */
     public function file_get_list()
     {
-	$get_list = $this->zlib->file_get_list($this->project_id);
+        if ($this->refresh_content_type_list() == false)
+            return false;
+
+        $filter_directories = array();
+
+        foreach ($this->content_type_list as $type_name => $array)
+        {
+            array_push($filter_directories, $array[0]);
+        }
+
+	$get_list = $this->zlib->file_get_list(
+            $this->project_id, $filter_directories);
 
 	if (is_array($get_list))
 	{
@@ -910,14 +1328,14 @@ class Zeek extends ZeekOutput {
 
 	if (is_array($type_list) && count($type_list) > 0)
 	{
-	    $res = array();
+            $res = array();
 
 	    foreach ($type_list as $file)
 	    {
-		$name = $file["name"];
+	        $name = $file["name"];
 
-		if (substr($name, 0, 8) == "js/mode-")
-		    array_push($res, substr($name, 8, -3));
+		if (substr($name, 0, 5) == "mode-")
+		    array_push($res, substr($name, 5, -3));
 	    }
 
 	    // we store the list
@@ -1282,7 +1700,7 @@ class Zeek extends ZeekOutput {
  */
     public function deploy($dst, $options)
     {
-        // if the destination is not set : we get from the database
+        // if the deploy command doesn't come from a master user : we get from the database
 
         // if the destination doesn't begin with '/':
         // we add the global path before the destination
@@ -1303,6 +1721,8 @@ class Zeek extends ZeekOutput {
             return false;
 
         // we apply all the deploy plugins
+
+        // we store default dst & options
 
 	$this->success("Successfully deployed!");
         return true;

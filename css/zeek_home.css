@@ -106,6 +106,15 @@ button.add {
     padding: 6px 15px;
 }
 
+button.select {
+   border: 2px solid #6f5499;
+}
+
+input.validate, button.validate {
+    color: #fff;
+    background-color: #6f5499;
+}
+
 ul.sidebar li {
     padding: 10px 0;
 }
@@ -180,11 +189,6 @@ textarea#structure_explain {
     width: 550px;
     resize: none;
     overflow: hidden;
-}
-
-button#file_create {
-    color: #fff;
-    background-color: #6f5499;
 }
 
 p#final_destination {
