@@ -27,6 +27,10 @@ using following
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+21/08/2015 Leo
+ * add contents fonctionality
+ * add mime validator
+
 20/07/2015 Leo
  * add file exportation on client side
  * correct bug on adding/deleting/modifying file behavior
