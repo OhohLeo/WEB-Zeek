@@ -85,6 +85,9 @@ include 'default/header.php';
             </nav>
             <div id="content_directory">
                 <form action="files[]" class="dropzone" id="dropzone"></form>
+                <table>
+                    <tbody id="contents_list"></tbody>
+                </table>
                 <button id="content_directory_remove" class="danger">Remove</button>
             </div>
         </div>

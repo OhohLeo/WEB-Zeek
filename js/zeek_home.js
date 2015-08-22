@@ -174,9 +174,7 @@ $(document).ready(function() {
 
     $content_get_type_list();
 
-    var $content_add = function($directory, $name) {
-
-    };
+    var $contents_list = {};
 
     var $contents_update = function() {
 
@@ -189,8 +187,6 @@ $(document).ready(function() {
                 if ($result == false || !("get_list" in $result))
 		    return false;
 
-
-
                 var $get_list = $result["get_list"];
 
 		for (var $directory in $get_list) {
@@ -198,6 +194,12 @@ $(document).ready(function() {
 
                     $contents_handle_directory($list["infos"]);
                     delete $list["infos"];
+
+                    $contents_list[$directory] = $list;
+
+                    if ($actual_content_directory != null) {
+                        $actual_content_directory.click();
+                    }
                 };
 
                 return -1;
@@ -248,7 +250,14 @@ $(document).ready(function() {
 		            "method": "content_add",
                             "directory": $actual_content_directory.text(),
                             "name": $file["name"],
-	                });
+	                }, function ($result) {
+
+                            if ($result == false) {
+                                return false;
+                            }
+
+                            $contents_update();
+                        });
                 }
             });
         },
@@ -264,12 +273,15 @@ $(document).ready(function() {
 
     var $actual_content_directory;
 
+    var $tbody_contents_list = $("tbody#contents_list");
+
     var $contents_handle_directory = function($input) {
 
         console.log($input);
 
         var $type = $input["type"];
         var $name = $type + "-" + $input["name"];
+        var $dst = $input["dst"];
 
         // we check if the name already exists
         if ($("button#contents_" + $name).length > 0) {
@@ -281,7 +293,7 @@ $(document).ready(function() {
             .attr("id", "contents_" + $name)
             .addClass("content_directory")
             .addClass($type)
-            .text($input["dst"])
+            .text($dst)
             .on("click", function () {
 
                 // we display the selected border
@@ -292,6 +304,66 @@ $(document).ready(function() {
                 $dropzone_empty();
 
                 $actual_content_directory = $(this);
+
+                $tbody_contents_list.empty();
+
+                // we get all images stored in the directory
+                var $list = $contents_list[$dst];
+
+                for (var $idx in $list) {
+
+                    var $content = $list[$idx];
+                    var $fullpath = $content["path"]
+                                  + "/" + $content["filename"]
+                                  + "." + $content["extension"];
+
+                    console.log($fullpath);
+
+                    var $row = $("<tr>").attr("class", "content")
+                                        .attr("id", "content-" + $idx);
+
+                    var $value = $("<img>").attr("src", $fullpath)
+                                           .on("click", function() {
+                                               $div_modal.html(
+                                                   $("<img>").attr("src", $fullpath));
+                                               $modal.dialog({
+		                                   open: function() {
+		                                       $(this).dialog("option", "title",
+				                                      $fullpath);
+                                                   }});
+                                               $modal.dialog("open");
+                                           });
+
+                    $row.append($("<td>").attr("class", "content_filename")
+                                         .append($("<input>").val($content["filename"])))
+                        .append($("<td>").attr("class", "content_extension")
+                                         .text($content["extension"]))
+                        .append($("<td>").attr("class", "content_size")
+                                         .text($content["size"]))
+                        .append($("<td>").attr("class", "content_value")
+                                         .append($value))
+                        .append($("<td>").append(
+                            $("<img>").attr("src", "img/delete.png")
+                                      .addClass("content_delete")
+                                      .on("click", function() {
+
+                                          $send_request({
+		                              "method": "content_delete",
+                                              "directory": $actual_content_directory.text(),
+                                              "name": $content["filename"]
+                                                    + "." + $content["extension"],
+	                                  }, function ($result) {
+                                              if ($result == false) {
+                                                  return false;
+                                              }
+
+                                              $row.remove();
+                                          });
+                                      })));
+
+
+                    $tbody_contents_list.append($row);
+                }
 
                 $div_content_directory.show();
             });
@@ -1878,6 +1950,14 @@ $(document).ready(function() {
 
     $("button#deploy_validate").on("click", function() {
 
+        var $dst = $("input#deploy_dst").val();
+
+        if ($dst === "/home/leo/zeek/" || $dst === "~/zeek/") {
+            $danger.text("This is really not a good idea!!").show();
+	    $alert.show();
+	    return;
+        }
+
         // we get all options choosed from the configuratio
         var $options = {};
 
@@ -1888,10 +1968,9 @@ $(document).ready(function() {
 	$send_request(
 	    {
 		method: "deploy",
-                dst: $("input#deploy_dst").val(),
+                dst: $dst,
                 options: JSON.stringify($options),
 	    });
-
     });
 
     // we set the configuration visual effects

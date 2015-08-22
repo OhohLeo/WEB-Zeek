@@ -885,7 +885,7 @@ class ZeekLibrary extends ZeekOutput {
 * @param integer size to remove
 */
     private function directory_scan($path, &$list, $len_to_remove=0,
-                                    $filter_directories=null)
+                                    $filter_directories=null, $no_global_path=false)
     {
 	try
 	{
@@ -900,6 +900,10 @@ class ZeekLibrary extends ZeekOutput {
 	    $user = $idx ? substr($start, 0, $idx) : $start;
 
 	    $get_type = $idx ? substr($start, $idx + 1) : '';
+
+            if ($no_global_path) {
+                $smallpath = substr($path, strlen($this->global_path));
+            }
 
 	    foreach ($files as $file)
 	    {
@@ -958,7 +962,8 @@ class ZeekLibrary extends ZeekOutput {
 
                 $result = array(
                     'mime'      => $mime,
-                    'path'      => $path,
+                    'path'      =>
+                    $no_global_path ? $smallpath : $path,
                     'directory' =>
                     $directory_idx ? substr($path, $directory_idx + 1) : $path,
                     'extension' =>
@@ -1491,7 +1496,7 @@ class ZeekLibrary extends ZeekOutput {
 
 	if ($this->directory_scan(
             $this->global_path . "projects/$project_id/$username/$directory_name",
-            $rsp, -1))
+            $rsp, -1, null, true))
 	    return $rsp;
 
 	return false;
