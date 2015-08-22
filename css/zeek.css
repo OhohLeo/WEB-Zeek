@@ -18,7 +18,7 @@ p.success {
 }
 
 input {
-    text-align: center;
+    text-align: left;
 }
 
 button, input.btn-block {

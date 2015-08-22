@@ -43,6 +43,29 @@ $(document).ready(function() {
             });
     };
 
+    var $contents_modify_type = function($name, $color) {
+
+        $send_request(
+	    {
+	        method: "contents_modify_type",
+                name: $name,
+                options: $color,
+	    },
+	    function($result) {
+
+	        if ($result == false || $result["error"])
+		    return false;
+
+                $content_get_type_list();
+
+                // we refresh the contents directory color
+                $("button.content_directory")
+                         .filter("." + $name)
+                         .css({ "color": "#fff",
+				"background-color": $color });
+            });
+    };
+
     // we store the current list of types
     var $contents_unset_type = function($name, $row) {
 
@@ -114,9 +137,9 @@ $(document).ready(function() {
 	$table_content_type.append($row);
 
         $("input#content_color_" + $name).change(function() {
-            $contents_set_type($name, $directory, $mime, $color)
-        })
-                                         .spectrum({
+            $contents_modify_type($name, $(this).spectrum("get")
+                                                .toHexString());
+        })                               .spectrum({
                                              color: $color
                                          });
 
@@ -257,6 +280,7 @@ $(document).ready(function() {
         var $btn = $("<button>")
             .attr("id", "contents_" + $name)
             .addClass("content_directory")
+            .addClass($type)
             .text($input["dst"])
             .on("click", function () {
 

@@ -292,6 +292,10 @@ class Zeek extends ZeekOutput {
                     $params["name"], $params["directory"], $params["mime"],
                     $params["options"]);
 
+            case 'contents_modify_type':
+                return $this->contents_modify_type(
+                    $params["name"], $params["options"]);
+
             case 'contents_unset_type':
                 return $this->contents_unset_type($params["name"]);
 
@@ -781,7 +785,7 @@ class Zeek extends ZeekOutput {
  * @param string mime filter
  * @param string options added (color)
  */
-    public function contents_set_type($name, $directory_name, $mime, $options)
+    public function contents_set_type($name, $directory_name, $mime, $options=NULL)
     {
         if ($this->refresh_content_type_list() == false)
             return false;
@@ -837,6 +841,49 @@ class Zeek extends ZeekOutput {
         }
 
         $this->success("Content type correctly added!");
+        return true;
+    }
+
+/**
+ * Return true if the content is correctly modified, otherwise return false.
+ *
+ * @method contents_set_type
+ * @param string name of the content type
+ * @param string options added (color)
+ */
+    public function contents_modify_type($name, $options)
+    {
+        if ($this->refresh_content_type_list() == false)
+            return false;
+
+        // Check that the name doesn't already exist
+        if (array_key_exists($name, $this->content_type_list) == false)
+        {
+            $this->error("Content type name '$name' doesn't exists!");
+            return false;
+        }
+
+        // Valid options parameters as string
+        if ($options != null
+            && $this->check_string_and_size($options, 100) == false)
+        {
+            $this->error("Invalid or too big options '$options'!");
+            return false;
+        }
+
+        // modify the content type options
+        $this->content_type_list[$name][2] = $options;
+
+        // And write all the values in database
+        if ($this->zlib->option_set($this->project_id,
+                                    "content_types",
+                                    $this->content_type_list) == false)
+        {
+            $this->error("Error while writing 'content_types' options!");
+            return false;
+        }
+
+        $this->success("Content type correctly modified!");
         return true;
     }
 
@@ -904,7 +951,8 @@ class Zeek extends ZeekOutput {
     }
 
 /**
- * Add new content directory
+ * Add new content directory, return true if directory correctly added,
+ * false otherwise.
  *
  * @method content_add_directory
  * @param string directory name
