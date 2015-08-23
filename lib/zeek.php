@@ -343,6 +343,12 @@ class Zeek extends ZeekOutput {
 	    return $this->deploy($params['dst'],
                                  $params['options']);
 
+            case 'option_get_plugins':
+                return $this->option_get("plugins");
+
+            case 'option_get_editor':
+                return $this->option_get("editor");
+
             case 'option_get':
                 return $this->option_get(
                     strtolower($params['name']));
@@ -833,7 +839,7 @@ class Zeek extends ZeekOutput {
         }
 
         // Add the new valid content type
-        $this->content_type_list[$name] = [ $directory_name, $mime, $options ];
+        $this->content_type_list[$name] = array($directory_name, $mime, $options);
 
         // And write all the values in database
         if ($this->zlib->option_set($this->project_id,

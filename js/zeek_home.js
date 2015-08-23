@@ -831,8 +831,7 @@ $(document).ready(function() {
     // we handle editor options
     var $option_get_editor = function () {
         $send_request({
-	    method: "option_get",
-            name: "editor",
+	    method: "option_get_editor",
 	},
 	function($result) {
 
@@ -1923,8 +1922,7 @@ $(document).ready(function() {
     // we handle deploy options
     $option_get_plugins = function () {
         $send_request({
-	    method: "option_get",
-            name: "plugins",
+	    method: "option_get_plugins",
 	},
 	function($result) {
 

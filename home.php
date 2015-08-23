@@ -151,7 +151,6 @@ include 'default/header.php';
 		</div>
 	    </div>
 	    <hr>
-            <?php if ($project_path == false) { ?>
 	    <div class="config">
 		<h3>Zeek configuration</h3>
 		<div class="config-group danger-zone">
@@ -159,6 +158,7 @@ include 'default/header.php';
                         <label>Enable</label>
                         <input type="checkbox" id="structure_enabled"">
                     </p>
+                    <?php if ($project_path == false) { ?>
                     <div id="structure_enabled">
                         <p>
                             <label>Expert mode</label>
@@ -166,10 +166,10 @@ include 'default/header.php';
                         </p>
 		        <button id="structure_modify" class="danger">MODIFY</button>
                     </div>
+                    <?php } ?>
 		</div>
 	    </div>
 	    <hr>
-            <?php } ?>
 	    <div class="config">
 		<h3>Edit configuration</h3>
 		<div class="config-group danger-zone">
