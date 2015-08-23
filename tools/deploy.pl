@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 
+use File::Basename;
 use Getopt::Long;
 use Net::FTP;
 use Cwd;
@@ -10,7 +11,7 @@ use feature 'say';
 
 my %AUTHORISED = map { $_ => 1 } qw(lib js css default projects extends img ace vendor);
 
-my($action, $host, $login, $password, $directory, $help);
+my($action, $host, $login, $password, $directory, $force, $help);
 
 GetOptions(
     'action|a=s'     => \$action,
@@ -18,6 +19,7 @@ GetOptions(
     'login|l=s'      => \$login,
     'password|p=s'   => \$password,
     'directory|d=s'  => \$directory,
+    'force|f'        => \$force,
     'help|h'         => \$help);
 
 sub display_help
@@ -28,6 +30,7 @@ usage : deploy.pl -a [see|update|clean]
                   -l LOGIN NAME
                   -p PASSWORD
                   -d DIRECTORY
+                  -f FORCE
                   -h this help
 END
 }
@@ -79,7 +82,34 @@ sub replace_link
 }
 
 my %files;
-read_directory($directory, \%files);
+
+if ($force)
+{
+    read_directory($directory, \%files);
+}
+else
+{
+    my $pwd = `pwd`;
+    chomp($pwd);
+
+    my @list = split("\n", `git diff --name-only`);
+    use Data::Dumper;
+
+    foreach my $name (@list)
+    {
+        my($filename, $path) = fileparse($name);
+
+        $path = substr($path, 0, -1);
+
+        if (exists($AUTHORISED{$path}))
+        {
+            $path = "$pwd/$path";
+
+            $files{$path} //= [];
+            push($files{$path}, $filename);
+        }
+    }
+}
 
 if ($action eq 'see')
 {
