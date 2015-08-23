@@ -673,7 +673,7 @@ $(document).ready(function() {
     var $file_create_on_click;
     var $last_edit_btn_type = "";
 
-    var $edit_update = function($type, $user, $name) {
+    var $edit_update = function($type, $name) {
  	$send_request(
 	    {
 		"method": "file_get_list",
@@ -762,11 +762,10 @@ $(document).ready(function() {
                     $("button." + $type).click();
 
                 // we select the file created or updated
-                if ($user != null && $name != null)
+                if ($name != null)
                     $select_edit.click(function() {
                         $(this).children().filter(function() {
-                            return $(this).attr("user") === $user
-                            && $(this).attr("name") === $name
+                            return $(this).attr("name") === $name
                         }).click();
                     });
 
@@ -1160,7 +1159,6 @@ $(document).ready(function() {
 
 			    $modal.dialog("close");
 			    $edit_update($filename["extension"],
-                                         $filename["user"],
                                          $filename["name"]);
 			});
                     }

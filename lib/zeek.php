@@ -314,8 +314,7 @@ class Zeek extends ZeekOutput {
 		    strtolower($params["name"]),
 		    strtolower($params["extension"]),
  		    $params["in_main_directory"] === "true",
-		    "projects/" . $project_id . "/"
-                                . $user . "/". $params["src"]);
+		    "projects/" . $project_id . "/" . $params["src"]);
 
 	    case 'file_delete':
 	        return $this->file_delete(strtolower($params['name']));
