@@ -317,10 +317,10 @@ $(document).ready(function() {
                                   + "/" + $content["filename"]
                                   + "." + $content["extension"];
 
-                    console.log($fullpath);
-
                     var $row = $("<tr>").attr("class", "content")
-                                        .attr("id", "content-" + $idx);
+                                        .attr("id", "content-" + $idx)
+                                        .attr("name", $content["filename"]
+                                                    + "." + $content["extension"]);
 
                     var $value = $("<img>").attr("src", $fullpath)
                                            .on("click", function() {
@@ -347,11 +347,14 @@ $(document).ready(function() {
                                       .addClass("content_delete")
                                       .on("click", function() {
 
+                                          var $row = $(this).parent().parent();
+
+                                          console.log($row);
+
                                           $send_request({
 		                              "method": "content_delete",
                                               "directory": $actual_content_directory.text(),
-                                              "name": $content["filename"]
-                                                    + "." + $content["extension"],
+                                              "name": $row.attr("name"),
 	                                  }, function ($result) {
                                               if ($result == false) {
                                                   return false;
@@ -429,7 +432,7 @@ $(document).ready(function() {
 
         var $array =  [
 	    { name: "Name",
-	      input: 'id="content_name" name="name" type="text" required',
+	      input: 'id="content_name" name="name" type="text" placeholder="optional"',
               class: "contents"},
 	    { name: "Max Size",
 	      input: 'name="max_size" type="integer" placeholder="optional"',

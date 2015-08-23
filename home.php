@@ -153,8 +153,12 @@ include 'default/header.php';
 	    <hr>
             <?php if ($project_path == false) { ?>
 	    <div class="config">
-		<h3>Project structure</h3>
+		<h3>Zeek configuration</h3>
 		<div class="config-group danger-zone">
+                    <p>
+                        <label>Enable</label>
+                        <input type="checkbox" id="zeekify_enabled"">
+                    </p>
                     <p>
                         <label>Expert mode</label>
                         <input type="checkbox" id="expert_mode">
@@ -176,7 +180,7 @@ include 'default/header.php';
 		<h3>Contents configuration</h3>
 		<div class="config-group danger-zone">
                     <table class="center" id="content_type_accepted"></table>
-                    <h3>Add new content</h3>
+                    <h3>Add new content type</h3>
                     <form id="content_type_add">
                         <p><input type="text"
 			          name="content_name"
@@ -197,13 +201,6 @@ include 'default/header.php';
 		<div class="config-group danger-zone">
                     <table class="center" id="options_test"></table>
                 </div>
-	    </div>
-	    <hr>
-	    <div class="config">
-		<h3>Clean data</h3>
-		<div class="config-group danger-zone">
-		    <button id="data_clean" class="danger">DELETE all data</button>
-		</div>
 	    </div>
 	    <hr>
 	    <div class="config">
