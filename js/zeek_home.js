@@ -6,6 +6,8 @@ $(document).ready(function() {
     var $div_structure = $("div#structure");
     var $div_dynamic = $("div#dynamic");
 
+    var $structure_enable = $("input#structure_enabled");
+
     // we store the dynamic html
     var $html_dynamic = $("div#dynamic").html();
 
@@ -1277,7 +1279,9 @@ $(document).ready(function() {
 	    $edit_update();
 	}
 
-	$li_data.removeClass("data_clicked");
+        if ($structure_enable.prop("checked"))
+	    $li_data.removeClass("data_clicked");
+
 	$li_menu.removeClass("menu_clicked");
 	$this.addClass("menu_clicked");
 	$div_menus.hide();
@@ -1771,8 +1775,6 @@ $(document).ready(function() {
         );
     };
 
-    $structure_get();
-
     var $div_users = $("div#users_list");
 
     // we set the user configuration
@@ -1878,9 +1880,9 @@ $(document).ready(function() {
     var $table_options_deploy = $("table#options_deploy");
     var $table_options_test   = $("table#options_test");
 
-    var $option_get_files;
+    var $option_get_plugins;
 
-    var $option_set_files = function () {
+    var $option_set_plugins = function () {
 
         var $options = {};
 
@@ -1890,7 +1892,7 @@ $(document).ready(function() {
 
         $send_request({
 	    method: "option_set",
-            name: "files",
+            name: "plugins",
             options: JSON.stringify($options),
 	},
         function($result) {
@@ -1898,7 +1900,7 @@ $(document).ready(function() {
 	    if ($result == false || $result["error"])
 		return false;
 
-            $option_get_files();
+            $option_get_plugins();
 
             // do not display result
             return -1;
@@ -1919,10 +1921,10 @@ $(document).ready(function() {
     }
 
     // we handle deploy options
-    $option_get_files = function () {
+    $option_get_plugins = function () {
         $send_request({
 	    method: "option_get",
-            name: "files",
+            name: "plugins",
 	},
 	function($result) {
 
@@ -1934,10 +1936,32 @@ $(document).ready(function() {
 
             for (var $name in $result)
             {
+                // special case concerning "zeekify" that can be disabled
+                if ($name === "zeekify")
+                {
+                    var $div_structure_enabled = $("div#structure_enabled");
+                    var $nav_data = $("nav#data");
+
+                    if ($result[$name] === "disabled")
+                    {
+                        $structure_enable.prop('checked', false);
+                        $('body').css('background', ' #FFF');
+                        $div_structure_enabled.hide();
+                        $nav_data.hide();
+                        continue;
+                    }
+
+                    $structure_get();
+
+                    $structure_enable.prop('checked', true);
+                    $div_structure_enabled.show();
+                    $nav_data.show();
+                }
+
                 $table_options_deploy.append($option_get_row($name, "deploy"));
 
                 $("input#deploy_" + $name).prop('checked', $result[$name])
-                                          .change($option_set_files);
+                                          .change($option_set_plugins);
 
                 $table_options_test.append($option_get_row($name, "test"));
 
@@ -1949,7 +1973,23 @@ $(document).ready(function() {
         });
     }
 
-    $option_get_files();
+    $option_get_plugins();
+
+
+    $structure_enable.change(function() {
+        $send_request(
+	    {
+	        method: "structure_enable",
+                enable: $(this).prop('checked'),
+	    },
+	    function($result) {
+
+	        if ($result == false || $result["error"])
+		    return false;
+
+                $option_get_plugins();
+            });
+    });
 
     $("button#deploy_validate").on("click", function() {
 

@@ -11,6 +11,7 @@ class Zeek extends ZeekOutput {
     protected $project_name;
     protected $zlib;
 
+    private $structure_enabled;
     private $plugins_list;
     private $type_list;
     private $content_type_list;
@@ -336,7 +337,7 @@ class Zeek extends ZeekOutput {
 		    $params['data']);
 
 	    case 'test':
-	    return $this->test($params['options']);
+	         return $this->test($params['options']);
 
 	    case 'deploy':
 	    return $this->deploy($params['dst'],
@@ -350,6 +351,9 @@ class Zeek extends ZeekOutput {
                 return $this->option_set(
                     strtolower($params['name']),
                     $params['options']);
+
+            case 'structure_enable':
+	        return $this->structure_enable($params['enable'] === "true");
 
             case 'structure_get':
 		return $this->structure_get();
@@ -488,13 +492,13 @@ class Zeek extends ZeekOutput {
                 // we set default options
                 if ($options == null)
                 {
-                    // zeekify plugins is always here
-                    $plugin_files = array("zeekify" => true);
+                    // zeekify plugins is deactivated by default
+                    $plugins = array("zeekify" => "disabled");
 
                     // we activate all plugins by default
-                    foreach ($this->plugins_get_list("files") as $plugin_name)
+                    foreach ($this->plugins_get_list('files') as $plugin_name)
                     {
-                        $plugin_files[$plugin_name] = true;
+                        $plugins[$plugin_name] = true;
                     }
 
                     $options = array(
@@ -508,7 +512,7 @@ class Zeek extends ZeekOutput {
                             'video'       => array('video', 'video/*', '#0000FF'),
                             'application' => array('app',   'application/*', '#000000'),
                         ),
-                        'files' => $plugin_files);
+                        'plugins' => $plugins);
                 }
 
 		// we create the project
@@ -1463,7 +1467,7 @@ class Zeek extends ZeekOutput {
 
 /**
  * Method that instantiate all the plugins.
- *
+ *x
  * @method plugins_init
  */
     public function plugins_init()
@@ -1827,10 +1831,13 @@ class Zeek extends ZeekOutput {
             // we handle the options
             foreach ($options as $option => $is_activated)
             {
+                if (is_string($is_activated) && $is_activated === "disabled")
+                    continue;
+
                 if ($is_activated == false)
                     continue;
 
-                // we handle 'files' plugin here
+                // we handle the plugins here
                 if (array_key_exists($option, $this->plugins_list['files']))
                 {
                     $plugin_obj = $this->plugins_list['files'][$option];
@@ -1919,9 +1926,82 @@ class Zeek extends ZeekOutput {
 
         $this->error("Error while setting option '$name'!");
         return false;
-
     }
 
+
+    private function structure_get_plugins()
+    {
+        $options = $this->zlib->option_get($this->project_id);
+
+        if (is_array($options) == false
+            || array_key_exists('plugins', $options) == false
+            || array_key_exists('zeekify', $options['plugins']) == false)
+        {
+            $this->error("Impossible to get list of plugins!");
+            return false;
+        }
+
+        return $options['plugins'];
+    }
+
+/**
+ * Check if project structure is enabled or disabled.
+ *
+ * @method structure_is_enabled
+ */
+    public function structure_is_enabled()
+    {
+        $plugins = $this->structure_get_plugins();
+
+        if ($plugins == false || is_bool($plugins['zeekify']) == false)
+        {
+            $this->error("Structure should be enabled!");
+            return false;
+        }
+
+        return true;
+    }
+
+/**
+ * Enable or disable project structure.
+ *
+ * @param boolean is_activated
+ *
+ * @method structure_enable
+ */
+    public function structure_enable($is_enabled)
+    {
+        if (is_bool($is_enabled) == false)
+        {
+            $this->error("Expected boolean parameter!");
+            return false;
+        }
+
+        $plugins = $this->structure_get_plugins();
+
+        if ($plugins == false)
+            return false;
+
+        $status = ($is_enabled ? "en" : "dis") . "abl";
+
+        if (is_bool($plugins['zeekify']) === $is_enabled)
+        {
+            $this->error("Structure already ". $status ."ed!");
+            return false;
+        }
+
+        $plugins['zeekify'] = $is_enabled ? true : "disabled";
+
+        if ($this->zlib->option_set($this->project_id, "plugins", $plugins))
+        {
+            $this->structure_enabled = $is_enabled;
+            $this->success("Structure correctly ". $status ."ed!");
+            return true;
+        }
+
+        $this->error("Error when ". $status ."ing structure!");
+        return false;
+    }
 
 /**
  * Send the project structure.
@@ -1932,6 +2012,9 @@ class Zeek extends ZeekOutput {
  */
     public function structure_get_list($expert_mode)
     {
+        if ($this->structure_is_enabled() == false)
+            return false;
+
 	$this->output_json(array('list' =>
             array_keys($expert_mode ? $this->type_complex : $this->type_simple)));
 
@@ -1946,7 +2029,10 @@ class Zeek extends ZeekOutput {
  */
     public function structure_get()
     {
-	// we get the structure project
+        if ($this->structure_is_enabled() == false)
+            return false;
+
+        // we get the structure project
 	$structure = $this->zlib->structure_get($this->project_id,
                                                 $this->project_name);
 
@@ -2012,6 +2098,9 @@ class Zeek extends ZeekOutput {
  */
     public function structure_set($new_structure)
     {
+        if ($this->structure_is_enabled() == false)
+            return false;
+
         // if a structure path is defined : structure_set is not allowed
         if ($this->zlib->projects_path)
         {

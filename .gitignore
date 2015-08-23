@@ -1,4 +1,6 @@
 var/config_free.ini
 var/old_config_free.ini
+var/config.ini
 extends/piwik/tmp
 extends/piwik/config
+projects

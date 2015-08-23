@@ -46,6 +46,13 @@ class TestZeek extends PHPUnit_Framework_TestCase
         $this->assertTrue(
             $zeek->connect('test', 'test', 'test'));
 
+        $this->assertTrue(
+            $zeek->structure_enable(true));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"Structure correctly enabled!"}'));
+
     	// we check the structure
     	$zeek->structure_get();
     	$this->assertTrue(
@@ -77,6 +84,84 @@ class TestZeek extends PHPUnit_Framework_TestCase
     public function test_structure()
     {
         $zeek = $this->zeek;
+
+        $this->assertTrue(
+            $zeek->connect('test', 'test', 'test'));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"Connection accepted, now create new project!","action":"project_create"}'));
+
+        $this->assertTrue($zeek->project_create('test'));
+
+        $this->assertTrue(
+            $zeek->checkOutput('{"redirect":"home.php"}'));
+
+        $this->assertFalse(
+            $zeek->structure_enable(false));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"error":"Structure already disabled!"}'));
+
+        // we can check the activation of the structure
+        $this->assertFalse($zeek->structure_is_enabled());
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"error":"Structure should be enabled!"}'));
+
+        $this->assertTrue(
+            $zeek->structure_enable(true));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"Structure correctly enabled!"}'));
+
+        $this->assertFalse(
+            $zeek->structure_enable(true));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"error":"Structure already enabled!"}'));
+
+        $this->assertTrue($zeek->option_get('plugins'));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"zeekify":true,"MinifyCss":true,"MinifyJs":true}'));
+
+        $this->assertTrue(
+            $zeek->structure_enable(false));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"Structure correctly disabled!"}'));
+
+        $this->assertTrue($zeek->option_get('plugins'));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"zeekify":"disabled","MinifyCss":true,"MinifyJs":true}'));
+
+    	$this->assertFalse($zeek->structure_get_list(true));
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"error":"Structure should be enabled!"}'));
+
+        $this->assertFalse(
+            $zeek->structure_set(
+                '{"console":{"test":{"sp_type":"TITLE","db_type":"","db_size":""}}}'));
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"error":"Structure should be enabled!"}'));
+
+        $this->assertTrue(
+            $zeek->structure_enable(true));
+
+        $this->assertTrue(
+            $zeek->checkOutput(
+                '{"success":"Structure correctly enabled!"}'));
 
         // we check the structure
     	$zeek->structure_get_list(true);
@@ -509,11 +594,11 @@ class TestZeek extends PHPUnit_Framework_TestCase
             $zeek->checkOutput(
                 '{"html":"#FF0000","css":"#00FF00","js":"#0000FF","php":"#000000"}'));
 
-        $this->assertTrue($zeek->option_get('files'));
+        $this->assertTrue($zeek->option_get('plugins'));
 
         $this->assertTrue(
             $zeek->checkOutput(
-                '{"zeekify":true,"MinifyCss":true,"MinifyJs":true}'));
+                '{"zeekify":"disabled","MinifyCss":true,"MinifyJs":true}'));
 
         // check a bad option can not be getted
         $this->assertFalse($zeek->option_get("error"));
@@ -534,14 +619,14 @@ class TestZeek extends PHPUnit_Framework_TestCase
 
         // check we can modified an option
         $this->assertTrue($zeek->option_set(
-            "files", json_encode(array("zeekify"    => true,
-                                       "MinifyCss" => false,
-                                       "MinifyJs"  => false))));
+            'plugins', json_encode(array('zeekify'   => true,
+                                         'MinifyCss' => false,
+                                         'MinifyJs'  => false))));
         $this->assertTrue(
             $zeek->checkOutput(
-                '{"success":"Option \'files\' successfully written!"}'));
+                '{"success":"Option \'plugins\' successfully written!"}'));
 
-        $this->assertTrue($zeek->option_get('files'));
+        $this->assertTrue($zeek->option_get('plugins'));
         $this->assertTrue(
             $zeek->checkOutput(
                 '{"zeekify":true,"MinifyCss":false,"MinifyJs":false}'));

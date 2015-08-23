@@ -157,13 +157,15 @@ include 'default/header.php';
 		<div class="config-group danger-zone">
                     <p>
                         <label>Enable</label>
-                        <input type="checkbox" id="zeekify_enabled"">
+                        <input type="checkbox" id="structure_enabled"">
                     </p>
-                    <p>
-                        <label>Expert mode</label>
-                        <input type="checkbox" id="expert_mode">
-                    </p>
-		    <button id="structure_modify" class="danger">MODIFY</button>
+                    <div id="structure_enabled">
+                        <p>
+                            <label>Expert mode</label>
+                            <input type="checkbox" id="expert_mode">
+                        </p>
+		        <button id="structure_modify" class="danger">MODIFY</button>
+                    </div>
 		</div>
 	    </div>
 	    <hr>
