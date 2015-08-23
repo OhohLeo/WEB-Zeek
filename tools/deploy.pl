@@ -101,7 +101,7 @@ else
 
         $path = substr($path, 0, -1);
 
-        if (exists($AUTHORISED{$path}))
+        if (exists($AUTHORISED{$path}) || $path eq ".")
         {
             $path = "$pwd/$path";
 
