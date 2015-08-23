@@ -713,7 +713,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	$this->assertTrue($zlib->file_create(
 	    'test', 'user', 'type', 'test1', 'type', true));
 	$this->assertTrue(
-	    file_exists($zlib->global_path . 'projects/test/user/test1.type'));
+	    file_exists($zlib->global_path . 'projects/test/test1.type'));
 
 	// we can't create similar file
 	$this->assertFalse($zlib->file_create(
@@ -726,7 +726,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	$this->assertTrue($zlib->file_create(
 	    'test', 'user', 'css', 'test2', 'css'));
 	$this->assertTrue(
-	    file_exists($zlib->global_path . 'projects/test/user/css/test2.css'));
+	    file_exists($zlib->global_path . 'projects/test/css/test2.css'));
 
 	// we can't create similar file
 	$this->assertFalse($zlib->file_create(
@@ -746,33 +746,31 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	// we check the list of file
 	$this->assertEquals($zlib->file_get_list('test'),
 			    array(array('mime' => '',
-                                        'user' => 'user',
 					'name' => 'css/test2.css',
 					'type' => 'css',
                                         'in_main_directory' => false),
 				  array('mime' => '',
-                                        'user' => 'user',
 					'name' => 'test1.type',
 					'type' => 'type',
                                         'in_main_directory' => true)));
 
 	// we modify the 2nd file
 	$this->assertTrue($zlib->file_modify(
-	    'test', 'user', 'projects/test/user/css/test2.css', 'type', 'test3', 'type'));
+	    'test', 'user', 'projects/test/css/test2.css', 'type', 'test3', 'type'));
 	$this->assertFalse(
-	    file_exists($zlib->global_path . 'projects/test/user/css/test2.css'));
+	    file_exists($zlib->global_path . 'projects/test/css/test2.css'));
 	$this->assertTrue(
-	    file_exists($zlib->global_path . 'projects/test/user/type/test3.type'));
+	    file_exists($zlib->global_path . 'projects/test/type/test3.type'));
 
 
 	// we check that we can delete the file
 	$this->assertTrue($zlib->file_delete('test', 'user', '/css/test2.css'));
 	$this->assertFalse(
-	    file_exists($zlib->global_path . 'projects/test/user/css/test2.css'));
+	    file_exists($zlib->global_path . 'projects/test/css/test2.css'));
 
 	$this->assertTrue($zlib->file_delete('test', 'user', '/type/test3.type'));
 	$this->assertFalse(
-	    file_exists($zlib->global_path . 'projects/test/user/type/test3.type'));
+	    file_exists($zlib->global_path . 'projects/test/type/test3.type'));
 
 	// we delete everything
 	$this->assertTrue($zlib->files_delete('test'));

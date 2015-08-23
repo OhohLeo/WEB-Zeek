@@ -586,18 +586,16 @@ $(document).ready(function() {
 
     var $actual_file = null;
 
-    var $file_get = function($user, $name) {
+    var $file_get = function($name) {
 	$send_request(
 	    {
 		method: "file_get",
-		user: $user,
 		name: $name,
 	    },
 	    function($result)
 	    {
 		// we initialise the actual file used
 		$actual_file = {
-		    "user": $user,
 		    "name": $name,
 		    "type": $result["type"],
 		    "previous": $result["get"],
@@ -628,7 +626,6 @@ $(document).ready(function() {
 	$send_request(
 	    {
 		method: "file_set",
-		user: $actual_file["user"],
 		name: $actual_file["name"],
 		data: $actual_data,
 	    },
@@ -665,8 +662,7 @@ $(document).ready(function() {
 
         if ($selection.val() != $last_selected)
         {
-	    $file_get($selection.attr("user"),
-                      $selection.attr("name"));
+	    $file_get($selection.attr("name"));
 
             $last_selected = $selection.val();
         }
@@ -731,13 +727,11 @@ $(document).ready(function() {
 			    if ($store_by_type[$type].length > 0)
 			    {
 				$store_by_type[$type].forEach(function($obj) {
-				    var $user = $obj["user"];
-				    var $name = $obj["name"];
+				    var $name      = $obj["name"];
 
 				    var $option = $("<option>");
-                                    $option.attr("user", $user);
                                     $option.attr("name", $name);
-				    $option.text($user + " - " + $name);
+				    $option.text($name);
 
                                     $select_edit.append($option);
 

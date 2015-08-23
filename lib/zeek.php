@@ -327,14 +327,12 @@ class Zeek extends ZeekOutput {
 	        return $this->file_get_type_list(true);
 
 	    case 'file_get':
-	        return $this->file_get(
-		    $params['user'], $params['name']);
+	        return $this->file_get($user, $params['name']);
 
 	    case 'file_set':
-	        return $this->file_set(
-		    strtolower($params['user']),
-		    strtolower($params['name']),
-		    $params['data']);
+	        return $this->file_set($user,
+		                       strtolower($params['name']),
+		                       $params['data']);
 
 	    case 'test':
 	         return $this->test($params['options']);
@@ -1204,7 +1202,7 @@ class Zeek extends ZeekOutput {
         foreach ($this->content_directory_list as $name => $options)
         {
             $get_list[$name] = $this->zlib->contents_get_list(
-                $this->project_id, $_SESSION["login"], $name);
+                $this->project_id, $name);
 
             $get_list[$name]["infos"] = $options;
         }
@@ -1232,17 +1230,8 @@ class Zeek extends ZeekOutput {
 
 	// the index.html file of the user already exist :
 	// we do nothing
-	if (file_exists($zlib->file_get_path($project_id, $user, 'html', 'index', true)))
+	if (file_exists($zlib->file_get_path($project_id, 'html', 'index', true)))
 	    return true;
-
-
-	// the index.html file of deploy directory exist :
-	// we copy the whole deploy directory in the user's
-	if (file_exists($zlib->file_get_path($project_id, 'deploy', 'html', 'index', true)))
-	{
-	    return $zlib->directory_copy("projects/$project_id/deploy",
-					 "projects/$project_id/$user");
-	}
 
 	// otherwise we create a generic index.html & css directory
 	if ($zlib->file_create($project_id, $user, 'html', 'index', 'html', true))
@@ -1463,7 +1452,7 @@ class Zeek extends ZeekOutput {
 	if ($zlib->file_set($this->project_id, $user, $name, $data))
 	{
 	    $this->success(
-		$zlib->file_get_path($this->project_id, $user, $name)
+		$zlib->file_get_path($this->project_id, $name)
 	      . " correctly updated");
 	    return true;
 	}
@@ -1737,7 +1726,7 @@ class Zeek extends ZeekOutput {
         }
 
         $dst = 'projects/' . $this->project_id
-	     . '/TEST_' . $_SESSION['login'];
+	     . '/TEST/' . $_SESSION['login'];
 
 
         // we deploy the files & apply all the data plugins
@@ -1815,9 +1804,6 @@ class Zeek extends ZeekOutput {
 
         foreach ($files as $file)
         {
-            if ($file['user'] != $_SESSION['login'])
-                continue;
-
             // check if the file directory exist
             if ($file['in_main_directory'] == false
                 && $zlib->directory_create(
@@ -1826,13 +1812,10 @@ class Zeek extends ZeekOutput {
 
             // we get the file content
             $input = $zlib->file_get($project_id,
-                                     $file['user'],
+                                     $_SESSION['login'],
                                      $file['name']);
-            if ($input == false) {
-                $this->error("No file found : " + $file['user']
-                    + " " + $file['name'] + "!");
+            if ($input == false)
                 return false;
-            }
 
             // we handle the options
             foreach ($options as $option => $is_activated)

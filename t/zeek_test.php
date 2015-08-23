@@ -368,10 +368,10 @@ class TestZeek extends PHPUnit_Framework_TestCase
     	        '{"success":"file \'toto.css\' with type \'css\' created!"}'));
 
         $this->assertTrue($zeek->file_create('css', 'tutu', 'css', false,
-    					     'projects/test/css/toto.css'));
+    					     'projects/css/toto.css'));
         $this->assertTrue(
     	    $zeek->checkOutput(
-    	        '{"success":"file \'projects/test/css/toto.css\' stored as \'tutu.css\' with type \'css\' created!"}'));
+    	        '{"success":"file \'projects/css/toto.css\' stored as \'tutu.css\' with type \'css\' created!"}'));
 
         $this->assertTrue($zeek->file_delete('css/tutu.css'));
         $this->assertTrue(

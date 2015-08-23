@@ -892,14 +892,7 @@ class ZeekLibrary extends ZeekOutput {
 	    $files = scandir($path);
 
 	    // we remove data before the username
-	    $start = substr($path, $len_to_remove);
-
-	    // we get the username
-	    $idx = strpos($start, '/');
-
-	    $user = $idx ? substr($start, 0, $idx) : $start;
-
-	    $get_type = $idx ? substr($start, $idx + 1) : '';
+	    $get_type = substr($path, $len_to_remove);
 
             if ($no_global_path) {
                 $smallpath = substr($path, strlen($this->global_path));
@@ -950,7 +943,6 @@ class ZeekLibrary extends ZeekOutput {
 
 		    array_push($list,
 			       array('mime' => $mime,
-                                     'user' => $user,
 				     'type' => $type,
 				     'name' => $file,
                                      'in_main_directory' => $in_main_directory));
@@ -1248,10 +1240,10 @@ class ZeekLibrary extends ZeekOutput {
 * @param string username
 * @param string type
 */
-    public function file_get_directory($project_id, $user, $type)
+    public function file_get_directory($project_id, $type)
     {
-	return $this->global_path . "projects/$project_id/$user"
-                                  . (($type == '') ? $type : "/$type");
+	return $this->global_path . "projects/$project_id"
+             . (($type != '') ? "/$type" : '');
     }
 
 /**
@@ -1262,12 +1254,12 @@ class ZeekLibrary extends ZeekOutput {
 * @param string username
 * @param string name
 */
-    public function file_get_path($project_id, $user, $name)
+    public function file_get_path($project_id, $name)
     {
 	if (substr($name, 0, 1) == '/')
 	    $name = substr($name, 1);
 
-	return $this->global_path . "projects/$project_id/$user/$name";
+	return $this->global_path . "projects/$project_id/$name";
     }
 
 /**
@@ -1330,7 +1322,7 @@ class ZeekLibrary extends ZeekOutput {
 				$extension, $in_main_directory = false)
     {
 	$dst = $this->file_get_directory(
-	    $project_id, $user, $in_main_directory ? '' : $type);
+	    $project_id, $in_main_directory ? '' : $type);
 
 	// we create the directory if it doesn't already exist
 	if ($this->directory_create($dst) == false)
@@ -1375,7 +1367,7 @@ class ZeekLibrary extends ZeekOutput {
 				$extension, $in_main_directory = false)
     {
 	$dst = $this->file_get_directory(
-	    $project_id, $user, $in_main_directory ? '' : $type);
+	    $project_id, $in_main_directory ? '' : $type);
 
 	// we create the directory if it doesn't already exist
 	if ($this->directory_create($dst) == false)
@@ -1405,7 +1397,7 @@ class ZeekLibrary extends ZeekOutput {
 */
     public function file_delete($project_id, $user, $name)
     {
-	$src = $this->file_get_path($project_id, $user, $name);
+	$src = $this->file_get_path($project_id, $name);
 
 	if ((file_exists($src) == false) || $this->file_remove($src))
 	    return true;
@@ -1414,16 +1406,21 @@ class ZeekLibrary extends ZeekOutput {
     }
 
 
-    public function file_check($project_id, $user, $name)
+    public function file_check($project_id, $name)
     {
 	return file_exists(
-	    $this->file_get_path($project_id, $user, $name));
+	    $this->file_get_path($project_id, $name));
     }
 
 
     public function file_get_list($project_id, $filter_directories=null)
     {
 	$rsp = array();
+
+        if ($filter_directories == null)
+            $filter_directories = array("DEPLOY", "TEST");
+        else
+            array_push($filter_directories, "DEPLOY", "TEST");
 
 	// on récupère le path
 	$path = $this->global_path . "projects/$project_id";
@@ -1450,7 +1447,7 @@ class ZeekLibrary extends ZeekOutput {
 
     public function file_get($project_id, $user, $name)
     {
-	$src = $this->file_get_path($project_id, $user, $name);
+	$src = $this->file_get_path($project_id, $name);
 
 	return $this->file_read($src);
     }
@@ -1458,7 +1455,7 @@ class ZeekLibrary extends ZeekOutput {
 
     public function file_set($project_id, $user, $name, $data)
     {
-	$src = $this->file_get_path($project_id, $user, $name);
+	$src = $this->file_get_path($project_id, $name);
 
 	if ($this->file_write($src, $data))
 	   return true;
@@ -1490,12 +1487,12 @@ class ZeekLibrary extends ZeekOutput {
  * @method contents_get_list
  * @param integer project_id
  */
-    public function contents_get_list($project_id, $username, $directory_name)
+    public function contents_get_list($project_id, $directory_name)
     {
 	$rsp = array();
 
 	if ($this->directory_scan(
-            $this->global_path . "projects/$project_id/$username/$directory_name",
+            $this->global_path . "projects/$project_id/$directory_name",
             $rsp, -1, null, true))
 	    return $rsp;
 
