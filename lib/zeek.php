@@ -440,7 +440,7 @@ class Zeek extends ZeekOutput {
                 $_SESSION["project_name"] = $project_name;
                 $_SESSION["project_id"]   = $project_id;
                 $_SESSION["project_path"] = isset($projects_path);
-                $_SESSION["project_dst"]  = $this->global_path;
+                $_SESSION["project_dst"]  = $this->global_path . "DEPLOY";
 
                 $this->project_name = $project_name;
 

@@ -1491,9 +1491,9 @@ class ZeekLibrary extends ZeekOutput {
     {
 	$rsp = array();
 
-	if ($this->directory_scan(
-            $this->global_path . "projects/$project_id/$directory_name",
-            $rsp, -1, null, true))
+        $src = $this->global_path . "projects/$project_id/$directory_name";
+
+	if (is_dir($src) && $this->directory_scan($src, $rsp, -1, null, true))
 	    return $rsp;
 
 	return false;

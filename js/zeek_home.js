@@ -16,6 +16,7 @@ $(document).ready(function() {
     $("div#home").show();
 
     // we configure contents menu
+    var $content_get_type_list;
     var $content_types = {};
     var $div_content_directory = $("div#content_directory");
 
@@ -147,7 +148,7 @@ $(document).ready(function() {
 
     };
 
-    var $content_get_type_list = function() {
+    $content_get_type_list = function() {
         $send_request(
 	    {
 	        method: "contents_get_type_list",
@@ -173,8 +174,6 @@ $(document).ready(function() {
                 return -1;
             });
     };
-
-    $content_get_type_list();
 
     var $contents_list = {};
 
@@ -784,6 +783,7 @@ $(document).ready(function() {
 
     var $file_create_html;
     var $file_modify_html;
+    var $file_get_type_list;
     var $files_type = {};
 
     var $table_type_accepted = $("table#file_type_accepted");
@@ -871,79 +871,81 @@ $(document).ready(function() {
 
     $option_get_editor();
 
-    $send_request(
-	{
-	    method: "file_get_type_list",
-	},
-	function($result) {
+    $file_get_type_list = function ()
+    {
+        $send_request(
+	    {
+	        method: "file_get_type_list",
+	    },
+	    function($result) {
 
-	    if ($result == false
-                || ("type_list" in $result) == false)
-		return false;
+	        if ($result == false
+                            || ("type_list" in $result) == false)
+		    return false;
 
-            var $select_type_proposed = $("select#file_type_proposed");
+                var $select_type_proposed = $("select#file_type_proposed");
 
-            // display & configure the type of file proposed
-	    $result["type_list"].forEach(function($type) {
-		var $option = $("<option>");
-		$option.text($type);
+                // display & configure the type of file proposed
+	        $result["type_list"].forEach(function($type) {
+		    var $option = $("<option>");
+		    $option.text($type);
 
-		$select_type_proposed.append($option);
-	    });
+		    $select_type_proposed.append($option);
+	        });
 
-            $select_type_proposed.change(function() {
-                $on_new_editor_type(
-                    $("select#file_type_proposed option:selected").val(),
-                    "#f00");
+                $select_type_proposed.change(function() {
+                    $on_new_editor_type(
+                        $("select#file_type_proposed option:selected").val(),
+                        "#f00");
 
-                $option_set_editor();
-            });
+                    $option_set_editor();
+                });
 
-            // display & delete the type of file accepted
-	    /* $result["type_accepted"].forEach(function($type) {
-	       }); */
+                // display & delete the type of file accepted
+	        /* $result["type_accepted"].forEach(function($type) {
+	           }); */
 
-            var $array =  [
+                var $array =  [
 		{ name: "Filename",
 		  input: 'name="name" type="text"'},
 		{ name: "Extension",
 		  input: 'name="extension" type="text"'},
-		{ name: "Is in main directory",
-		  input: 'name="in_main_directory" type="checkbox"'},
-	    ];
+		    { name: "Is in main directory",
+		      input: 'name="in_main_directory" type="checkbox"'},
+	        ];
 
-            var $generate_html = function($array) {
+                var $generate_html = function($array) {
 
-                var $list = $('<select></select>');
-                $list.attr("id", "select_type");
-                $list.attr("name", "type");
+                    var $list = $('<select></select>');
+                    $list.attr("id", "select_type");
+                    $list.attr("name", "type");
 
-                $("td.editor_type").each(function() {
-              	    $list.append($("<option>").text($(this).text()));
-                });
+                    $("td.editor_type").each(function() {
+              	        $list.append($("<option>").text($(this).text()));
+                    });
 
-                return "<table><tr><td><b>Type</b></td><td>"
-	             + $("<div></div>").append($list).html() + "</td></tr>"
-                     + Mustache.to_html("{{#foreach}}<tr><td><b>{{name}}</b></td>"
-                     + "<td><input {{{input}}}/></td></tr>{{/foreach}}</table>",
-		                        { foreach: $array })
-                    + '<p id="final_create">Press enter to see the result!</p>'
-            };
+                    return "<table><tr><td><b>Type</b></td><td>"
+	                 + $("<div></div>").append($list).html() + "</td></tr>"
+                         + Mustache.to_html("{{#foreach}}<tr><td><b>{{name}}</b></td>"
+                                          + "<td><input {{{input}}}/></td></tr>{{/foreach}}</table>",
+		                            { foreach: $array })
+                        + '<p id="final_create">Press enter to see the result!</p>'
+                };
 
 
-	    $file_modify_html = function() {
-                return $generate_html($array);
-            };
+	        $file_modify_html = function() {
+                    return $generate_html($array);
+                };
 
-            $array.push({ name: "File",
-		          input: 'id="file_upload" type="file" name="files[]" multiple'});
+                $array.push({ name: "File",
+		              input: 'id="file_upload" type="file" name="files[]" multiple'});
 
-            $file_create_html = function() {
-                return $generate_html($array)
-                    + '<div id="progress_bar"></div>';
-            };
-	});
-
+                $file_create_html = function() {
+                    return $generate_html($array)
+                        + '<div id="progress_bar"></div>';
+                };
+	    });
+    };
 
     var $generate_filename = function() {
 
@@ -1260,15 +1262,32 @@ $(document).ready(function() {
 	    return;
 	}
 
+	if ($id == 'edit')
+	{
+            if ($file_create_html == null
+                || $file_modify_html == null)
+                $file_get_type_list();
+
+	    $edit_update();
+	}
+
         if ($id == 'contents')
         {
+            if (Object.keys($content_types) == 0)
+                $content_get_type_list();
+
             $contents_update();
         }
 
-	if ($id == 'edit')
-	{
-	    $edit_update();
-	}
+        if ($id == 'configuration')
+        {
+            if ($file_create_html == null
+                || $file_modify_html == null)
+                $file_get_type_list();
+
+            if (Object.keys($content_types) == 0)
+                $content_get_type_list();
+        }
 
         if ($structure_enable.prop("checked"))
 	    $li_data.removeClass("data_clicked");
@@ -1670,7 +1689,7 @@ $(document).ready(function() {
                 $("button#new_attribute").on("click", function() {
                     var $name = $("input#new_attribute").val();
                     var $type = $("select#select_type option:selected").val();
-                    var $size = $("input#attribute_size").val();
+                    var $size = $("input#attribute_size").val()
 
                     // we check if the attribute name is empty or already exists
                     if ($name == "" || $name.indexOf(" ") >= 0) {
