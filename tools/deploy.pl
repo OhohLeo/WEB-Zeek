@@ -143,7 +143,7 @@ if ($host eq 'ftpperso.free.fr')
 	my $filehandle;
 	open($filehandle, '>', "$directory/$filename");
 	print {$filehandle} <<END;
-php 1
+php56 1
 END
 
 	close($filehandle);
