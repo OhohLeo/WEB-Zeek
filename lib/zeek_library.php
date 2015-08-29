@@ -121,13 +121,22 @@ class ZeekLibrary extends ZeekOutput {
 
         /* we create the project table */
         $db->table_create('project', array(
-            'name'        => array('db_type' => 'VARCHAR',
-				   'db_size' => 25),
-            'since'       => array('db_type' => 'DATE'),
-            'structure'   => array('db_type' => 'VARCHAR',
-				   'db_size' => 2000),
-	    'options'     => array('db_type' => 'VARCHAR',
-				   'db_size' => 2000)));
+            'name'              => array('db_type' => 'VARCHAR',
+				         'db_size' => 25),
+            'created_at'        => array('db_type' => 'DATE'),
+            'last_connection'   => array('db_type' => 'DATE'),
+            'last_user'         => array('db_type' => 'VARCHAR',
+				         'db_size' => 25),
+            'destination'       => array('db_type' => 'VARCHAR',
+			                 'db_size' => 200),
+            'url'               => array('db_type' => 'VARCHAR',
+			                 'db_size' => 200),
+            'structure'         => array('db_type' => 'VARCHAR',
+				         'db_size' => 2000),
+	    'options'           => array('db_type' => 'VARCHAR',
+				         'db_size' => 2000),
+            'piwik_token'       => array('db_type' => 'VARCHAR',
+			                 'db_size' => 32)));
 
         /* we create the user table */
         $db->table_create('user', array(
@@ -329,9 +338,10 @@ class ZeekLibrary extends ZeekOutput {
  *
  * @method project_add
  * @param string project name
+ * @param string project destination
  * @param array options associated to the the project
  */
-    public function project_add($project_name, $options=null)
+    public function project_add($project_name, $project_dst=null, $options=null)
     {
         $db = $this->db;
 
@@ -345,23 +355,35 @@ class ZeekLibrary extends ZeekOutput {
         // we check if the project already exists
         if ($this->project_get_id($project_name)) {
             $this->error(
-                "another project have the same name $project_name!");
+                "another project have the same name '$project_name'!");
             return false;
         }
 
-        $params = array('name' => $project_name);
+        $params = array('name' => $project_name,
+                        'created_at' => time());
 
         if ($options)
             $params['options'] = $this->json_encode($options);
-
 
         // we insert the new project
         if ($this->db->row_insert('project', $params) == false)
             return false;
 
         // we store the project id
-        if ($this->project_get_id($project_name))
+        $project_id = $this->project_get_id($project_name);
+
+        if ($project_id)
+        {
+            if ($project_dst == NULL) {
+                $project_url = "projects/$project_id/DEPLOY";
+                $project_dst = $this->global_path . $project_url;
+
+                $this->project_set_attribute($project_id, "url", $project_url);
+            }
+
+            $this->project_set_attribute($project_id, "destination", $project_dst);
             return true;
+        }
 
         $this->error('Impossible to add project!');
         return false;
@@ -480,6 +502,49 @@ class ZeekLibrary extends ZeekOutput {
         return false;
     }
 
+
+/**
+ * Return the value of an attribute from the specified project.
+ *
+ * @method project_get_attribute
+ * @param int project id
+ * @param string attribute name
+ */
+    public function project_get_attribute($project_id, $name)
+    {
+        $db = $this->db;
+
+        $result = $this->db->table_view(
+            'project', $name, NULL, 1, 0, $project_id);
+
+        if ($result)
+        {
+            $array = $this->value_fetch($result);
+
+            return $array[$name];
+        }
+
+        return NULL;
+    }
+
+/**
+ * Set the value of an attribute from the specified project.
+ *
+ * @method project_set_attribute
+ * @param int project id
+ * @param string attribute name
+ * @param string value to write
+ */
+    public function project_set_attribute($project_id, $name, $value)
+    {
+        if ($this->db->row_update(
+            'project', $project_id, array($name => $value)))
+        {
+            return true;
+        }
+
+        return false;
+    }
 
 /**
  * Return the whole structure if it exists otherwise return
@@ -700,16 +765,11 @@ class ZeekLibrary extends ZeekOutput {
         if ($this->options)
             return $this->options;
 
-        $db = $this->db;
+        $options = $this->project_get_attribute($project_id, 'options');
 
-        $result = $this->db->table_view(
-            'project', 'options', NULL, 1, 0, $project_id);
-
-        if ($result)
+        if ($options != NULL)
         {
-            $options = $this->value_fetch($result);
-
-            $this->options = $this->json_decode($options['options']);
+            $this->options = $this->json_decode($options);
 
             return $this->options;
         }
@@ -734,9 +794,8 @@ class ZeekLibrary extends ZeekOutput {
 
         $this->options[$name] = $values;
 
-        if ($this->db->row_update(
-            'project', $project_id, array('options' =>
-                $this->json_encode($this->options))))
+        if ($this->project_set_attribute(
+            $project_id, 'options', $this->json_encode($this->options)))
         {
             return true;
         }
@@ -805,7 +864,7 @@ class ZeekLibrary extends ZeekOutput {
 
 	try
 	{
-	    if (mkdir($path, 0776, true) == false)
+	    if (mkdir($path, 0755, true) == false)
             {
                 $this->error(
 		    "Error when creating '$path': $php_errormsg!");

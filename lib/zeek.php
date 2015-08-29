@@ -248,6 +248,18 @@ class Zeek extends ZeekOutput {
             case 'project_delete':
 		return $this->project_delete($project_name);
 
+            case 'project_set_name':
+                return $this->project_set_name($params["value"]);
+
+            case 'project_set_url':
+                return $this->project_set_url($params["value"]);
+
+            case 'project_set_dst':
+                return $this->project_set_destination($params["value"]);
+
+            case 'piwik_set_token':
+                return $this->project_set_piwik_token($params["value"]);
+
             case 'user_add':
 		return $this->user_add($project_id, $project_name, $email);
 
@@ -439,8 +451,14 @@ class Zeek extends ZeekOutput {
             {
                 $_SESSION["project_name"] = $project_name;
                 $_SESSION["project_id"]   = $project_id;
-                $_SESSION["project_path"] = isset($projects_path);
-                $_SESSION["project_dst"]  = $this->global_path . "DEPLOY";
+                $_SESSION["has_project_path"] = isset($projects_path);
+                $_SESSION["project_url"] = $zlib->project_get_attribute(
+                    $project_id, "url");
+                $_SESSION["project_dst"] = $zlib->project_get_attribute(
+                    $project_id, "destination");
+                $_SESSION["piwik_token"] = $zlib->project_get_attribute(
+                    $project_id, "piwik_token");
+                $_SESSION["global_path"]  = $this->global_path;
 
                 $this->project_name = $project_name;
 
@@ -480,9 +498,10 @@ class Zeek extends ZeekOutput {
  *
  * @method project_create
  * @param string project name to create
+ * @param string project destination
  * @param array options associated to the the project
  */
-    public function project_create($project_name, $options = null)
+    public function project_create($project_name, $project_dst=null, $options=null)
     {
         $zlib = $this->zlib;
 
@@ -519,7 +538,7 @@ class Zeek extends ZeekOutput {
                 }
 
 		// we create the project
-		if ($zlib->project_add($project_name, $options) == false)
+		if ($zlib->project_add($project_name, $project_dst, $options) == false)
 		{
 		    $this->error('Impossible to add project!');
 		    return false;
@@ -536,6 +555,12 @@ class Zeek extends ZeekOutput {
 		}
 
 		$_SESSION["project_id"] = $zlib->project_get_id($project_name);
+                $_SESSION["has_project_path"] = isset($projects_path);
+                $_SESSION["project_url"] = $zlib->project_get_attribute(
+                    $project_id, "url");
+                $_SESSION["project_dst"] = $zlib->project_get_attribute(
+                    $project_id, "destination");
+                $_SESSION["global_path"]  = $this->global_path;
 
 		$this->project_name = $project_name;
 		$this->project_id   = $project_id;
@@ -578,6 +603,97 @@ class Zeek extends ZeekOutput {
     }
 
 /**
+ * Set the name of a project.
+ *
+ * @method project_set_name
+ * @param string new name of the projet
+ */
+    public function project_set_name($value)
+    {
+
+        if ($this->project_set_attribute($this->project_id, "name", $value))
+        {
+            $_SESSION["project_name"] = $value;
+            return true;
+        }
+
+        return false;
+    }
+
+/**
+ * Set the url of a project.
+ *
+ * @method project_set_url
+ * @param string new url of the projet
+ */
+    public function project_set_url($value)
+    {
+
+        if ($this->project_set_attribute($this->project_id, "url", $value))
+        {
+            $_SESSION["project_url"] = $value;
+            return true;
+        }
+
+        return false;
+    }
+
+
+/**
+ * Set the destination of a project.
+ *
+ * @method project_set_destination
+ * @param string new destination of the projet
+ */
+    public function project_set_destination($value)
+    {
+
+        if ($this->project_set_attribute($this->project_id, "destination", $value))
+        {
+            $_SESSION["project_dst"] = $value;
+            return true;
+        }
+
+        return false;
+    }
+
+/**
+ * Set the piwik_token of a project.
+ *
+ * @method project_set_piwik_token
+ * @param string new piwik token
+ */
+    public function project_set_piwik_token($value)
+    {
+        if ($this->project_set_attribute($this->project_id, "piwik_token", $value))
+        {
+            $_SESSION["piwik_token"] = $value;
+            return true;
+        }
+
+        return false;
+    }
+
+/**
+ * Set the value of an attribute from the specified project.
+ *
+ * @method project_set_attribute
+ * @param int project id
+ * @param string attribute name
+ * @param string value to write
+ */
+    public function project_set_attribute($project_id, $name, $value)
+    {
+        if ($this->zlib->project_set_attribute($project_id, $name, $value))
+        {
+            $this->success("Attribute '$name' correctly set!");
+            return true;
+        }
+
+        return false;
+    }
+
+/**
  * Authorised new user to connect with this project.
  *
  * @method user_add
@@ -586,7 +702,7 @@ class Zeek extends ZeekOutput {
  */
     public function user_add($project_id, $project_name, $email)
     {
-        /* we check if the email is set */
+        // we check if the email is set
         if ($this->check_string($email) == false) {
             $this->error("Expecting valid user email!");
             return false;
@@ -2403,12 +2519,32 @@ class Zeek extends ZeekOutput {
     }
 
 /**
+ * Store piwik token
+ *
+ * @method piwik_token_set
+ * @param string piwik token
+ */
+    public function piwik_token_set($token)
+    {
+    }
+
+/**
+ * Get piwik token
+ *
+ * @method piwik_token_get
+ */
+    public function piwik_token_get()
+    {
+    }
+
+/**
  * Launch jquery redirection.
  *
  * @method redirect
  * @param string where to redirect
  */
-    public function redirect($url) {
+    public function redirect($url)
+    {
         $this->output_json(array("redirect" => $url));
     }
 

@@ -59,3 +59,47 @@ $send_request = (function($data, $handle_rsp) {
     	},
     });
 });
+
+
+$input_validator = function($name_with_type, $on_success) {
+
+    var $name = $name_with_type.substring(1);
+    var $button_name = "button#" + $name;
+    var $start_value = $("input" + $name_with_type).val();
+
+    return function() {
+
+        $("input" + $name_with_type).on("input", function () {
+
+            if ($($button_name).length == 0)
+            {
+                $(this).after(
+                    $("<button>").attr("id", $name)
+                                 .attr("class", "validate")
+                                 .text("OK")
+                                 .on("click", function() {
+
+                                     $value = $("input" + $name_with_type).val()
+
+                                     $send_request(
+                                         {
+                                             "method": $name,
+                                             "value": $value,
+                                         },
+                                         function($result) {
+	                                     if ($result == false || $result["error"])
+		                                 return false;
+
+                                             $($button_name).remove();
+                                             $on_success($value);
+
+                                         });
+                                 }));
+            }
+            else if ($(this).val() == "" || $(this).val() == $start_value)
+            {
+                $($button_name).remove();
+            }
+        });
+    };
+};

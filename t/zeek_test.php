@@ -413,7 +413,7 @@ class TestZeek extends PHPUnit_Framework_TestCase
         // check test functionality
         $zeek->test('{"zeekify":true,"MinifyCss":false,"MinifyJs":true}');
         $this->assertTrue(
-            $zeek->checkOutput('{"href":"projects/1/TEST_test/index.html"}'));
+            $zeek->checkOutput('{"href":"projects/1/TEST/test/index.html"}'));
 
         // check the files have been correctly set & deploy
         $this->assertTrue($zeek->file_get('TEST_test', 'index.html'));

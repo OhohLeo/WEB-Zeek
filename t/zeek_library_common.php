@@ -119,10 +119,29 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
             $zlib->project_get_id('test'));
 
         $this->assertTrue(
-            $zlib->project_add('test'));
+            $zlib->project_add('test', 'deploy_test'));
 
         $this->assertFalse(
-            $zlib->project_add('test'));
+            $zlib->project_add('test', 'deploy_test'));
+
+        $this->assertTrue(
+            $zlib->checkOutput(
+                '{"error":"another project have the same name \'test\'!"}'));
+
+        $this->assertEquals(
+            'deploy_test', $zlib->project_get_attribute(1, 'destination'));
+
+        $this->assertEquals(
+            NULL, $zlib->project_get_attribute(1, 'failed'));
+
+        $this->assertTrue(
+            $zlib->project_set_attribute(1, 'destination', 'deploy_modified'));
+
+        $this->assertEquals(
+            'deploy_modified', $zlib->project_get_attribute(1, 'destination'));
+
+        $this->assertFalse(
+            $zlib->project_set_attribute(1, 'failed', 'failure'));
 
         $this->assertEquals(
             $zlib->project_get_id('test'), 1);
@@ -130,6 +149,12 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
         $this->assertTrue($zlib->connect_to_database());
 
         $this->assertTrue($zlib->project_delete('test'));
+
+        $this->assertFalse($zlib->project_delete('test'));
+
+	$this->assertTrue(
+            $zlib->checkOutput(
+                '{"error":"no existing project delete \'test\' in database!"}'));
 
         $zlib->environment_clean($this->db_name);
     }
@@ -234,7 +259,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	$zlib->environment_clean($this->db_name);
 
 	$this->assertTrue(
-	    $zlib->project_add('test'));
+	    $zlib->project_add('test', 'dst'));
 
 	$project_id = $zlib->project_get_id('test');
 
@@ -497,7 +522,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
         $project_id = 1;
 
         $this->assertTrue(
-            $zlib->project_add($project_name));
+            $zlib->project_add($project_name, 'dst'));
 
         $this->assertEquals(
             $zlib->structure_get($project_id, $project_name), array(
@@ -804,7 +829,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
        exit;
 
        // we create the project
-       if ($zlib->project_add($project_name) == false) {
+       if ($zlib->project_add($project_name, 'dst') == false) {
        print "\nimpossible to create project\n";
        exit;
        }

@@ -202,3 +202,7 @@ p#final_destination {
     font-weight: bold;
     text-align: center;
 }
+
+iframe#piwik_statistics {
+    height: 800px;
+}

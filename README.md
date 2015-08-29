@@ -27,6 +27,10 @@ using following
  - secure 1st form using http://www.jcryption.org/
 
 #### Git Log :
+29/08/2015 Leo
+ * handle piwik statistics
+ * modify project name, url & dst
+
 21/08/2015 Leo
  * add contents fonctionality
  * add mime validator

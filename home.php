@@ -3,12 +3,22 @@
 /* we check the session */
 session_start();
 
+$start_ts     = $_SESSION["start_ts"];
+
 $login        = $_SESSION["login"];
+$global_path  = $_SESSION["global_path"];
+
 $project_name = $_SESSION["project_name"];
 $project_id   = $_SESSION["project_id"];
-$start_ts     = $_SESSION["start_ts"];
-$project_path = $_SESSION["project_path"];
-$project_dst  =  $_SESSION["project_dst"];
+$project_url  = $_SESSION["project_url"];
+$project_dst  = $_SESSION["project_dst"];
+$has_project_path = $_SESSION["has_project_path"];
+
+$piwik_token = $_SESSION["piwik_token"];
+
+$host = $_SERVER[HTTP_HOST];
+$request_uri = $_SERVER[REQUEST_URI];
+$uri = substr($request_uri, 0, strrpos($request_uri, "/"));
 
 /* if one field is not define : do not authorize to display the
  * page */
@@ -46,7 +56,9 @@ include 'default/header.php';
 </head>
 <body>
     <nav id="action">
-	<h1 id="title"><?php echo "$project_name";?></h1>
+	<a href="<?php echo "$project_url";?>">
+            <h1 id="title"><?php echo "$project_name";?></h1>
+        </a>
 	<ul>
 	    <li id="home" class="menu">Home</li>
 	    <li id="edit" class="menu">Edit</li>
@@ -73,11 +85,50 @@ include 'default/header.php';
 	    <div class="error"></div>
 	</div>
 	<div id="home" class="menu">
-	    <h3>Project name</h3>
-	    <input type="text"
-		   class="form-control"
-		   name="project_name"
-		   value=<?php echo $project_name; ?>>
+
+            <?php
+
+            $is_piwik_installed = false;
+            $piwik_config_path = $global_path . "extends/piwik/config/config.ini.php";
+
+            // Is piwik install ?
+            // we check if config/config.ini.php is defined
+            if (file_exists($piwik_config_path) == false)
+            {
+            ?>
+                <button id="piwik_install" class="validate">
+                    <a href="extends/piwik">Install Piwik</a>
+                </button>
+            <?php
+            }
+            // Is Piwik fully installed ?
+            // we check the status 'installation_in_progress' in config/config.ini.php
+            else if (strpos(file_get_contents($piwik_config_path), "installation_in_progress") > 0)
+            {
+            ?>
+                <button id="piwik_complete_install" class="warning">
+                    <a href="extends/piwik">Complete Piwik Installation</a>
+                </button>
+            <?php
+            }
+            else if ($piwik_token == "")
+            {
+                $is_piwik_installed = true;
+            ?>
+                <h3>Piwik Statistics</h3>
+                <label>Enter piwik token</label>
+                <input class="piwik_set_token"
+                       type="text"
+                       placeholder="piwik authentification token">
+            <?php
+            }
+            else
+            {
+            ?>
+                <iframe id="piwik_statistics" src="http://<?php echo "$host$uri"; ?>/extends/piwik/index.php?module=Widgetize&action=iframe&moduleToWidgetize=Dashboard&actionToWidgetize=index&idSite=1&period=week&date=yesterday&token_auth=<?php echo "$piwik_token"; ?>" frameborder="0" marginheight="0" marginwidth="0" width="100%" height="100%"></iframe>
+        <?php
+            }
+        ?>
 	</div>
 	<div id="contents" class="menu">
             <nav id="contents">
@@ -108,11 +159,13 @@ include 'default/header.php';
 	</div>
 	<div id="test" class="menu"></div>
 	<div id="deploy" class="menu">
-            <h3>Project destination</h3>
-	    <input id="deploy_dst"
+            <h3>Project url</h3>
+	    <input id="project_set_url"
                    type="text"
-		   class="form-control"
-		   name="deploy_dst"
+		   value=<?php echo $project_url; ?>>
+            <h3>Project destination</h3>
+	    <input id="project_set_dst"
+                   type="text"
 		   value=<?php echo $project_dst; ?>>
             <h3>Project options</h3>
             <table class="center" id="options_deploy"></table>
@@ -120,19 +173,20 @@ include 'default/header.php';
         </div>
 	<div id="configuration" class="menu">
 	    <div class="config">
-		<h3 id="user">Add new user</h3>
-		<div class="config-group">
-                    <div id="users_list"></div>
-		    <form id="user_add" role="form">
-			<p><input type="email" class="form-control" name="email"
-			          placeholder="enter new e-mail adress"></input></p>
-			<input type="submit" class="btn-block btn-success validate">
-		    </form>
+		<h3>Project</h3>
+		<div class="config-group danger-zone">
+                    <p>
+                        <label>Change project name</label>
+                        <input id="project_set_name"
+                               type="text"
+		               value=<?php echo $project_name; ?>>
+		    </p>
+                    <button id="project_delete" class="danger">DELETE this project</button>
 		</div>
 	    </div>
-	    <hr>
+             <hr>
 	    <div class="config">
-		<h3>Change password</h3>
+		<h3>Password</h3>
 		<div class="config-group">
 		    <form id="user_change_password" role="form">
 			<p><input type="password"
@@ -150,15 +204,44 @@ include 'default/header.php';
 		    </form>
 		</div>
 	    </div>
-	    <hr>
+            <hr>
 	    <div class="config">
-		<h3>Zeek configuration</h3>
+		<h3 id="user">User</h3>
+		<div class="config-group">
+                    <div id="users_list"></div>
+		    <form id="user_add" role="form">
+			<p><input type="email" class="form-control" name="email"
+			          placeholder="enter new e-mail adress"></input></p>
+			<input type="submit" class="btn-block btn-success validate">
+		    </form>
+		</div>
+	    </div>
+	    <hr>
+            <?php
+            if ($piwik_token != "")
+            {
+                $is_piwik_installed = true;
+            ?>
+	    <div class="config">
+		<h3>Piwik</h3>
+		<div class="config-group danger-zone">
+                    <p>
+                        <input class="piwik_token" type="text" placeholder="authentification token">
+                    </p>
+                </div>
+	    </div>
+	    <hr>
+            <?php
+            }
+            ?>
+	    <div class="config">
+		<h3>Zeek</h3>
 		<div class="config-group danger-zone">
                     <p>
                         <label>Enable</label>
                         <input type="checkbox" id="structure_enabled"">
                     </p>
-                    <?php if ($project_path == false) { ?>
+                    <?php if ($has_project_path == false) { ?>
                     <div id="structure_enabled">
                         <p>
                             <label>Expert mode</label>
@@ -171,7 +254,7 @@ include 'default/header.php';
 	    </div>
 	    <hr>
 	    <div class="config">
-		<h3>Edit configuration</h3>
+		<h3>Edit</h3>
 		<div class="config-group danger-zone">
                     <select id="file_type_proposed"></select>
                     <table class="center" id="file_type_accepted"></table>
@@ -179,7 +262,7 @@ include 'default/header.php';
 	    </div>
 	    <hr>
 	    <div class="config">
-		<h3>Contents configuration</h3>
+		<h3>Contents</h3>
 		<div class="config-group danger-zone">
                     <table class="center" id="content_type_accepted"></table>
                     <h3>Add new content type</h3>
@@ -199,24 +282,17 @@ include 'default/header.php';
 	    </div>
 	    <hr>
 	    <div class="config">
-		<h3>Test configuration</h3>
+		<h3>Test</h3>
 		<div class="config-group danger-zone">
                     <table class="center" id="options_test"></table>
                 </div>
-	    </div>
-	    <hr>
-	    <div class="config">
-		<h3>Delete project</h3>
-		<div class="config-group danger-zone">
-		    <button id="project_delete" class="danger">DELETE this project</button>
-		</div>
 	    </div>
 	</div>
 	<div id="disconnect" class="menu">
 	    <h2>Are you sure you want to disconnect from Zeek ?</h2>
 	    <button id="disconnect" class="danger">Disconnect</button>
 	</div>
-        <?php if ($project_path == false) { ?>
+        <?php if ($has_project_path == false) { ?>
 	<div id="structure" class="menu">
             <h3>What is a Zeek structure ?</h3>
             <p>A structure defines the way datas will be stored.</p>
@@ -281,4 +357,22 @@ include 'default/header.php';
 <script src='js/JSON.safe.js'></script>
 <script src='js/dropzone.min.js'></script>
 <script src="js/zeek_home.js"></script>
-<?php include 'default/footer.php'; ?>
+<?php
+if ($is_piwik_installed)
+{
+?>
+<script>
+$(document).ready(function() {
+    $input_validator(
+        ".piwik_set_token",
+        function()
+        {
+            console.log("CLIK!!")
+        })();
+});
+</script>
+<?php
+}
+
+include 'default/footer.php';
+?>

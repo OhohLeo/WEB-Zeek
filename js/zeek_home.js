@@ -1493,6 +1493,25 @@ $(document).ready(function() {
 	});
     };
 
+    // we configure to set project name
+    $input_validator(
+        "#project_set_name",
+        function($new_value) {
+            $("h1#title").text($new_value);
+        })();
+
+    // we configure to set project url
+    $input_validator(
+        "#project_set_url",
+        function() {
+        })();
+
+    // we configure to set project destination
+    $input_validator(
+        "#project_set_dst",
+        function() {
+        })();
+
     // we enable/disable the structure configuration
     var $button_structure_modify = $("button#structure_modify");
 
