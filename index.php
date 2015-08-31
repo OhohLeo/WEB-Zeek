@@ -12,16 +12,16 @@
 	    <div class="error"></div>
 	</div>
 	<div id="connect" disabled="disabled">
-	    <input id="connect"
-	           name="project_name"
-		   placeholder="Project name"
-		   type="text" required>
 	    <input name="login"
 		   placeholder="Login"
 		   type="text" required>
 	    <input name="password"
 		   placeholder="Password"
 		   type="password" required>
+            <input id="connect"
+	           name="project_name"
+		   placeholder="Project name"
+		   type="text" required>
 	    <button id="connect" class="success">Connect</button>
 	</div>
 	<div id="create" disabled="disabled">

@@ -96,9 +96,11 @@ include 'default/header.php';
             if (file_exists($piwik_config_path) == false)
             {
             ?>
-                <button id="piwik_install" class="validate">
-                    <a href="extends/piwik">Install Piwik</a>
-                </button>
+                <a href="extends/piwik">
+                    <button id="piwik_install" class="validate">
+                        Install Piwik
+                    </button>
+                </a>
             <?php
             }
             // Is Piwik fully installed ?
@@ -106,9 +108,11 @@ include 'default/header.php';
             else if (strpos(file_get_contents($piwik_config_path), "installation_in_progress") > 0)
             {
             ?>
-                <button id="piwik_complete_install" class="warning">
-                    <a href="extends/piwik">Complete Piwik Installation</a>
-                </button>
+                <a href="extends/piwik">
+                    <button id="piwik_complete_install" class="warning">
+                        Complete Piwik Installation
+                    </button>
+                </a>
             <?php
             }
             else if ($piwik_token == "")

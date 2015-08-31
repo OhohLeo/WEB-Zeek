@@ -9,7 +9,7 @@ require_once $global_path . '/lib/zeek.php';
 
 $zeek = new Zeek();
 if ($zeek->start('config.ini') == false) {
-    header('HTTP/1.1 500 Internal Server Error');
+    exit;
 }
 
 if (isset($_POST)) {

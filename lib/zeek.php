@@ -1,5 +1,5 @@
 <?php
-/**
+ /**
  * Zeek : all the function to handle the website & the backoffice.
  *
  * @package Zeek
@@ -539,10 +539,7 @@ class Zeek extends ZeekOutput {
 
 		// we create the project
 		if ($zlib->project_add($project_name, $project_dst, $options) == false)
-		{
-		    $this->error('Impossible to add project!');
 		    return false;
-		}
 
 		// we store it
 		$_SESSION["project_name"] = $project_name;

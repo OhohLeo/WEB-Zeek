@@ -78,15 +78,14 @@ class ZeekLibrary extends ZeekOutput {
             $this->data_structure = $_SESSION["data_structure"];
         }
 
-        $check_environment = ($this->db_use_specific)
-            ? !($db->table_check('project') || $db->table_check('user'))
-            : $db->database_check($this->db_name) == false;
-
-      /* We check if the database already exists */
-        if ($check_environment) {
+        // Check if the database already exists
+        if ($db->database_check($this->db_name) == false
+            || $db->table_check('project') == false
+            || $db->table_check('user') == false)
+        {
                return $this->environment_setup(
                    $this->db_name, $this->db_login, $this->db_password);
-        }
+            }
 
         /* We will use only this database */
         $db->database_use($this->db_name);
@@ -108,11 +107,8 @@ class ZeekLibrary extends ZeekOutput {
         /* we get the database */
         $db = $this->db;
 
-        if ($this->db_use_uniq == false) {
-
-            /* we create the database */
-            $db->database_create($name);
-        }
+        /* we create the database */
+        $db->database_create($name);
 
         /* we use this database */
         $db->database_use($name);
@@ -348,14 +344,14 @@ class ZeekLibrary extends ZeekOutput {
         if ($this->projects_path
             && $this->project_check($project_name) == false) {
             $this->error(
-                "no existing project '$project_name' in configuration file!");
+                "No existing project '$project_name' in configuration file!");
             return false;
         }
 
         // we check if the project already exists
         if ($this->project_get_id($project_name)) {
             $this->error(
-                "another project have the same name '$project_name'!");
+                "Another project have the same name '$project_name'!");
             return false;
         }
 
@@ -366,8 +362,11 @@ class ZeekLibrary extends ZeekOutput {
             $params['options'] = $this->json_encode($options);
 
         // we insert the new project
-        if ($this->db->row_insert('project', $params) == false)
+        if ($this->db->row_insert('project', $params) == false) {
+            $this->error(
+                "Impossible to insert project '$project_name' in database!");
             return false;
+        }
 
         // we store the project id
         $project_id = $this->project_get_id($project_name);
