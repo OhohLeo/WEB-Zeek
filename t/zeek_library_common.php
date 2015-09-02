@@ -126,7 +126,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
         $this->assertTrue(
             $zlib->checkOutput(
-                '{"error":"another project have the same name \'test\'!"}'));
+                '{"error":"Another project have the same name \'test\'!"}'));
 
         $this->assertEquals(
             'deploy_test', $zlib->project_get_attribute(1, 'destination'));

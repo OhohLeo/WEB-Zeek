@@ -351,16 +351,17 @@ include 'default/header.php';
     </div>
 </body>
 <?php include 'default/scripts.php'; ?>
-<script src="js/jquery-ui.min.js"></script>
-<script src="js/ace/ace.js"></script>
-<script src="js/mustache.js"></script>
-<script src="js/vendor/jquery.ui.widget.js"></script>
-<script src="js/jquery.iframe-transport.js"></script>
-<script src="js/jquery.fileupload.js"></script>
-<script src='js/spectrum.js'></script>
-<script src='js/JSON.safe.js'></script>
-<script src='js/dropzone.min.js'></script>
-<script src="js/zeek_home.js"></script>
+<script type="text/javascript" src="js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="js/ace/ace.js"></script>
+<script type="text/javascript" src="js/mustache.js"></script>
+<script type="text/javascript" src="js/vendor/jquery.ui.widget.js"></script>
+<script type="text/javascript" src="js/jquery.iframe-transport.js"></script>
+<script type="text/javascript" src="js/jquery.fileupload.js"></script>
+<script type="text/javascript" src='js/spectrum.js'></script>
+<script type="text/javascript" src='js/JSON.safe.js'></script>
+<script type="text/javascript" src='js/dropzone.min.js'></script>
+<script type="text/javascript" src="js/ckeditor/ckeditor.js"></script>
+<script type="text/javascript" src="js/zeek_home.js"></script>
 <?php
 if ($is_piwik_installed)
 {

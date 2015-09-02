@@ -689,7 +689,13 @@ $(document).ready(function() {
 
 		$get_list.forEach(function($obj) {
 
+                    console.log($obj);
+
 		    var $type = $obj["type"];
+
+                    // we ignore unknown type
+                    if ($files_type[$type] == undefined)
+                        return;
 
 		    // we create the type button
 		    if ($nav_edit.children("button." + $type).length == 0)
@@ -1302,9 +1308,9 @@ $(document).ready(function() {
     var $div_modal = $("#modal");
 
     var $modal = $div_modal.dialog({
-        minWidth: 500,
+        minWidth: 800,
         autoOpen: false,
-	resizable: false,
+	resizable: true,
 	modal: true,
     });
 
@@ -1323,24 +1329,6 @@ $(document).ready(function() {
         if ($data == null)
             return false;
 
-	var $set = new Array();
-	for (var $attribute in $data)
-	{
-	    var $options = $data[$attribute];
-
-	    // we get all options for the css input
-	    var $input = "<input name=\"" + $attribute + "\"";
-
-	    for (var $type in $options) {
-		$input = $input.concat(
-		    " " + $type + "=\"" + $options[$type]) + "\"";
-	    }
-
-	    $input = $input.concat("></input>");
-
-	    $set.push({ name: $attribute, input: $input });
-	}
-
 	$div_dynamic.html(Mustache.render(
 	    $html_dynamic, {
 		name: $name,
@@ -1349,11 +1337,44 @@ $(document).ready(function() {
 
 	$div_dynamic.show();
 
-	var $result = Mustache.to_html(
-	   "{{#set}}<p>{{name}}</p>{{{input}}}{{/set}}",
-	   { set: $set });
+        $div_modal.empty();
 
-	$div_modal.html($result);
+	for (var $attribute in $data)
+	{
+            $div_modal.append($("<p>").text($attribute));
+
+            var $options = $data[$attribute];
+
+            var $input;
+
+            if ($options["type"] === "textarea")
+            {
+                $input = $("<textarea>")
+                    .attr("class", "data")
+                    .attr("name", $attribute)
+                    .attr("rows", 10)
+                    .attr("cols", 70);
+            }
+            else
+            {
+                $input = $("<input>").attr("name", $attribute)
+                                     .attr("class", "data");
+
+                for (var $type in $options)
+                {
+                    $input.attr($type, $options[$type]);
+                }
+
+                if ($options["type"] === "text")
+                {
+                    $input.attr("size", 70);
+                }
+            }
+
+            $div_modal.append($input);
+	}
+
+        CKEDITOR.replaceAll("data");
 
 	var $tbody_data_get = $("tbody#data_get");
 
@@ -1362,6 +1383,7 @@ $(document).ready(function() {
 
 	var $data_update;
 	var $data_delete;
+        var $data_get;
 
 	var $update_get = function() {
 	    $send_request(
@@ -1411,14 +1433,46 @@ $(document).ready(function() {
 		});
 	};
 
+        $data_get = function() {
+
+            var $values = {};
+
+            $("textarea.data").each(function() {
+
+                var $name = $(this).attr("name");
+
+                $values[$name] = CKEDITOR.instances[$name].getData();
+            });
+
+            $("input.data").each(function() {
+
+                var $input = $(this);
+
+                $values[$input.attr("name")] = $input.val();
+            });
+
+            return $values;
+        };
+
 	$data_update = function() {
 	    var $id = $(this).attr("item");
 
             // we set all actual values in <input>
             var $content = $(this).parents("tr").children();
 
-            $div_modal.children("input").each(function() {
-                $(this).val($content.eq(0).text());
+            $div_modal.children("input, textarea").each(function() {
+
+                var $value = $content.eq(0).html();
+
+                if ($(this).is("textarea"))
+                {
+                    CKEDITOR.instances[$(this).attr("name")].setData($value);
+                }
+                else
+                {
+                    $(this).val($value);
+                }
+
                 $content = $content.next();
             });
 
@@ -1429,12 +1483,13 @@ $(document).ready(function() {
 		},
 		buttons: {
 		    "Update": function() {
-			$send_request(
+
+                        $send_request(
 			    {
 				method: "data_update",
 				name: $name,
 				id: $id,
-				values: $div_modal.children().serialize(),
+				values: $.param($data_get()),
 			    },
 			    function($result) {
 				if ($result['success'])
@@ -1466,6 +1521,19 @@ $(document).ready(function() {
 
 
 	$("h2#data_set").on("click", function() {
+
+            $div_modal.children("input, textarea").each(function() {
+
+                if ($(this).is("textarea"))
+                {
+                    CKEDITOR.instances[$(this).attr("name")].setData("");
+                }
+                else
+                {
+                    $(this).val("");
+                }
+            });
+
 	    $modal.dialog({
 		open: function() {
 		    $(this).dialog("option", "title",
@@ -1477,7 +1545,7 @@ $(document).ready(function() {
 			    {
 				method: "data_set",
 				type: $name,
-				values: $div_modal.children().serialize(),
+				values: $.param($data_get()),
 			    },
 			    function($result) {
 				if ($result['success'])
@@ -1703,6 +1771,20 @@ $(document).ready(function() {
 
                 $div_modal.html($setup);
 
+                var $input_new_attribute = $("input#new_attribute");
+                var $previous_attribute_name;
+
+                $("select#select_type").change(function() {
+                    var $selected = $("select#select_type option:selected").val();
+
+                    if ($input_new_attribute.val() === ""
+                        || $input_new_attribute.val() === $previous_attribute_name)
+                    {
+                        $input_new_attribute.val($selected.toLowerCase());
+                        $previous_attribute_name = $input_new_attribute.val()
+                    }
+                });
+
                 $handle_delete_attribute();
 
                 $("button#new_attribute").on("click", function() {
@@ -1872,9 +1954,9 @@ $(document).ready(function() {
 	        if ($result == false || $result["error"])
 		    return false;
 
-	        $select_type_list = $('<select></select>');
-	        $select_type_list.attr("id", "select_type");
-	        $select_type_list.attr("name", "type");
+	        $select_type_list = $('<select></select>')
+                         .attr("id", "select_type")
+	                 .attr("name", "type");
 
                 $result["list"].forEach(function($type) {
 		    var $option = $("<option>");

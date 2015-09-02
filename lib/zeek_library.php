@@ -942,7 +942,8 @@ class ZeekLibrary extends ZeekOutput {
 * @param array ref of list of elements
 * @param integer size to remove
 */
-    private function directory_scan($path, &$list, $len_to_remove=0,
+    private function directory_scan($path, &$list,
+                                    $is_recursive, $len_to_remove=0,
                                     $filter_directories=null, $no_global_path=false)
     {
 	try
@@ -974,8 +975,11 @@ class ZeekLibrary extends ZeekOutput {
                         continue;
                     }
 
-		    $this->directory_scan(
-			$filepath, $list, $len_to_remove, $filter_directories);
+                    if ($is_recursive)
+		        $this->directory_scan(
+			    $filepath, $list, $is_recursive,
+                            $len_to_remove, $filter_directories);
+
                     continue;
 		}
 
@@ -1057,7 +1061,7 @@ class ZeekLibrary extends ZeekOutput {
     {
 	$files_list = array();
 
-	if (directory_scan($src, $files_lists) == false)
+	if (directory_scan($src, $files_lists, true) == false)
 	    return false;
 
 	foreach ($files_list as $file)
@@ -1483,7 +1487,7 @@ class ZeekLibrary extends ZeekOutput {
 	// on récupère le path
 	$path = $this->global_path . "projects/$project_id";
 
-	if ($this->directory_scan($path, $rsp, strlen($path) + 1, $filter_directories))
+	if ($this->directory_scan($path, $rsp, true, strlen($path) + 1, $filter_directories))
 	    return $rsp;
 
 	return false;
@@ -1496,7 +1500,7 @@ class ZeekLibrary extends ZeekOutput {
 	// on récupère le path
 	$path = $this->global_path . "js/ace";
 
-	if ($this->directory_scan($path, $rsp, strlen($path) + 1))
+	if ($this->directory_scan($path, $rsp, false, strlen($path) + 1))
 	    return $rsp;
 
 	return false;
@@ -1551,7 +1555,7 @@ class ZeekLibrary extends ZeekOutput {
 
         $src = $this->global_path . "projects/$project_id/$directory_name";
 
-	if (is_dir($src) && $this->directory_scan($src, $rsp, -1, null, true))
+	if (is_dir($src) && $this->directory_scan($src, $rsp, false, -1, null, true))
 	    return $rsp;
 
 	return false;
@@ -1566,7 +1570,7 @@ class ZeekLibrary extends ZeekOutput {
     {
 	$rsp = array();
 
-	if ($this->directory_scan($this->global_path . "plugins", $rsp, -1))
+	if ($this->directory_scan($this->global_path . "plugins", $rsp, true, -1))
 	    return $rsp;
 
 	return false;
