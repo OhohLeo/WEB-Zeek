@@ -1186,7 +1186,9 @@ class ZeekLibrary extends ZeekOutput {
 	try
 	{
 	    $fp = fopen($src, 'r');
-	    $content = fread($fp, filesize($src));
+            $size = filesize($src);
+
+            $content = ($size != 0) ? fread($fp, $size) : "Write a good masterpiece!";
 	    fclose($fp);
 
 	    return $content;
