@@ -283,7 +283,7 @@ class Zeek extends ZeekOutput {
 
             case 'content_add':
 		return $this->content_add(
-                    $params["directory"], $params["name"]);
+                    $params["directory"], $params["files"]);
 
             case 'content_move':
 		return $this->content_update(
@@ -1189,39 +1189,46 @@ class Zeek extends ZeekOutput {
  * @param string file input
  * @param string file name
  */
-    public function content_add($directory_name, $input, $name=null)
+    public function content_add($directory_name, $inputs)
     {
         if ($this->content_valid_directory($directory_name) == false)
             return false;
 
-        // Get the uploaded files
-        $uploaded = "files/" . $input;
+        // we check that the json is well formated
+        $decode_inputs = $this->json_decode($inputs);
+        if ($decode_inputs == NULL)
+        {
+            $this->error("Invalid input values '$inputs'!");
+            return false;
+        }
 
-        if ($name == null)
-            $name = $input;
+        foreach ($decode_inputs as $input)
+        {
+            // Get the uploaded files
+            $uploaded = "files/" . $input;
 
-        $zlib = $this->zlib;
+            if ($name == null)
+                $name = $input;
 
-        // Get the extension of the content
-        $extension = $zlib->file_get_extension($input);
+            $zlib = $this->zlib;
 
-        // Remove the extension of the destination name
-        if ($zlib->file_get_extension($name) === $extension)
-            $name = substr($name, 0, strpos($name, '.'));
+            // Get the extension of the content
+            $extension = $zlib->file_get_extension($input);
 
-        // Move source file to destination file
-        $result = false;
+            // Remove the extension of the destination name
+            if ($zlib->file_get_extension($name) === $extension)
+                $name = substr($name, 0, strpos($name, '.'));
 
-	if ($zlib->file_modify(
-	    $this->project_id, $_SESSION["login"], $uploaded,
-            $directory_name, $name, $extension))
-	{
-	    $this->success(
-		"content '$uploaded' stored as "
-	      . "'$directory_name/$name.$extension'!");
+            // Move source file to destination file
+	    if ($zlib->file_modify(
+	        $this->project_id, $_SESSION["login"], $uploaded,
+                $directory_name, $name, $extension) == false)
+                    return false;
 
-	    $result = true;
-	}
+	    array_push($failed, $name);
+        }
+
+	$this->success("Content(s) stored in " . "'$directory_name'!");
 
         $this->zlib->uploaded_files_delete();
         return $result;
@@ -1554,12 +1561,6 @@ class Zeek extends ZeekOutput {
     public function file_set($user, $name, $data)
     {
 	$zlib = $this->zlib;
-
-        // TODO : the file chosen
-        //if ($user !==  $_SESSION['login'])
-        //{
-        //
-        //}
 
 	if ($zlib->file_set($this->project_id, $user, $name, $data))
 	{

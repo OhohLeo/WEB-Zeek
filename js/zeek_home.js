@@ -237,35 +237,31 @@ $(document).ready(function() {
         dictRemoveFileConfirmation: null,
         dictMaxFilesExceeded: "You can not upload any more files.",
         init: function () {
+
+           var $dropzone_files = [];
+
             this.on("complete", function ($file) {
 
-                // when all uploads are over
+                $dropzone_files.push($file["name"]);
+
                 if (this.getUploadingFiles().length === 0
                     && this.getQueuedFiles().length === 0) {
 
-                        if ($actual_content_directory == null) {
-                            return false;
-                        }
-
                         $send_request({
-		            "method": "content_add",
+                            "method": "content_add",
                             "directory": $actual_content_directory.text(),
-                            "name": $file["name"],
-	                }, function ($result) {
+                            "files": JSON.stringify($dropzone_files),
+                        }, function ($result) {
 
-                            if ($result == false) {
+                            if ($result == false)
                                 return false;
-                            }
 
+                            $dropzone_empty();
                             $contents_update();
                         });
                 }
             });
         },
-    });
-
-    $dropzone.on("complete", function($file) {
-        $dropzone.removeFile($file);
     });
 
     var $dropzone_empty = function () {
@@ -277,8 +273,6 @@ $(document).ready(function() {
     var $tbody_contents_list = $("tbody#contents_list");
 
     var $contents_handle_directory = function($input) {
-
-        console.log($input);
 
         var $type = $input["type"];
         var $name = $type + "-" + $input["name"];
