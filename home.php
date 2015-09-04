@@ -138,6 +138,9 @@ include 'default/header.php';
             <nav id="contents">
                 <button id="contents_create" class="validate">Create</button>
             </nav>
+            <select id="contents">
+                <option>No directory found!</option>
+            </select>
             <div id="content_directory">
                 <form action="files[]" class="dropzone" id="dropzone"></form>
                 <table>

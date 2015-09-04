@@ -20,7 +20,6 @@ class Zeek extends ZeekOutput {
 
     private $type_simple = array(
         "TITLE"    => array("db_type" => "VARCHAR", "db_size" => 100),
-        "IMAGE"    => array("db_type" => "LONGBLOB"),
         "TEXT"     => array("db_type" => "LONGTEXT"),
         "INTEGER"  => array("db_type" => "INTEGER"),
         "NUMBER"   => array("db_type" => "BIGINT"),
@@ -2117,9 +2116,19 @@ class Zeek extends ZeekOutput {
         if ($this->structure_is_enabled() == false)
             return false;
 
-	$this->output_json(array('list' =>
-            array_keys($expert_mode ? $this->type_complex : $this->type_simple)));
+        $result = array_keys(
+            $expert_mode ? $this->type_complex : $this->type_simple);
 
+        // we also support contents type list
+        if ($this->refresh_content_type_list())
+        {
+            foreach ($this->content_type_list as $type_name => $detail)
+            {
+                array_push($result, "contents:" . $type_name);
+            }
+        }
+
+	$this->output_json(array('list' => $result));
 	return true;
     }
 
@@ -2217,6 +2226,22 @@ class Zeek extends ZeekOutput {
         {
             $this->error("Invalid structure value '$new_structure'!");
             return false;
+        }
+
+        // we add supported contents type list
+        if ($this->refresh_content_type_list())
+        {
+            $array = $this->type_simple["TITLE"];
+
+            foreach ($this->content_type_list as $type_name => $detail)
+            {
+                $type_name = "contents:" . $type_name;
+
+                $array["type"] = $type_name;
+
+                $this->type_simple[$type_name]  = $array;
+                $this->type_complex[$type_name] = $array;
+            }
         }
 
         $structure = array();

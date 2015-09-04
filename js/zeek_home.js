@@ -43,6 +43,7 @@ $(document).ready(function() {
 		    return false;
 
                 $content_get_type_list();
+                $structure_get_list();
             });
     };
 
@@ -1972,6 +1973,8 @@ $(document).ready(function() {
 		    $select_type_list.append(
                         $("<option>").text($type));
 	        });
+
+                return -1;
             });
     }
 
