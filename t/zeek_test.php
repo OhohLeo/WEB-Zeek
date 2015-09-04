@@ -166,11 +166,11 @@ class TestZeek extends PHPUnit_Framework_TestCase
         // we check the structure
     	$zeek->structure_get_list(true);
     	$this->assertTrue(
-            $zeek->checkOutput('{"list":["TINYINT","TINYINT_U","SMALLINT","SMALLINT_U","MEDIUMINT","MEDIUMINT_U","INT","INT_U","BIGINT","BIGINT_U","DECIMAL","INTEGER","FLOAT","DOUBLE","REAL","DATE","TIME","TIMESTAMP","DATETIME","YEAR","CHAR","VARCHAR","TINYTEXT","TEXT","MEDIUMTEXT","LONGTEXT","TINYBLOB","BLOB","MEDIUMBLOB","LONGBLOB"]}'));
+            $zeek->checkOutput('{"list":["TINYINT","TINYINT_U","SMALLINT","SMALLINT_U","MEDIUMINT","MEDIUMINT_U","INT","INT_U","BIGINT","BIGINT_U","DECIMAL","INTEGER","FLOAT","DOUBLE","REAL","DATE","TIME","TIMESTAMP","DATETIME","YEAR","CHAR","VARCHAR","TINYTEXT","TEXT","MEDIUMTEXT","LONGTEXT","TINYBLOB","BLOB","MEDIUMBLOB","LONGBLOB","contents:images","contents:audio","contents:video","contents:application"]}'));
 
         $zeek->structure_get_list(false);
     	$this->assertTrue(
-            $zeek->checkOutput('{"list":["TITLE","IMAGE","TEXT","INTEGER","NUMBER","FLOAT","DATE","TIME","YEAR","DATETIME"]}'));
+            $zeek->checkOutput('{"list":["TITLE","TEXT","INTEGER","NUMBER","FLOAT","DATE","TIME","YEAR","DATETIME","contents:images","contents:audio","contents:video","contents:application"]}'));
 
         // we check that it is not possible to dynamically modify the project structure
         // in this kind of project
