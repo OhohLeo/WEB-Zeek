@@ -176,6 +176,8 @@ $(document).ready(function() {
     };
 
     var $contents_list = {};
+    var $actual_content_type;
+    var $actual_content_directory;
 
     var $contents_update = function() {
 
@@ -191,21 +193,145 @@ $(document).ready(function() {
                 var $get_list = $result["get_list"];
 
 		for (var $directory in $get_list) {
-                    $list = $get_list[$directory];
 
-                    $contents_handle_directory($list["infos"]);
+                    var $list = $get_list[$directory];
+                    var $type = $list["infos"]["type"];
                     delete $list["infos"];
 
-                    $contents_list[$directory] = $list;
+                    if ($contents_list[$type] == null)
+                        $contents_list[$type] = {};
 
-                    if ($actual_content_directory != null) {
-                        $actual_content_directory.click();
-                    }
+                    $contents_list[$type][$directory] = $list;
+
+                    $contents_handle_type($type);
                 };
 
                 return -1;
             });
     };
+
+    var $contents_handle_type = function($type) {
+
+        // we create the type button if it doesn't exist
+        if ($("button#contents_" + $type).length == 0) {
+
+            // we create the directory button
+            var $btn = $("<button>").attr("id", "contents_" + $type)
+                                    .addClass("content_type")
+                                    .addClass($type)
+                                    .text($type)
+                                    .on("click", function () {
+
+                                        $actual_content_type = $(this).text();
+
+                                        // we display the selected border
+                                        $("button.content_type").removeClass("select");
+                                        $(this).addClass("select");
+
+                                        $select_contents.empty();
+
+                                        if (Object.keys($contents_list[$type]).length > 0)
+                                        {
+                                            for (var $directory in $contents_list[$type])
+                                            {
+                                                $select_contents.append($("<option>").text($directory));
+                                            }
+                                        }
+
+                                        // we select the first option
+                                        $("select#contents").first().click();
+                                    });
+
+            // we get the color associated to the button
+            if ($content_types[$type] != undefined) {
+
+	        var $color = $content_types[$type][2];
+
+                // add the css
+	        $btn.css({ "color": "#fff",
+	                   "background-color": $color });
+            }
+
+            if ($contents_list[$type] == null)
+                $contents_list[$type] = {};
+
+            $button_contents_create.before($btn);
+        }
+    };
+
+    var $div_content_directory =  $("div#content_directory");
+    var $tbody_contents_list = $("tbody#contents_list");
+
+    var $select_contents = $("select#contents").on("click", function() {
+
+        $dropzone_empty();
+        $tbody_contents_list.empty();
+
+        if ($actual_content_type == null)
+            return;
+
+        var $selection = $("select#contents option:selected");
+
+        $actual_content_directory = $selection.val();
+        var $list = $contents_list[$actual_content_type][$actual_content_directory]
+
+        for (var $idx in $list) {
+
+            var $content = $list[$idx];
+            var $fullpath = $content["path"]
+            + "/" + $content["filename"]
+            + "." + $content["extension"];
+
+            var $row = $("<tr>").attr("class", "content")
+                                .attr("id", "content-" + $idx)
+                                .attr("name", $content["filename"]
+                                      + "." + $content["extension"]);
+
+            var $value = $("<img>").attr("src", $fullpath)
+                                   .on("click", function() {
+                                       $div_modal.html(
+                                           $("<img>").attr("src", $fullpath));
+                                       $modal.dialog({
+		                           open: function() {
+		                               $(this).dialog("option", "title",
+		                                              $fullpath);
+                                           }});
+                                       $modal.dialog("open");
+                                   });
+
+            $row.append($("<td>").attr("class", "content_filename")
+                .append($("<input>").val($content["filename"])))
+                .append($("<td>").attr("class", "content_extension")
+                .text($content["extension"]))
+                .append($("<td>").attr("class", "content_size")
+                .text($content["size"]))
+                .append($("<td>").attr("class", "content_value")
+                .append($value))
+                .append($("<td>").append(
+                    $("<img>").attr("src", "img/delete.png")
+                .addClass("content_delete")
+                .on("click", function() {
+
+                    var $row = $(this).parent().parent();
+
+                    $send_request({
+		        "method": "content_delete",
+                        "directory": $actual_content_directory,
+                        "name": $row.attr("name"),
+	            }, function ($result) {
+                        if ($result == false) {
+                            return false;
+                        }
+
+                        $row.remove();
+                    });
+                })));
+
+            $tbody_contents_list.append($row);
+        }
+
+        $div_content_directory.show();
+    });
 
     // Disable auto discover for all elements:
     Dropzone.autoDiscover = false;
@@ -249,7 +375,7 @@ $(document).ready(function() {
 
                         $send_request({
                             "method": "content_add",
-                            "directory": $actual_content_directory.text(),
+                            "directory": $actual_content_directory,
                             "files": JSON.stringify($dropzone_files),
                         }, function ($result) {
 
@@ -267,124 +393,6 @@ $(document).ready(function() {
     var $dropzone_empty = function () {
         $dropzone.removeAllFiles()
     };
-
-    var $actual_content_directory;
-
-    var $tbody_contents_list = $("tbody#contents_list");
-
-    var $contents_handle_directory = function($input) {
-
-        var $type = $input["type"];
-        var $name = $type + "-" + $input["name"];
-        var $dst = $input["dst"];
-
-        // we check if the name already exists
-        if ($("button#contents_" + $name).length > 0) {
-            return false;
-        }
-
-        // we create the directory button
-        var $btn = $("<button>")
-            .attr("id", "contents_" + $name)
-            .addClass("content_directory")
-            .addClass($type)
-            .text($dst)
-            .on("click", function () {
-
-                // we display the selected border
-                $("button.content_directory").removeClass("select");
-                $(this).addClass("select");
-
-                // we empty the dropzone
-                $dropzone_empty();
-
-                $actual_content_directory = $(this);
-
-                $tbody_contents_list.empty();
-
-                // we get all images stored in the directory
-                var $list = $contents_list[$dst];
-
-                for (var $idx in $list) {
-
-                    var $content = $list[$idx];
-                    var $fullpath = $content["path"]
-                                  + "/" + $content["filename"]
-                                  + "." + $content["extension"];
-
-                    var $row = $("<tr>").attr("class", "content")
-                                        .attr("id", "content-" + $idx)
-                                        .attr("name", $content["filename"]
-                                                    + "." + $content["extension"]);
-
-                    var $value = $("<img>").attr("src", $fullpath)
-                                           .on("click", function() {
-                                               $div_modal.html(
-                                                   $("<img>").attr("src", $fullpath));
-                                               $modal.dialog({
-		                                   open: function() {
-		                                       $(this).dialog("option", "title",
-				                                      $fullpath);
-                                                   }});
-                                               $modal.dialog("open");
-                                           });
-
-                    $row.append($("<td>").attr("class", "content_filename")
-                                         .append($("<input>").val($content["filename"])))
-                        .append($("<td>").attr("class", "content_extension")
-                                         .text($content["extension"]))
-                        .append($("<td>").attr("class", "content_size")
-                                         .text($content["size"]))
-                        .append($("<td>").attr("class", "content_value")
-                                         .append($value))
-                        .append($("<td>").append(
-                            $("<img>").attr("src", "img/delete.png")
-                                      .addClass("content_delete")
-                                      .on("click", function() {
-
-                                          var $row = $(this).parent().parent();
-
-                                          console.log($row);
-
-                                          $send_request({
-		                              "method": "content_delete",
-                                              "directory": $actual_content_directory.text(),
-                                              "name": $row.attr("name"),
-	                                  }, function ($result) {
-                                              if ($result == false) {
-                                                  return false;
-                                              }
-
-                                              $row.remove();
-                                          });
-                                      })));
-
-
-                    $tbody_contents_list.append($row);
-                }
-
-                $div_content_directory.show();
-            });
-
-        if ($content_types[$type] != undefined) {
-
-            // we get the color associated to the button
-	    var $color = $content_types[$type][2];
-
-            // add the css
-	    $btn.css({ "color": "#fff",
-		       "background-color": $color });
-
-            /* if ($.isPlainObject($input)) {
-               for (var $key in $input) {
-               $content_directory.attr($key, $input[$key]);
-               };
-               } */
-        }
-
-        $button_contents_create.before($btn);
-        return true;
-    }
 
     $button_contents_create.on("click", function () {
 
@@ -485,6 +493,7 @@ $(document).ready(function() {
                             return;
                         }
 
+                        var $type = $contents_opt["type"];
                         var $directory = $generate_name();
 
                         $contents_opt["dst"] = $directory;
@@ -505,8 +514,8 @@ $(document).ready(function() {
                                 return false;
                             }
 
-                            $contents_handle_directory($contents_opt);
-
+                            $contents_update();
+                            $("select#contents").append($("<option>").text($directory));
                             $modal.dialog("close");
                         });
                     }
@@ -518,14 +527,13 @@ $(document).ready(function() {
 
     $("button#content_directory_remove").on("click", function() {
 
-        if ($actual_content_directory == null) {
+        if ($actual_content_type == null
+            || $actual_content_directory == null) {
             return false;
         }
 
-        $directory = $actual_content_directory.text();
-
 	$div_modal.html("<p>Do you still want to delete <b>"
-                      + $directory + "</b> ?</p>");
+                        + $actual_content_directory + "</b> ?</p>");
 
 	$modal.dialog({
 	    open: function() {
@@ -536,7 +544,7 @@ $(document).ready(function() {
 
                     $send_request({
                         "method": "content_remove_directory",
-                        "directory": $directory
+                        "directory": $actual_content_directory
                     }, function ($result) {
                         if ($result == false) {
                             return false;
@@ -545,11 +553,22 @@ $(document).ready(function() {
                         // Hide directory elements
                         $div_content_directory.hide();
 
-                        // Remove all actual buttons
-                        $("button.content_directory").remove();
+                        // Remove type button if needed
+                        delete $contents_list[$actual_content_type][
+                            $actual_content_directory];
 
-                        // Get actual content list
-                        $contents_update();
+                        // Remove actual input
+                        $("select#contents option:selected").remove();
+
+                        // Remove type button if needed
+                        if (Object.keys($contents_list[
+                            $actual_content_type]).length == 0)
+                        {
+                            delete $contents_list[$actual_content_type];
+                            $("button#contents_" + $actual_content_type).remove();
+                            $select_contents.append(
+                                $("<option>No directory found!</option>"));
+                        }
 
                         $modal.dialog("close");
                     });
@@ -728,11 +747,8 @@ $(document).ready(function() {
 				$store_by_type[$type].forEach(function($obj) {
 				    var $name      = $obj["name"];
 
-				    var $option = $("<option>");
-                                    $option.attr("name", $name);
-				    $option.text($name);
-
-                                    $select_edit.append($option);
+                                    $select_edit.append($("<option>").attr("name", $name)
+                                                                     .text($name));
 
                                     $on_selected();
 				});
@@ -1953,10 +1969,8 @@ $(document).ready(function() {
 	                 .attr("name", "type");
 
                 $result["list"].forEach(function($type) {
-		    var $option = $("<option>");
-		    $option.text($type);
-
-		    $select_type_list.append($option);
+		    $select_type_list.append(
+                        $("<option>").text($type));
 	        });
             });
     }

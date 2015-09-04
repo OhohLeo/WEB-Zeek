@@ -78,7 +78,7 @@ nav#edit {
     text-align:center;
 }
 
-select#edit {
+select#edit, select#contents {
     width: 320px;
     height: 40px;
     margin: 20px;
