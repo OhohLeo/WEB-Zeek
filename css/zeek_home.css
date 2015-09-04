@@ -197,6 +197,10 @@ textarea#structure_explain {
     overflow: hidden;
 }
 
+input.content_filename {
+    cursor: pointer;
+}
+
 p#final_destination {
     color: #6f5499;
     font-weight: bold;

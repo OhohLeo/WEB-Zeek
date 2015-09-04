@@ -143,7 +143,7 @@ include 'default/header.php';
             </select>
             <div id="content_directory">
                 <form action="files[]" class="dropzone" id="dropzone"></form>
-                <table>
+                <table class="center">
                     <tbody id="contents_list"></tbody>
                 </table>
                 <button id="content_directory_remove" class="danger">Remove</button>

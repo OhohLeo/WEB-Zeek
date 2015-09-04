@@ -340,10 +340,11 @@ $(document).ready(function() {
     var $dropzone = new Dropzone("form#dropzone", {
         url: "upload.php",
         maxFilesize: 3, // MB
-        acceptedFiles: 'image/*',
+        acceptedFiles: "image/jpeg,image/png,image/gif",
+        method: "post",
         ignoreHiddenFiles: true,
         autoProcessQueue: true,
-        createImageThumbnails: true,
+        createImageThumbnails: false,
         maxThumbnailFilesize: 10,
         thumbnailWidth: 100,
         thumbnailHeight: 100,

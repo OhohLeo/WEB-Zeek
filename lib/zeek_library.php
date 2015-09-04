@@ -1016,6 +1016,7 @@ class ZeekLibrary extends ZeekOutput {
 
                 $result = array(
                     'mime'      => $mime,
+                    'size'      => filesize($filepath),
                     'path'      =>
                     $no_global_path ? $smallpath : $path,
                     'directory' =>

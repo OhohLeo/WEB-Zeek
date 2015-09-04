@@ -1205,9 +1205,7 @@ class Zeek extends ZeekOutput {
         {
             // Get the uploaded files
             $uploaded = "files/" . $input;
-
-            if ($name == null)
-                $name = $input;
+            $name = $input;
 
             $zlib = $this->zlib;
 
@@ -1223,8 +1221,6 @@ class Zeek extends ZeekOutput {
 	        $this->project_id, $_SESSION["login"], $uploaded,
                 $directory_name, $name, $extension) == false)
                     return false;
-
-	    array_push($failed, $name);
         }
 
 	$this->success("Content(s) stored in " . "'$directory_name'!");
