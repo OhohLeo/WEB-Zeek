@@ -9,27 +9,32 @@ use Cwd;
 
 use feature 'say';
 
-my %AUTHORISED = map { $_ => 1 } qw(lib js css default projects extends img ace vendor);
+my %FORBIDDEN = map { $_ => 1 } qw(.. DEPLOY projects t tools var);
 
-my($action, $host, $login, $password, $directory, $force, $help);
+my($action, $host, $login, $password, $directory, @input, $output, $force, $help);
 
 GetOptions(
     'action|a=s'     => \$action,
-    'host|h=s'       => \$host,
+    'host|t=s'       => \$host,
     'login|l=s'      => \$login,
     'password|p=s'   => \$password,
     'directory|d=s'  => \$directory,
+    'input|i=s'      => \@input,
+    'output|o=s'     => \$output,
     'force|f'        => \$force,
     'help|h'         => \$help);
 
 sub display_help
 {
     die <<END;
-usage : deploy.pl -a [see|update|clean]
-                  -h HOST NAME
+usage : deploy.pl {options} [ directory / file ]
+                  -a [see|update|clean]
+                  -t HOST NAME
                   -l LOGIN NAME
                   -p PASSWORD
                   -d DIRECTORY
+                  -i INPUT
+                  -o OUTPUT
                   -f FORCE
                   -h this help
 END
@@ -57,11 +62,13 @@ sub read_directory
 	my $filename = $_;
 	my $url = "$directory/$filename";
 
-	if (-d $url and exists($AUTHORISED{$filename}))
+	if (-d $url
+            and not exists($FORBIDDEN{$filename})
+            and substr($filename, 0, 1) ne ".")
 	{
 	    read_directory($url, $files);
 	}
-	elsif (-f $url and $filename =~ /\.(html|php|js|css|ini|png)+$/)
+	elsif (-f $url) # and $filename =~ /\.(html|php|js|css|ini|png)+$/)
 	{
 	    next if $filename =~ /^(external_|internal_)+/;
 
@@ -83,7 +90,14 @@ sub replace_link
 
 my %files;
 
-if ($force)
+if (@input)
+{
+    foreach my $input (@input)
+    {
+        read_directory($input, \%files);
+    }
+}
+elsif ($force)
 {
     read_directory($directory, \%files);
 }
@@ -101,12 +115,13 @@ else
 
         $path = substr($path, 0, -1);
 
-        if (exists($AUTHORISED{$path}) || $path eq ".")
+        if (not exists($FORBIDDEN{$path})
+            || substr($filename, 0, 1) eq ".")
         {
             $path = "$pwd/$path";
 
             $files{$path} //= [];
-            push($files{$path}, $filename);
+            push(@{$files{$path}}, $filename);
         }
     }
 }
@@ -177,6 +192,48 @@ END
 		     "$directory/var/config.ini");
     };
 }
+elsif ($host eq 'divebartheband.com')
+{
+    my $filename = '.htaccess';
+
+    $action_before = sub {
+	# we create the file
+	my $filehandle;
+	open($filehandle, '>', "$directory/$filename");
+	print {$filehandle} <<END;
+AddType x-mapp-php5.5 .php
+AddHandler x-mapp-php5.5 .php
+END
+
+	close($filehandle);
+
+	# we add the file to the list
+        $files{"*$directory"} = [];
+        push(@{$files{"*$directory"}}, $filename);
+
+	# we add the sessions directory
+	mkdir("$directory/sessions");
+
+	# we use /var/config_free.ini file
+	replace_link("$directory/config.ini",
+		     "$directory/var/config_1and1.ini");
+
+	# we add the sessions to the list
+	$files{"*$directory/sessions"} = [];
+    };
+
+    $action_after = sub {
+	# we remove the file
+	unlink("$directory/$filename");
+
+	# we remove the sessions directory
+	rmdir("$directory/sessions");
+
+        # we use config file again
+	replace_link("$directory/config.ini",
+		     "$directory/var/config.ini");
+    };
+}
 
 # we try to establish connection
 my $ftp = Net::FTP->new($host, Passive => 1)
@@ -207,20 +264,34 @@ my $size = length($directory);
 
 while (my($cwd, $files) = each %files)
 {
-    $cwd = substr($cwd, $size);
+    my $orig_dst;
 
-    if ($cwd eq '')
+    if (substr($cwd, 0, 1) eq '*')
     {
-	$cwd = '/';
+        $cwd = substr($cwd, 1);
+        $orig_dst = 1;
+    }
+
+    my $relative_dst = substr($cwd, $size);
+    my $full_dst = $relative_dst;
+
+    if ($output && not $orig_dst)
+    {
+        $full_dst = "/$output$relative_dst";
+    }
+
+    if ($full_dst eq '')
+    {
+	$full_dst = '/';
     }
     else
     {
 	# we create the directory
-	$ftp->mkdir($cwd, 1);
+	$ftp->mkdir($full_dst, 1);
     }
 
-    say "change directory '$cwd'";
-    $ftp->cwd($cwd)
+    say "change directory '$full_dst'";
+    $ftp->cwd($full_dst)
 	or die "Cannot change working directory ", $ftp->message;
 
     # we write the file
@@ -228,8 +299,7 @@ while (my($cwd, $files) = each %files)
     {
 	# we set binary mode
 	$ftp->binary;
-
- 	$ftp->put("$directory/$cwd/$file");
+ 	$ftp->put("$directory/$relative_dst/$file");
 	say "send $file";
     }
 }
