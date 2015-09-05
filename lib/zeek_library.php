@@ -890,7 +890,7 @@ class ZeekLibrary extends ZeekOutput {
 * @method directory_remove
 * @param string path
 */
-    public function directory_remove($path)
+    public function directory_remove($path, $filter=null)
     {
         // we check if the directory exists
 	if (!is_dir($path))
@@ -906,13 +906,18 @@ class ZeekLibrary extends ZeekOutput {
 	    {
 		if ($object != "." && $object != "..")
 		{
-		    if (filetype($path."/".$object) == "dir")
+                    $filepath = $path ."/". $object;
+
+                    if ($filter != null && $filter == $filepath)
+                        continue;
+
+		    if (filetype($filepath) == "dir")
 		    {
-			$this->directory_remove($path."/".$object);
+			$this->directory_remove($filepath);
 		    }
 		    else
 		    {
-			unlink($path."/".$object);
+			unlink($filepath);
 		    }
 		}
 	    }

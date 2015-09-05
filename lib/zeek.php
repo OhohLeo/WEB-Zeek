@@ -1836,7 +1836,6 @@ class Zeek extends ZeekOutput {
         $dst = 'projects/' . $this->project_id
 	     . '/TEST/' . $_SESSION['login'];
 
-
         // we deploy the files & apply all the data plugins
         if ($this->deploy_files(
             $this->global_path . $dst, $decode_options) == false)
@@ -1871,6 +1870,9 @@ class Zeek extends ZeekOutput {
             return false;
         }
 
+        $dst = $this->zlib->project_get_attribute(
+            $project_id, "destination");
+
         // we deploy the files & apply all the plugins
         if ($this->deploy_files($dst, $decode_options) == false)
             return false;
@@ -1903,10 +1905,12 @@ class Zeek extends ZeekOutput {
         }
 
         // we clean all files in the destination
-        if ($zlib->directory_remove($destination) == false)
+        // but not the zeek directory
+        if ($zlib->directory_remove(
+                $destination, $this->global_path) == false)
             return false;
 
-        // we start from clean directory
+        // we start from clean
         if ($zlib->directory_create($destination) == false)
             return false;
 

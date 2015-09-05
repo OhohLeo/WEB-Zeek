@@ -63,8 +63,7 @@ $(document).ready(function() {
                 $content_get_type_list();
 
                 // we refresh the contents directory color
-                $("button.content_directory")
-                         .filter("." + $name)
+                $("button#contents_" + $name)
                          .css({ "color": "#fff",
 				"background-color": $color });
             });
@@ -143,9 +142,9 @@ $(document).ready(function() {
         $("input#content_color_" + $name).change(function() {
             $contents_modify_type($name, $(this).spectrum("get")
                                                 .toHexString());
-        })                               .spectrum({
-                                             color: $color
-                                         });
+        }).spectrum({
+            color: $color
+        });
 
     };
 
@@ -180,7 +179,7 @@ $(document).ready(function() {
     var $actual_content_type;
     var $actual_content_directory;
 
-    var $contents_update = function() {
+    var $contents_update = function($on_result) {
 
  	$send_request(
 	    {
@@ -206,6 +205,9 @@ $(document).ready(function() {
 
                     $contents_handle_type($type);
                 };
+
+                if ($on_result != null)
+                    $on_result();
 
                 return -1;
             });
@@ -280,8 +282,12 @@ $(document).ready(function() {
 
             var $content = $list[$idx];
             var $fullpath = $content["path"]
-            + "/" + $content["filename"]
-            + "." + $content["extension"];
+                          + "/" + $content["filename"]
+                          + "." + $content["extension"];
+
+            var $relativepath = $actual_content_directory
+                              + "/" + $content["filename"]
+                              + "." + $content["extension"];
 
             var $row = $("<tr>").attr("class", "content")
                                 .attr("id", "content-" + $idx)
@@ -704,8 +710,6 @@ $(document).ready(function() {
 
 		$get_list.forEach(function($obj) {
 
-                    console.log($obj);
-
 		    var $type = $obj["type"];
 
                     // we ignore unknown type
@@ -1125,8 +1129,6 @@ $(document).ready(function() {
                         $send_request($filename, function($result) {
 			    $last_edit_btn_type = "";
 
-                            console.log();
-
 			    $modal.dialog("close");
 			    $edit_update($filename["extension"],
                                          $filename["user"],
@@ -1359,7 +1361,37 @@ $(document).ready(function() {
 
             var $input;
 
-            if ($options["type"] === "textarea")
+            var $sp_type = $options["sp_type"];
+            var $contents_type_idx = $sp_type.lastIndexOf("contents:");
+
+            // We check it is a content type
+            if ($contents_type_idx == 0)
+            {
+                var $type = $sp_type.substring(9);
+                var $directories = $contents_list[$type];
+
+                $input = $("<select>")
+                    .attr("class", "data")
+                    .attr("name", $attribute);
+
+                for (var $directory in $directories)
+                {
+                    var $list = $directories[$directory];
+
+                    // we set empty option
+                    $input.append($("<option>"));
+
+                    for (var $idx in $list)
+                    {
+                        var $content = $list[$idx];
+
+                        $input.append($("<option>").text(
+                            $directory + "/" + $content["filename"]
+                                       + "." + $content["extension"]));
+                    }
+                }
+            }
+            else if ($options["type"] === "textarea")
             {
                 $input = $("<textarea>")
                     .attr("class", "data")
@@ -1456,6 +1488,13 @@ $(document).ready(function() {
                 $values[$name] = CKEDITOR.instances[$name].getData();
             });
 
+            $("select.data").each(function() {
+
+                var $name = $(this).attr("name");
+
+                $values[$name] = $("option:selected", this).val();
+            });
+
             $("input.data").each(function() {
 
                 var $input = $(this);
@@ -1472,11 +1511,17 @@ $(document).ready(function() {
             // we set all actual values in <input>
             var $content = $(this).parents("tr").children();
 
-            $div_modal.children("input, textarea").each(function() {
+            $div_modal.children("input, textarea, select").each(function() {
 
                 var $value = $content.eq(0).html();
 
-                if ($(this).is("textarea"))
+                if ($(this).is("select"))
+                {
+                    $(this).children().filter(function() {
+                        return $(this).text() == $value;
+                    }).prop('selected', true)
+                }
+                else if ($(this).is("textarea"))
                 {
                     CKEDITOR.instances[$(this).attr("name")].setData($value);
                 }
@@ -1861,6 +1906,18 @@ $(document).ready(function() {
 	    $li_menu.removeClass("menu_clicked");
 	    $li_data.removeClass("data_clicked");
 	    $this.addClass("data_clicked");
+
+           if (Object.keys($content_types) == 0)
+                $content_get_type_list();
+
+            if (Object.keys($contents_list).length == 0)
+            {
+                $contents_update(function() {
+                    $handle_data($this.text());
+                });
+
+                return;
+            }
 
 	    $handle_data($this.text());
 	});
