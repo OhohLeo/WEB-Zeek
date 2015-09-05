@@ -1435,7 +1435,7 @@ $(document).ready(function() {
 		    method: "data_get",
 		    name: $name,
 		    offset: 0,
-		    size: 10,
+		    size: 100,
 		},
 		function($array) {
 		    if ($array == false)
@@ -1628,7 +1628,12 @@ $(document).ready(function() {
     // we configure to set project url
     $input_validator(
         "#project_set_url",
-        function() {
+        function($new_value) {
+
+            if ($new_value.substring(0, 4) === "www.")
+                $new_value = "http://" + $new_value;
+
+            $("a#url").attr("href", $new_value);
         })();
 
     // we configure to set project destination

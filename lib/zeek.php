@@ -624,6 +624,8 @@ class Zeek extends ZeekOutput {
  */
     public function project_set_url($value)
     {
+        if (strpos($value, "www.") == 0)
+            $value = "http://" . $value;
 
         if ($this->project_set_attribute($this->project_id, "url", $value))
         {
@@ -725,7 +727,7 @@ class Zeek extends ZeekOutput {
             "Login Access to Zeek '$project_name'",
             "Welcome to Zeek '$project_name':\n"
             . "login: $email\n"
-          . "password : $password\n")) {
+            . "password : $password\n")) {
 
             if ($this->zlib->user_add($project_id, $email, $password)) {
                 $this->success("User '$email' correctly added & informed!");
@@ -2367,8 +2369,18 @@ class Zeek extends ZeekOutput {
  */
     public function data_get($name, $offset, $size)
     {
-        if (!(isset($name) && isset($offset) && isset($size))) {
-            $this->error("Expecting valid table name, offset and size field!");
+        if (isset($name) == false) {
+            $this->error("Expecting valid table name!");
+            return false;
+	}
+
+        if (isset($offset) && is_numeric($offset) == false) {
+            $this->error("Expecting valid offset!");
+            return false;
+	}
+
+        if (isset($size) && is_numeric($size) == false) {
+            $this->error("Expecting valid size!");
             return false;
 	}
 

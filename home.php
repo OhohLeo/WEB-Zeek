@@ -56,7 +56,7 @@ include 'default/header.php';
 </head>
 <body>
     <nav id="action">
-	<a href="<?php echo "$project_url";?>">
+	<a id="url" href="<?php echo "$project_url";?>">
             <h1 id="title"><?php echo "$project_name";?></h1>
         </a>
 	<ul>
