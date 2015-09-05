@@ -539,6 +539,33 @@ class TestZeek extends PHPUnit_Framework_TestCase
               . ' Here is the list of albums: '
               . '<zeek name="album" offset="1" size="2"><p>album {{name}} ({{duration}}): {{comment}}</p></zeek> end'));
 
+        // create new news element
+        $news = array(
+            'name=test1&date=2015-01-01&comments=Tropcool1!',
+            'name=test2&date=2015-02-02&comments=Tropcool2!',
+            'name=test3&date=2015-03-03&comments=Tropcool3!');
+
+        foreach ($news as $new)
+        {
+            $this->assertTrue(
+                $zeek->data_set('news', $new));
+
+            // check the value has been correctly created
+            $this->assertTrue(
+                $zeek->checkOutput('{"success":"Value correctly inserted!"}'));
+        }
+
+        $this->assertEquals(
+            "<p>test1 (2015-01-01): Tropcool1!</p><p>test2 (2015-02-02): Tropcool2!</p><p>test3 (2015-03-03): Tropcool3!</p>",
+            $zeek->zeekify(
+                '<zeek name="news"><p>{{name}} ({{date}}): {{comments}}</p></zeek>'));
+
+        $this->assertEquals(
+            "<p>test3 (2015-03-03): Tropcool3!</p><p>test2 (2015-02-02): Tropcool2!</p><p>test1 (2015-01-01): Tropcool1!</p>",
+            $zeek->zeekify(
+                '<zeek name="news" sort_by="date--"><p>{{name}} ({{date}}): {{comments}}</p></zeek>'));
+
+
         $zeek->environment_clean();
     }
 

@@ -904,7 +904,7 @@ class ZeekLibrary extends ZeekOutput {
 
 	    foreach ($objects as $object)
 	    {
-		if ($object != "." && $object != "..")
+		if (substr($object, 0, 1) != "." && $object != "..")
 		{
                     $filepath = $path ."/". $object;
 

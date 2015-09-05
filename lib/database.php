@@ -326,7 +326,7 @@ class DataBase extends ZeekOutput {
 
         if (is_array($sort)
             and count($sort) == 2
-            and in_array($sort[1], array('ASC', 'DESC'))) {
+            and ($sort[1] === 'ASC' || $sort[1] === 'DESC')) {
             $options .= " ORDER BY " . implode(' ', $sort);
         }
 

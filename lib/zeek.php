@@ -1695,9 +1695,10 @@ class Zeek extends ZeekOutput {
             return $options;
 
 
-        $valid = array("name"   => "[a-z]+",
-                       "offset" => "\d+",
-                       "size"   => "\d+");
+        $valid = array("name"    => "[a-z]+",
+                       "offset"  => "\d+",
+                       "size"    => "\d+",
+                       "sort_by" => "\w+([+|-]{2})?");
 
         // Separate each toto = tutu and check the attribute values
         foreach ($list as $attribute)
@@ -1753,24 +1754,62 @@ class Zeek extends ZeekOutput {
             return "Invalid zeek name '$table_name'!";
 
         // we check the optional option : offset
-        $offset = array_key_exists('offset', $options) ? $options['offset'] : 0;
+        $offset = array_key_exists('offset', $options) ? $options['offset'] : null;
 
-        if (is_numeric($offset) == false)
+        if ($offset != null && is_numeric($offset) == false)
             return "Invalid offset option '$offset': expect an integer!";
 
-        // we check the optional option : size (5 by default)
-        $size = array_key_exists('size', $options) ? $options['size'] : 5;
+        // we check the optional option : size
+        $size = array_key_exists('size', $options) ? $options['size'] : null;
 
-        if (is_numeric($size) == false)
+        if ($size != null && is_numeric($size) == false)
             return "Invalid size option '$size': expect an integer!";
 
+        if ($offset != null && $size == null)
+            return "If offset is defined : size option must be also defined!";
+
+        // we check the validity of the table
         $structure = $zlib->type_get($this->project_name, $table_name);
 
         if ($structure == false)
             return "Zeek '$table_name' not found!";
 
+        // we check the optional option : sort_by
+        $sort = array('id', 'ASC');
+
+        $sort_by = array_key_exists('sort_by', $options) ? $options['sort_by'] : null;
+
+        if ($sort_by != null)
+        {
+            $direction_str = substr($sort_by, strlen($sort_by) - 2);
+
+            $direction = null;
+
+            if ($direction_str == '++')
+                $direction = 'ASC';
+            else if ($direction_str == '--')
+                $direction = 'DESC';
+
+            if ($direction == null)
+            {
+                $direction = 'ASC';
+                $name = $sort_by;
+            }
+            else
+            {
+                $name = substr($sort_by, 0, strlen($sort_by) - 2);
+            }
+
+            // we check that the attribute is valid
+            if (array_key_exists($name, $structure) == false && $name != "id")
+                return "Attribute '$name' not found in '$table_name'!";
+
+            $sort = array($name, $direction);
+        }
+
+
         $result = $zlib->value_get(
-            $this->project_id, $table_name, array('id' => 'DEC'), $size, $offset);
+            $this->project_id, $table_name, $sort, $size, $offset);
 
 	// if no value : we return an empty array
 	if ($result == NULL)
