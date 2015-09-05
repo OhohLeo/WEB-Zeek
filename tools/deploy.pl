@@ -203,6 +203,10 @@ elsif ($host eq 'divebartheband.com')
 	print {$filehandle} <<END;
 AddType x-mapp-php5.5 .php
 AddHandler x-mapp-php5.5 .php
+
+RewriteEngine on
+RewriteCond %{REQUEST_URI} !^/zeek
+RewriteRule ^(.*)$ /zeek/projects/1/DEPLOY/$1 [L]
 END
 
 	close($filehandle);
