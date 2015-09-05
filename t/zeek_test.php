@@ -201,48 +201,48 @@ class TestZeek extends PHPUnit_Framework_TestCase
         $this->assertTrue(
             $zeek->checkOutput('{"redirect":"home.php"}'));
 
-        $this->assertFalse($zeek->user_add(0,'test', NULL));
+        $this->assertFalse($zeek->user_add(0,'test', NULL, false));
 
         $this->assertTrue(
             $zeek->checkOutput('{"error":"Expecting valid user email!"}'));
 
-        $this->assertFalse($zeek->user_add(0,'test', 'test'));
+        $this->assertFalse($zeek->user_add(0,'test', 'test', false));
 
-        $this->assertTrue(
-            $zeek->checkOutput('{"error":"The user \'test\' already exist!"}'));
-
-        $this->assertFalse($zeek->user_add(1,'test', 'test_zeek.fr'));
+        //$this->assertTrue(
+        //$zeek->checkOutput('{"error":"The user \'test\' already exist!"}'));
+        //
+        $this->assertFalse($zeek->user_add(1,'test', 'test_zeek.fr', false));
 
         $this->assertTrue(
             $zeek->checkOutput(
                 '{"error":"Expected a valid email adress, received \'test_zeek.fr\'!"}'));
 
         $zeek->send_email_output = false;
-        $this->assertFalse($zeek->user_add(1,'test', 'test@zeek.fr'));
+        $this->assertFalse($zeek->user_add(1,'test', 'test@zeek.fr', false));
 
         $this->assertTrue(
             $zeek->checkOutput(
                 '{"error":"Impossible to send email to \'test@zeek.fr\'!"}'));
 
         $zeek->send_email_output = true;
-        $this->assertTrue($zeek->user_add(1,'test', 'test@zeek.fr'));
+        $this->assertTrue($zeek->user_add(1,'test', 'test@zeek.fr', false));
 
         $this->assertTrue(
             $zeek->checkOutput(
                 '{"success":"User \'test@zeek.fr\' correctly added & informed!"}'));
 
-        $this->assertFalse($zeek->user_add(1,'test', 'test@zeek.fr'));
+        $this->assertFalse($zeek->user_add(1,'test', 'test@zeek.fr', false));
 
         $this->assertTrue(
             $zeek->checkOutput('{"error":"The user \'test@zeek.fr\' already exist!"}'));
 
-        $this->assertTrue($zeek->user_add(1,'test', 'test2@zeek.fr'));
+        $this->assertTrue($zeek->user_add(1,'test', 'test2@zeek.fr', false));
 
         $this->assertTrue(
             $zeek->checkOutput(
                 '{"success":"User \'test2@zeek.fr\' correctly added & informed!"}'));
 
-        $this->assertTrue($zeek->user_add(1,'test', 'test3@zeek.fr'));
+        $this->assertTrue($zeek->user_add(1,'test', 'test3@zeek.fr', false));
 
         $this->assertTrue(
             $zeek->checkOutput(

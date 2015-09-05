@@ -28,9 +28,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
         $result = $db->handle_result($result);
 
-        $this->assertEquals($result->id, 1);
-        $this->assertEquals($result->name, "test");
-        $this->assertEquals($result->password, "test");
+        $this->assertFalse($result);
 
         $this->assertTrue(
             $db->table_check('project'));
@@ -65,9 +63,9 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($zlib->user_check(1, 'toto', 'toto'));
 
-        $this->assertTrue($zlib->user_add(1, 'toto', 'toto'));
+        $this->assertTrue($zlib->user_add(1, 'toto', 'toto', false));
 
-        $this->assertFalse($zlib->user_add(1, 'toto', 'toto'));
+        $this->assertFalse($zlib->user_add(1, 'toto', 'toto', false));
 
         $this->assertTrue($zlib->user_get(1, 'toto') !== NULL);
 
@@ -96,6 +94,12 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($zlib->user_change_password(
             1, 'toto', 'titi', 'toto'));
+
+        $this->assertTrue($zlib->user_change_authorisation(
+            1, 'toto', true));
+
+        $this->assertTrue($zlib->user_change_authorisation(
+            1, 'toto', false));
 
         $this->assertTrue($zlib->user_remove(1, 'toto'));
         $this->assertFalse($zlib->user_remove(1, 'toto'));

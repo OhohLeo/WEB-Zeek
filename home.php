@@ -8,6 +8,8 @@ $start_ts     = $_SESSION["start_ts"];
 $login        = $_SESSION["login"];
 $global_path  = $_SESSION["global_path"];
 
+$is_master_user = $_SESSION["is_master_user"];
+
 $project_name = $_SESSION["project_name"];
 $project_id   = $_SESSION["project_id"];
 $project_url  = $_SESSION["project_url"];
@@ -93,7 +95,7 @@ include 'default/header.php';
 
             // Is piwik install ?
             // we check if config/config.ini.php is defined
-            if (file_exists($piwik_config_path) == false)
+            if ($is_master_user && file_exists($piwik_config_path) == false)
             {
             ?>
                 <a href="extends/piwik">
@@ -105,7 +107,8 @@ include 'default/header.php';
             }
             // Is Piwik fully installed ?
             // we check the status 'installation_in_progress' in config/config.ini.php
-            else if (strpos(file_get_contents($piwik_config_path), "installation_in_progress") > 0)
+            else if ($is_master_user
+                && strpos(file_get_contents($piwik_config_path), "installation_in_progress") > 0)
             {
             ?>
                 <a href="extends/piwik">
@@ -115,7 +118,7 @@ include 'default/header.php';
                 </a>
             <?php
             }
-            else if ($piwik_token == "")
+            else if ($is_master_user && $piwik_token == "")
             {
                 $is_piwik_installed = true;
             ?>
@@ -166,6 +169,7 @@ include 'default/header.php';
 	</div>
 	<div id="test" class="menu"></div>
 	<div id="deploy" class="menu">
+            <?php if ($is_master_user) { ?>
             <h3>Project url</h3>
 	    <input id="project_set_url"
                    type="text"
@@ -176,9 +180,11 @@ include 'default/header.php';
 		   value=<?php echo $project_dst; ?>>
             <h3>Project options</h3>
             <table class="center" id="options_deploy"></table>
+            <?php } ?>
             <button id="deploy_validate" class="danger">DEPLOY</button>
         </div>
 	<div id="configuration" class="menu">
+            <?php if ($is_master_user) { ?>
 	    <div class="config">
 		<h3>Project</h3>
 		<div class="config-group danger-zone">
@@ -191,7 +197,8 @@ include 'default/header.php';
                     <button id="project_delete" class="danger">DELETE this project</button>
 		</div>
 	    </div>
-             <hr>
+            <hr>
+            <?php } ?>
 	    <div class="config">
 		<h3>Password</h3>
 		<div class="config-group">
@@ -212,14 +219,21 @@ include 'default/header.php';
 		</div>
 	    </div>
             <hr>
+            <?php if ($is_master_user) { ?>
 	    <div class="config">
 		<h3 id="user">User</h3>
 		<div class="config-group">
                     <div id="users_list"></div>
 		    <form id="user_add" role="form">
-			<p><input type="email" class="form-control" name="email"
-			          placeholder="enter new e-mail adress"></input></p>
-			<input type="submit" class="btn-block btn-success validate">
+			<p>
+                            <input type="email" class="form-control" name="email"
+			           placeholder="enter new e-mail adress"></input>
+                        </p>
+                        <p>
+                            <label>Is master user?</label>
+                            <input type="checkbox" name="is_master_user"">
+                        </p>
+                    	<input type="submit" class="btn-block btn-success validate">
 		    </form>
 		</div>
 	    </div>
@@ -260,6 +274,7 @@ include 'default/header.php';
 		</div>
 	    </div>
 	    <hr>
+            <?php } ?>
 	    <div class="config">
 		<h3>Edit</h3>
 		<div class="config-group danger-zone">

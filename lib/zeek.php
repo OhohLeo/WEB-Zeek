@@ -260,7 +260,8 @@ class Zeek extends ZeekOutput {
                 return $this->project_set_piwik_token($params["value"]);
 
             case 'user_add':
-		return $this->user_add($project_id, $project_name, $email);
+	        return $this->user_add(
+                    $project_id, $project_name, $email, $is_master_user);
 
             case 'user_delete':
 	        return $this->user_delete($project_id, $params["email"]);
@@ -270,7 +271,7 @@ class Zeek extends ZeekOutput {
 
             case 'user_change_password':
 		return $this->user_change_password(
-		    $project_id, $email, $password_old, $password_new);
+		    $project_id, $user, $password_old, $password_new);
 
             case 'content_add_directory':
 		return $this->content_add_directory(
@@ -441,6 +442,9 @@ class Zeek extends ZeekOutput {
                 return false;
             }
 
+            $is_master_user = $zlib->user_get_authorisation(
+                $project_id, $login);
+
             // we store the session user
             $_SESSION["login"] = $login;
             $_SESSION["start_ts"] = time();
@@ -448,6 +452,7 @@ class Zeek extends ZeekOutput {
             // the project already exist : it is ok!
             if ($project_id)
             {
+                $_SESSION["is_master_user"] = $is_master_user;
                 $_SESSION["project_name"] = $project_name;
                 $_SESSION["project_id"]   = $project_id;
                 $_SESSION["has_project_path"] = isset($projects_path);
@@ -464,6 +469,12 @@ class Zeek extends ZeekOutput {
                 // we redirect to the home
                 $this->redirect('home.php');
                 return true;
+            }
+            // only master user can create new project
+            else if ($is_master_user == false)
+            {
+                $this->error("unexpected project name!");
+                return false;
             }
 
             // otherwise we create a new project from the beginning
@@ -697,39 +708,72 @@ class Zeek extends ZeekOutput {
  * @method user_add
  * @param integer id of the current project
  * @param email email to send new password to user
+ * @param boolean true if master user
  */
-    public function user_add($project_id, $project_name, $email)
+    public function user_add($project_id, $project_name, $email, $is_master_user)
     {
         // we check if the email is set
-        if ($this->check_string($email) == false) {
+        if ($this->check_string($email) == false)
+        {
             $this->error("Expecting valid user email!");
             return false;
         }
 
-        /* TODO!!  we check if the user doesn't already exist */
-        if ($this->zlib->user_get($project_id, $email)) {
-            $this->error("The user '$email' already exist!");
+        if ($is_master_user == "")
+            $is_master_user = false;
+        else if ($is_master_user == "on")
+            $is_master_user = true;
+        else
+        {
+            $this->error("Expecting valid master user boolean, get '$is_master_user'!");
             return false;
         }
 
-        /* we check if the email has valid format */
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $zlib = $this->zlib;
+
+        // check if the user doesn't already exist
+        $user = $zlib->user_get($project_id, $email);
+        if ($user != NULL)
+        {
+            // check if the user has the same authorisation
+            if ($user->is_master == $is_master_user)
+            {
+                $this->error("The user '$email' already exist!");
+                return false;
+            }
+
+            // otherwise we change de user authorisation
+            if ($zlib->user_change_authorisation($project_id, $user, $is_master_user))
+            {
+                $this->success("Change user '$email' authorisations");
+                return true;
+            }
+
+            return false;
+        }
+
+        // we check if the email has valid format
+        if (filter_var($email, FILTER_VALIDATE_EMAIL) == false)
+        {
             $this->error("Expected a valid email adress, received '$email'!");
             return false;
         }
 
-        /* otherwise we create the user with the password randomly */
+        // otherwise we create the user with the password randomly
         $password = $this->password_generate(8);
 
         /* we send the password to the user */
         if ($this->send_email(
             $email,
-            "Login Access to Zeek '$project_name'",
-            "Welcome to Zeek '$project_name':\n"
-            . "login: $email\n"
-            . "password : $password\n")) {
+            "Access to Zeek '$project_name'",
+            "Welcome to Zeek '$project_name':\n\n"
+            . " - login: $email\n"
+            . " - password : $password\n"
+            . " - project_name : $project_name\n"))
+        {
 
-            if ($this->zlib->user_add($project_id, $email, $password)) {
+            if ($zlib->user_add($project_id, $email, $password, $is_master_user))
+            {
                 $this->success("User '$email' correctly added & informed!");
                 return true;
             }
@@ -781,24 +825,24 @@ class Zeek extends ZeekOutput {
     }
 
 /**
- * Don't authorized user to connect with this project.
+ * Change password of the user.
  *
  * @method user_change_password
  * @param integer id of the current project
- * @param email email of user to remove
+ * @param login of user to change password
  * @param string old password
  * @param string new password
  */
     public function user_change_password(
-        $project_id, $email, $password_old, $password_new)
+        $project_id, $login, $password_old, $password_new)
     {
         if (!(isset($password_old) or isset($password_new))) {
-            $this->error("Expecting valid old and new password!");
+            $this->error("Expecting valid old and new passwords!");
             return false;
         }
 
         if ($this->zlib->user_change_password(
-            $project_id, $email, $password_old, $password_new)) {
+            $project_id, $login, $password_old, $password_new)) {
             $this->success("User password correctly changed!");
             return true;
         }

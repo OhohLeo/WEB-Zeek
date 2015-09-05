@@ -140,14 +140,9 @@ class ZeekLibrary extends ZeekOutput {
 				  'db_size' => 25),
             'password'   => array('db_type' => 'CHAR',
 				  'db_size' => 32),
+            'is_master'  => array('db_type' => 'TINYINT'),
             'project_id' => array('db_type' => 'INT',
 				  'db_size' => 11)));
-
-        /* we add the actual user */
-        $db->row_insert('user', array(
-            'name'       => $login,
-            'password'   => $password,
-            'project_id' => 0));
 
         return true;
     }
@@ -164,10 +159,11 @@ class ZeekLibrary extends ZeekOutput {
         $this->db->database_delete($name);
     }
 
-    public function user_add($project_id, $username, $password)
+    public function user_add($project_id, $username, $password, $is_master)
     {
         /* We check if the user already exists */
-        if ($this->user_check($project_id, $username, $password)) {
+        if ($this->user_check($project_id, $username, $password))
+        {
             $this->error("user $username already exist!");
             return false;
         }
@@ -177,34 +173,73 @@ class ZeekLibrary extends ZeekOutput {
             'user', array(
                 'project_id' => $project_id,
                 'name'       => $username,
-                'password'   => $password ))) {
+                'password'   => md5($password),
+                'is_master'  => $is_master)))
+        {
             return true;
         }
 
         return false;
     }
 
-    public function user_change_password(
-        $project_id, $username, $old_password, $new_password)
+    public function user_get_authorisation($project_id, $username)
     {
-        /* we get the user */
+        // if the login & password are the same than the database one :
+        // we accept it immediately whatever the project id exist or not
+        if ($username === $this->db_login)
+            return true;
+
         $user = $this->user_get($project_id, $username);
         if ($user == NULL) {
-            $this->error(
-                "can't change password : '$username' doesn't exist!");
             return false;
         }
 
-        /* we check the old password */
-        if ($old_password !== $user->password) {
+        return !!$user->is_master;
+    }
+
+    public function user_change_authorisation($project_id, $username, $is_master)
+    {
+        if (is_string($username))
+        {
+            $user = $this->user_get($project_id, $username);
+            if ($user == NULL) {
+                $this->error(
+                    "can't change authorisation : user '$username' doesn't exist!");
+                return false;
+            }
+        }
+        else
+            $user = $username;
+
+        if ($this->db->row_update('user', $user->id,
+                                  array('is_master' => $is_master))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function user_change_password($project_id, $username,
+                                         $old_password, $new_password)
+    {
+        // we get the user
+        $user = $this->user_get($project_id, $username);
+        if ($user == NULL) {
             $this->error(
-                "can't change password : unexpected old password!");
+                "can't change password : user '$username' doesn't exist!");
+            return false;
+        }
+
+        // we check the old password
+        if (md5($old_password) !== $user->password) {
+            $this->error(
+                "can't change password : wrong old password!");
             return false;
         }
 
         if ($this->db->row_update(
             'user', $user->id,
-            array('password' => $new_password))) {
+            array('password' => md5($new_password)))) {
             return true;
         }
 
@@ -215,13 +250,13 @@ class ZeekLibrary extends ZeekOutput {
     {
         $user = $this->user_get($project_id, $username);
 
-        /* We check if the project already exists */
+        // we check if the project already exists
         if ($user == NULL) {
             $this->error("can't remove user, '$username' doesn't exist!");
             return false;
         }
 
-        /* we insert the new project */
+        // we insert the new project
         if ($this->db->row_delete(
             'user', array('project_id' => $project_id,
                           'name'       => $username))) {
@@ -278,7 +313,7 @@ class ZeekLibrary extends ZeekOutput {
             'user', 'name', NULL, NULL, NULL,
             array('project_id' => $project_id,
                   'name'       => $username,
-                  'password'   => $password));
+                  'password'   => md5($password)));
 
         if ($result == false) {
             return false;
