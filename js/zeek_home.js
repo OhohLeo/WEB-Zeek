@@ -387,11 +387,17 @@ $(document).ready(function() {
                             "files": JSON.stringify($dropzone_files),
                         }, function ($result) {
 
+                            $dropzone_files = [];
+                            $dropzone_empty();
+
                             if ($result == false)
                                 return false;
 
-                            $dropzone_empty();
-                            $contents_update();
+                            $contents_update(function()
+                                {
+                                    $("button#contents_"
+                                    + $actual_content_type).click();
+                                });
                         });
                 }
             });

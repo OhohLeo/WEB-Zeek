@@ -1286,7 +1286,11 @@ class Zeek extends ZeekOutput {
 	    if ($zlib->file_modify(
 	        $this->project_id, $_SESSION["login"], $uploaded,
                 $directory_name, $name, $extension) == false)
-                    return false;
+            {
+
+                $this->zlib->uploaded_files_delete();
+                return false;
+            }
         }
 
 	$this->success("Content(s) stored in " . "'$directory_name'!");
