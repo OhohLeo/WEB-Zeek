@@ -244,30 +244,8 @@ class Zeek extends ZeekOutput {
 		$this->success("disconnect now!");
 		return true;
 
-            case 'project_delete':
-		return $this->project_delete($project_name);
-
-            case 'project_set_name':
-                return $this->project_set_name($params["value"]);
-
-            case 'project_set_url':
-                return $this->project_set_url($params["value"]);
-
-            case 'project_set_dst':
-                return $this->project_set_destination($params["value"]);
-
-            case 'piwik_set_token':
-                return $this->project_set_piwik_token($params["value"]);
-
-            case 'user_add':
-	        return $this->user_add(
-                    $project_id, $project_name, $email, $is_master_user);
-
-            case 'user_delete':
-	        return $this->user_delete($project_id, $params["email"]);
-
             case 'users_get_list':
-	        return $this->users_get_list($project_id);
+	       return $this->users_get_list($project_id);
 
             case 'user_change_password':
 		return $this->user_change_password(
@@ -367,14 +345,8 @@ class Zeek extends ZeekOutput {
                     strtolower($params['name']),
                     $params['options']);
 
-            case 'structure_enable':
-	        return $this->structure_enable($params['enable'] === "true");
-
             case 'structure_get':
 		return $this->structure_get();
-
-            case 'structure_set':
-	        return $this->structure_set($params['structure']);
 
             case 'structure_get_list':
 	        return $this->structure_get_list(
@@ -398,6 +370,41 @@ class Zeek extends ZeekOutput {
             case 'data_delete':
 		return $this->data_delete(strtolower($params['name']),
 					  strtolower($params['id']));
+
+        }
+
+        if ($this->user_master_only())
+            return false;
+
+        switch ($method)
+	{
+            case 'project_delete':
+		return $this->project_delete($project_name);
+
+            case 'project_set_name':
+                return $this->project_set_name($params["value"]);
+
+            case 'project_set_url':
+                return $this->project_set_url($params["value"]);
+
+            case 'project_set_dst':
+                return $this->project_set_destination($params["value"]);
+
+            case 'piwik_set_token':
+                return $this->project_set_piwik_token($params["value"]);
+
+            case 'user_add':
+	        return $this->user_add(
+                    $project_id, $project_name, $email, $is_master_user);
+
+            case 'user_delete':
+	        return $this->user_delete($project_id, $params["email"]);
+
+            case 'structure_enable':
+	        return $this->structure_enable($params['enable'] === "true");
+
+            case 'structure_set':
+	        return $this->structure_set($params['structure']);
 
             case 'data_clean_all':
 		return $this->data_clean_all();
@@ -808,6 +815,20 @@ class Zeek extends ZeekOutput {
         }
 
         return false;
+    }
+
+/**
+ * Return true and display an error if it isn't a master user.
+ *
+ * @method user_master_only
+ */
+    public function user_master_only()
+    {
+        if ($_SESSION["is_master_user"])
+            return false;
+
+        $this->error("Only master user can do this!");
+        return true;
     }
 
 /**

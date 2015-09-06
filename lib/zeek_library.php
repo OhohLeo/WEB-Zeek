@@ -204,7 +204,7 @@ class ZeekLibrary extends ZeekOutput {
             $user = $this->user_get($project_id, $username);
             if ($user == NULL) {
                 $this->error(
-                    "can't change authorisation : user '$username' doesn't exist!");
+                    "Can't change authorisation : user '$username' doesn't exist!");
                 return false;
             }
         }
@@ -226,14 +226,14 @@ class ZeekLibrary extends ZeekOutput {
         $user = $this->user_get($project_id, $username);
         if ($user == NULL) {
             $this->error(
-                "can't change password : user '$username' doesn't exist!");
+                "Can't change password : user '$username' doesn't exist!");
             return false;
         }
 
         // we check the old password
         if (md5($old_password) !== $user->password) {
             $this->error(
-                "can't change password : wrong old password!");
+                "Can't change password : wrong old password!");
             return false;
         }
 
@@ -252,7 +252,7 @@ class ZeekLibrary extends ZeekOutput {
 
         // we check if the project already exists
         if ($user == NULL) {
-            $this->error("can't remove user, '$username' doesn't exist!");
+            $this->error("Can't remove user, '$username' doesn't exist!");
             return false;
         }
 
@@ -337,7 +337,7 @@ class ZeekLibrary extends ZeekOutput {
     {
         /* we check if the file exists */
         if (file_exists($file) == false) {
-            $this->error("can't find projects configuration file '$file'!");
+            $this->error("Can't find projects configuration file '$file'!");
             return false;
         }
 
