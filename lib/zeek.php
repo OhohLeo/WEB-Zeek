@@ -449,7 +449,7 @@ class Zeek extends ZeekOutput {
                 return false;
             }
 
-            $is_master_user = $zlib->user_get_authorisation(
+            $_SESSION["is_master_user"] = $zlib->user_get_authorisation(
                 $project_id, $login);
 
             // we store the session user
@@ -459,7 +459,6 @@ class Zeek extends ZeekOutput {
             // the project already exist : it is ok!
             if ($project_id)
             {
-                $_SESSION["is_master_user"] = $is_master_user;
                 $_SESSION["project_name"] = $project_name;
                 $_SESSION["project_id"]   = $project_id;
                 $_SESSION["has_project_path"] = isset($projects_path);
@@ -478,7 +477,7 @@ class Zeek extends ZeekOutput {
                 return true;
             }
             // only master user can create new project
-            else if ($is_master_user == false)
+            else if ($_SESSION["is_master_user"] == false)
             {
                 $this->error("unexpected project name!");
                 return false;
