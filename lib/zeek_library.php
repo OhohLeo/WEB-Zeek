@@ -644,7 +644,7 @@ class ZeekLibrary extends ZeekOutput {
             // we store the data structure in the session
             $_SESSION["data_structure"] = $this->data_structure;
 
-            return $this->structure_update($structure);
+            return $this->structure_update($project_id, $structure);
         }
 
         // if there is an issue : we remove the structure
@@ -692,9 +692,10 @@ class ZeekLibrary extends ZeekOutput {
  * Return true if the process correctly happens, false otherwise.
  *
  * @method struture_compare
+ * @param integer project id
  * @param array structure to apply
  */
-    public function structure_update($new_structure)
+    public function structure_update($project_id, $new_structure)
     {
         $db = $this->db;
 
@@ -709,7 +710,9 @@ class ZeekLibrary extends ZeekOutput {
         foreach ($tables as $table_name)
         {
             // we ignore the not concerned tables
-            if ($table_name === "project" || $table_name === "user")
+            if ($table_name === "project"
+                || $table_name === "user"
+                || substr($table_name, 0, 1) != $project_id)
                 continue;
 
             $reel_table_name = substr($table_name, 1);
@@ -722,7 +725,7 @@ class ZeekLibrary extends ZeekOutput {
                                          $new_structure[$reel_table_name]);
             }
             // otherwise we remove the stored table from the database
-            else if ($db->table_delete($name))
+            else if ($db->table_delete($table_name))
             {
                 continue;
             }

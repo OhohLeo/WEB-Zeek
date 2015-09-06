@@ -1642,6 +1642,35 @@ $(document).ready(function() {
         function() {
         })();
 
+    // we enable to delete the project
+    $("button#project_delete").on("click", function($e) {
+
+	$div_modal.html("<p>Do you still want to delete <b>"
+                      + $("h1#title").text() + "</b> ?</p>");
+
+	$modal.dialog({
+	    open: function() {
+		$(this).dialog("option", "title", "Confirm");
+	    },
+	    buttons: {
+		"Delete": function() {
+		    $send_request(
+			{
+                            "method": "project_delete"
+                        },
+			function($result) {
+
+			    $modal.dialog("close");
+                            $(location).attr("href", "index.php");
+                            return true;
+			});
+		}
+	    }
+	});
+
+	$modal.dialog("open");
+    });
+
     // we enable/disable the structure configuration
     var $button_structure_modify = $("button#structure_modify");
 
@@ -1920,8 +1949,6 @@ $(document).ready(function() {
                 $contents_update(function() {
                     $handle_data($this.text());
                 });
-
-                return;
             }
 
 	    $handle_data($this.text());
@@ -2244,12 +2271,6 @@ $(document).ready(function() {
    });
    });
 
-   $("button#project_delete").on("click", function($e) {
-   e.preventDefault();
-   $send_request({
-   "method": "project_delete_to_confirm",
-   });
-   });
 
    var $title = $("h2").first();
    var $data; */

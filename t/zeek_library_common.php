@@ -231,7 +231,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
 	$this->assertFalse($zlib->projects_get('t/projects/unknown.ini'));
 	$this->assertTrue($zlib->checkOutput(
-	    '{"error":"can\'t find projects configuration file \'t/projects/unknown.ini\'!"}'));
+	    '{"error":"Can\'t find projects configuration file \'t/projects/unknown.ini\'!"}'));
 
 	$zlib->environment_clean($this->db_name);
     }
