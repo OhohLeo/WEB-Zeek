@@ -94,7 +94,7 @@ if (@input)
 {
     foreach my $input (@input)
     {
-        read_directory($input, \%files);
+        read_directory($directory . "/" . $input, \%files);
     }
 }
 elsif ($force)
@@ -206,9 +206,11 @@ AddHandler x-mapp-php5.5 .php
 
 RewriteEngine on
 RewriteCond %{REQUEST_URI} !^/zeek
-RewriteRule ^(.*)$ /zeek/projects/1/DEPLOY/$1 [L]
+RewriteRule ^(.*)$ /zeek/projects/1/DEPLOY/\$1 [L]
+
 END
 
+        chmod(0604, $filehandle);
 	close($filehandle);
 
 	# we add the file to the list
@@ -301,10 +303,10 @@ while (my($cwd, $files) = each %files)
     # we write the file
     foreach my $file (@$files)
     {
-	# we set binary mode
-	$ftp->binary;
- 	$ftp->put("$directory/$relative_dst/$file");
-	say "send $file";
+        # we set binary mode
+        $ftp->binary;
+        $ftp->put("$directory/$relative_dst/$file");
+        say "send $file";
     }
 }
 
