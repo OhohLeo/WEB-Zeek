@@ -354,7 +354,7 @@ $(document).ready(function() {
         method: "post",
         url: "upload.php",
         maxFilesize: 3, // MB
-        acceptedFiles: "image/jpeg,image/png,image/gif",
+        acceptedFiles: "image/*",
         ignoreHiddenFiles: true,
         autoProcessQueue: true,
         createImageThumbnails: false,
@@ -366,7 +366,7 @@ $(document).ready(function() {
         addRemoveLinks: false,
         paramName: "files[]",
         parallelUploads: 1,
-        dictDefaultMessage: "Drop file here or click to upload.",
+        dictDefaultMessage: "Drop files here or click to upload.",
         dictFallbackMessage: "Your browser does not support drag'n'drop file uploads.",
         dictFallbackText: "Please use the fallback form below to upload your files like in the olden days.",
         dictFileTooBig: "File is too big ({{filesize}}MiB). Max filesize: {{maxFilesize}}MiB.",
@@ -1615,7 +1615,6 @@ $(document).ready(function() {
 	};
 
 	$update_get();
-
 
 	$("h2#data_set").on("click", function() {
 

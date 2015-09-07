@@ -187,7 +187,7 @@ include 'default/header.php';
 		<h3>Project</h3>
 		<div class="config-group danger-zone">
                     <p>
-                        <label>Change project name</label>
+                        <label>Project name</label>
                         <input id="project_set_name"
                                type="text"
 		               value=<?php echo $project_name; ?>>

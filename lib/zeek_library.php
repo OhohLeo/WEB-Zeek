@@ -1187,7 +1187,7 @@ class ZeekLibrary extends ZeekOutput {
 *
 * Return true if the file is correctly move, otherwise return false.
 *
-* @method file_copy
+* @method file_move
 * @param string src
 * @param string dst
 */
