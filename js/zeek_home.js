@@ -1684,7 +1684,7 @@ $(document).ready(function() {
     // we enable to delete the project
     $("button#project_delete").on("click", function($e) {
 
-        $div_modal.html("<p>Do you still want to delete <b>" + $("h1#title").text() + "</b> ?</p>");
+        $div_modal.html("<p>Are you sure you still want to delete <b>" + $("h1#title").text() + "</b> ?</p>");
 
 	$modal.dialog({
 	    open: function() {
