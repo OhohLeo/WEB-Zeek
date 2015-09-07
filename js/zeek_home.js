@@ -123,11 +123,15 @@ $(document).ready(function() {
         $content_types[$name] = [ $directory, $mime, $color ];
 
         var $row = $("<tr>").attr("class", "config_contents");
-        $row.append($("<td class=\"content_name\">").text($name))
-            .append($("<td class=\"content_directory\">").text($directory))
-            .append($("<td class=\"content_mime\">").text($mime))
+        $row.append($("<td>").attr("class", "content_name")
+                             .text($name))
+            .append($("<td>").attr("class", "content_directory")
+                             .text($directory))
+            .append($("<td>").attr("class", "content_mime")
+                             .text($mime))
             .append($("<td>").append(
-                "<input id=\"content_color_" + $name +"\" type=\"text\">"))
+                $("<input>").attr("id", "content_color_" + $name)
+                            .attr("type", "text")))
             .append(
                 $("<td>").append(
                     $("<img>").attr("src", "img/delete.png")
@@ -219,31 +223,33 @@ $(document).ready(function() {
         if ($("button#contents_" + $type).length == 0) {
 
             // we create the directory button
-            var $btn = $("<button>").attr("id", "contents_" + $type)
-                                    .addClass("content_type")
-                                    .addClass($type)
-                                    .text($type)
-                                    .on("click", function () {
+            var $btn = $("<button>")
+                          .attr("id", "contents_" + $type)
+                          .addClass("content_type")
+                          .addClass($type)
+                          .text($type)
+                          .on("click", function () {
 
-                                        $actual_content_type = $(this).text();
+                              $actual_content_type = $(this).text();
 
-                                        // we display the selected border
-                                        $("button.content_type").removeClass("select");
-                                        $(this).addClass("select");
+                              // we display the selected border
+                              $("button.content_type").removeClass("select");
+                              $(this).addClass("select");
 
-                                        $select_contents.empty();
+                              $select_contents.empty();
 
-                                        if (Object.keys($contents_list[$type]).length > 0)
-                                        {
-                                            for (var $directory in $contents_list[$type])
-                                            {
-                                                $select_contents.append($("<option>").text($directory));
-                                            }
-                                        }
+                              if (Object.keys($contents_list[$type]).length > 0)
+                              {
+                                  for (var $directory in $contents_list[$type])
+                                  {
+                                      $select_contents.append(
+                                          $("<option>").text($directory));
+                                  }
+                              }
 
-                                        // we select the first option
-                                        $("select#contents").first().click();
-                                    });
+                              // we select the first option
+                              $("select#contents").first().click();
+                          });
 
             // we get the color associated to the button
             if ($content_types[$type] != undefined) {
@@ -276,7 +282,8 @@ $(document).ready(function() {
         var $selection = $("select#contents option:selected");
 
         $actual_content_directory = $selection.val();
-        var $list = $contents_list[$actual_content_type][$actual_content_directory]
+        var $list = $contents_list[
+            $actual_content_type][$actual_content_directory]
 
         for (var $idx in $list) {
 
@@ -413,9 +420,8 @@ $(document).ready(function() {
         $dropzone_empty();
 
         var $selected_content_type;
-        var $list = $('<select></select>');
-        $list.attr("id", "content_types");
-        $list.attr("name", "type");
+        var $list = $("<select>").attr("id", "content_types")
+                                 .attr("name", "type");
 
         var $generate_name = function() {
             var $name = $("input#content_name").val();
@@ -448,31 +454,62 @@ $(document).ready(function() {
         }
 
         var $array =  [
-	    { name: "Name",
-	      input: 'id="content_name" name="name" type="text" placeholder="optional"',
-              class: "contents"},
-	    { name: "Max Size",
-	      input: 'name="max_size" type="integer" placeholder="optional"',
-              class: "contents"},
-            { name: "Image Type",
-	      input: 'name="img_type" type="text" placeholder="optional"',
-              class: 'contents images opt'},
-            { name: "Image Height",
-	      input: 'class="contents opt images" name="img_height" type="number" step="1" placeholder="optional"',
-              class: "contents images opt"},
-	    { name: "Image Width",
-	      input: 'class="contents opt images" name="img_width" type="number" step="1" placeholder="optional"',
-              class: 'contents images opt'},
+	    [ "Name",
+	      $("<input>").attr("id", "content_name")
+                          .attr("name", "name")
+                          .attr("type", "text")
+                          .attr("placeholder", "optional"),
+              "contents" ],
+	    /* [ "Max Size",
+	         $("<input>").attr("name", "max_size")
+                             .attr("type", "integer")
+                             .attr("placeholder", "optional"),
+                 "contents" ],
+            [ "Image Type",
+              $("<input>").attr("name", "img_type")
+                          .attr("type", "text")
+                          .attr("placeholder", "optional"),
+              "contents images opt" ],
+            [ "Image Height",
+              $("<input>").attr("class", "contents opt images")
+                          .attr("name", "img_height")
+                          .attr("type", "number")
+                          .attr("step", "1")
+                          .attr("placeholder", "optional"),
+              "contents images opt" ],
+	    [ "Image Width",
+              $("<input>").attr("class", "contents opt images")
+                          .attr("name", "img_width")
+                          .attr("type", "number")
+                          .attr("step", "1")
+                          .attr("placeholder", "optional"),
+               "contents images opt" ] */
         ];
 
-        $div_modal.html(Mustache.to_html(
-            "<table><tr><td><b>Type</b></td><td>"
-          + $("<div></div>").append($list).html() + "</td></tr>"
-          + "{{#foreach}}<tr class=\"{{class}}\"><td><b>{{name}}</b></td>"
-          + "<td><input {{{input}}}/></td></tr>{{/foreach}}",
-	    { foreach: $array })
-          + "<tr><td><b>Destination</b></td>"
-          + '<td id="final_content">Press enter to see the result!</td></tr></table>');
+        var $table = $("<table>").append(
+            $("<tr>").append($("<td>").append($("<b>").text("Type")))
+                     .append($("<td>").append($list)));
+
+        for (var $idx in $array)
+        {
+            var $name  = $array[$idx][0];
+            var $input = $array[$idx][1];
+            var $class = $array[$idx][2];
+
+            $table.append(
+                $("<tr>").attr("class", $class)
+                         .append($("<td>").append("<b>").text($name))
+                         .append($input))
+
+        }
+
+        $table.append(
+            $("<tr>").append($("<td>").append($("<b>").text("Destination")))
+                     .append($("<td>").attr("id", "final_content")
+                                      .text("Press enter to see the result!")));
+
+        $div_modal.empty();
+        $div_modal.append($table);
 
         $("select#content_types").change($on_selected);
         $on_selected();
@@ -529,7 +566,10 @@ $(document).ready(function() {
                             }
 
                             $contents_update();
-                            $("select#contents").append($("<option>").text($directory));
+
+                            $("select#contents").append(
+                                $("<option>").text($directory));
+
                             $modal.dialog("close");
                         });
                     }
@@ -731,7 +771,7 @@ $(document).ready(function() {
 		    if ($nav_edit.children("button." + $type).length == 0)
 		    {
 			// create the button
-			var $btn = $("<button>" + $type + "</button>");
+			var $btn = $("<button>").text($type);
 
 			// add the class
 			$btn.addClass("edit " + $type);
@@ -764,8 +804,9 @@ $(document).ready(function() {
 				$store_by_type[$type].forEach(function($obj) {
 				    var $name      = $obj["name"];
 
-                                    $select_edit.append($("<option>").attr("name", $name)
-                                                                     .text($name));
+                                    $select_edit.append(
+                                        $("<option>").attr("name", $name)
+                                                     .text($name));
 
                                     $on_selected();
 				});
@@ -774,7 +815,7 @@ $(document).ready(function() {
 			    else
 			    {
 				$store_by_type[$type].append(
-				    $("<option>No file found!</option>"));
+				    $("<option>").text("No file found!"));
 			    }
 			});
 
@@ -833,17 +874,17 @@ $(document).ready(function() {
         $files_type[$name] = $color;
 
         var $row = $("<tr>").attr("id", "config_" + $name);
-        $row.append($("<td class=\"editor_type\">").text($name))
+        $row.append($("<td>").attr("class", "editor_type")
+                             .text($name))
             .append($("<td>").append(
-                "<input id=\"color_" + $name +"\" type=\"text\">"))
-            .append(
-                $("<td>").append(
-                    $("<img>").attr("src", "img/delete.png")
-                              .addClass("file_type_delete")
-                              .on("click", function() {
-                                  $row.remove();
-                              })
-                ));
+                $("<input>").attr("id", "color_" + $name)
+                            .attr("type", "text")))
+            .append($("<td>").append(
+                $("<img>").attr("src", "img/delete.png")
+                          .addClass("file_type_delete")
+                          .on("click", function() {
+                              $row.remove();
+                          })));
 
 	$table_type_accepted.append($row);
 
@@ -930,10 +971,6 @@ $(document).ready(function() {
                     $option_set_editor();
                 });
 
-                // display & delete the type of file accepted
-	        /* $result["type_accepted"].forEach(function($type) {
-	           }); */
-
                 var $array =  [
                     [ "Filename",
 		      $("<input>").attr("name", "name")
@@ -986,7 +1023,7 @@ $(document).ready(function() {
 
 	var $filename = {};
 
-	$("#modal :input").each(function() {
+	$("div#modal :input").each(function() {
 	    var $name = $(this).attr("name");
 
 	    var $value;
@@ -995,17 +1032,16 @@ $(document).ready(function() {
 	    else
 		$value = $(this).val();
 
-	    if ($name === "files[]" && $value.length > 0)
-            {
-                $filename["upload"] = $value;
-
-                if ($filename["name"] === "")
-		    $filename["name"] = $value;
-            }
-
 	    $filename[$name] = $value;
 	});
 
+        if ($fileupload)
+        {
+            $filename["upload"] = $fileupload;
+
+            if ($filename["name"] === "")
+                $filename["name"] = $fileupload;
+        }
 
         if ($filename["name"].length > 0)
         {
@@ -1071,6 +1107,7 @@ $(document).ready(function() {
 
 
     var $file_dropzone;
+    var $fileupload;
 
     $file_create_on_click = function() {
 
@@ -1082,6 +1119,8 @@ $(document).ready(function() {
 	}
 
 	$div_modal.html($file_edit(false));
+
+        var $filename = {};
 
         if ($file_dropzone == null)
         {
@@ -1097,15 +1136,17 @@ $(document).ready(function() {
                 autoQueue: true,
                 paramName: "files[]",
                 parallelUploads: 1,
-                dictDefaultMessage: "Drop file here or click to upload.",
+                dictDefaultMessage: "Drop file here or click!",
+                init: function () {
+                    this.on("complete", function ($file) {
+                        $fileupload = $file["name"];
 
-                removedfile: function($file) {
-                    console.log("REMOVE!" + $file);
+
+                        $filename = $generate_filename();
+                    });
                 },
             });
         }
-
-        var $filename = {};
 
         $div_modal.change(function() {
             $filename = $generate_filename();
@@ -1122,9 +1163,13 @@ $(document).ready(function() {
 		    id: "file_create_ok",
 		    click: function() {
 
+                        console.log($filename);
+
                         $filename["method"] = "file_create";
 
                         $send_request($filename, function($result) {
+
+                            $file_dropzone.removeAllFiles();
 
                             $last_edit_btn_type = "";
 
@@ -1132,7 +1177,8 @@ $(document).ready(function() {
 
 			    $edit_update($filename["extension"],
                                          $filename["user"],
-                                         $filename["name"]);
+                                         $filename["name"],
+                                         $filename["upload"]);
 		        });
                     }
 		}
@@ -1218,7 +1264,7 @@ $(document).ready(function() {
 
 	var $filename = $actual_file["name"];
 
-	$div_modal.html("<p>Do you still want to delete <b>" + $filename + "</b> ?</p>");
+        $div_modal.html("<p>Do you still want to delete <b>" + $filename + "</b> ?</p>");
 
 	$modal.dialog({
 	    open: function() {
@@ -1439,34 +1485,30 @@ $(document).ready(function() {
 		    if ($array == false)
 			return false;
 
-		    var $get_body = new Array();
+		    $tbody_data_get.empty(),
 
 		    $array.forEach(function($obj) {
-			$id = $obj["id"];
 
+		        var $id = $obj["id"];
 			delete $obj["id"];
 
-			$td = "";
+                        var $tr = $("<tr>").attr("class", "modal")
 
 			for (var $key in $obj) {
-			    $td += "<td>" + $obj[$key] + "</td>";
+			    $tr.append($("<td>").text($obj[$key]));
 			}
 
-			$td += "<td><img item=\"" + $id + "\""
-			     + " src=\"img/update.png\""
-			     + " class=\"data_update\"></td>"
-			     + "<td><img item=\"" + $id + "\""
-			     + " src=\"img/delete.png\""
-			     + " class=\"data_delete\"></td>";
+                        $tr.append($("<td>").append(
+                                $("<img>").attr("item", $id)
+                                          .attr("src", "img/update.png")
+                                          .attr("class", "data_update")))
+                           .append("<td>").append(
+                               $("<img>").attr("item", $id)
+                                         .attr("src", "img/delete.png")
+                                         .attr("class", "data_delete"));
 
-			$get_body.push($td);
+                        $tbody_data_get.append($tr);
 		    });
-
-		    var $result = Mustache.to_html(
-			"{{#get_body}}<tr class=\"modal\">{{{.}}}</tr>{{/get_body}}",
-			{ get_body: $get_body });
-
-		    $tbody_data_get.html($result);
 
 		    $("img.data_update").on("click", $data_update);
 		    $("img.data_delete").on("click", $data_delete);
@@ -1643,8 +1685,7 @@ $(document).ready(function() {
     // we enable to delete the project
     $("button#project_delete").on("click", function($e) {
 
-	$div_modal.html("<p>Do you still want to delete <b>"
-                      + $("h1#title").text() + "</b> ?</p>");
+        $div_modal.html("<p>Do you still want to delete <b>" + $("h1#title").text() + "</b> ?</p>");
 
 	$modal.dialog({
 	    open: function() {
@@ -1680,7 +1721,9 @@ $(document).ready(function() {
     var $append_create_structure = function() {
 
         $("ul#structure").append(
-            '<li id="structure_create" class="data">CREATE</li>');
+            $("<li>").attr("id", "structure_create")
+                     .attr("class", "data")
+                     .text("CREATE"));
 
         $("li.data")
              .off("click")
@@ -1746,8 +1789,11 @@ $(document).ready(function() {
                     var $db_type = $($tr).children("td.db_type").text();
                     var $db_size = $($tr).children("td.db_size").text();
 
-                    $structure[$structure_name][$name] =
-                           { "sp_type": $sp_type, "db_type": $db_type, "db_size": $db_size };
+                    $structure[$structure_name][$name] = {
+                        "sp_type": $sp_type,
+                        "db_type": $db_type,
+                        "db_size": $db_size
+                    };
                 });
 
                 $structure_set($structure);
@@ -1968,7 +2014,7 @@ $(document).ready(function() {
 	        if ($result == false || $result["error"])
 		    return false;
 
-                $('body').css('background', ' #FFF');
+                $("body").css("background", "#fff");
 
 	        // we store the structure
 	        $structure = $result["structure"];
@@ -1979,7 +2025,7 @@ $(document).ready(function() {
 		    return -1;
 	        }
 
-                $("li#structure_loading").text('Error!');
+                $("li#structure_loading").text("Error!");
                 return -1;
 	    }
         );
@@ -1994,12 +2040,22 @@ $(document).ready(function() {
                 "method": "users_get_list",
             },
             function($users) {
-                $div_users.html(
-                    Mustache.to_html(
-                        '<table>{{#users}}<tr><td>{{{.}}}</td>'
-                      + '<td><img email="{{{.}}}" src="img/delete.png"'
-                      + 'class="user_delete"></td>'
-                      + '</tr>{{/users}}</table>', $users));
+
+                var $table = $("<table>");
+
+                for (var $idx in $users["users"])
+                {
+                    var $user = $users["users"][$idx];
+
+                    $table.append(
+                        $("<tr>").append($("<td>").text($user))
+                                 .append($("<td>").append(
+                                     $("<img>").attr("email", $user)
+                                               .attr("src", "img/delete.png")
+                                               .attr("class", "user_delete"))));
+                }
+
+                $div_users.empty().append($table);
 
                 $("img.user_delete").on("click", function() {
                     $send_request(
@@ -2046,20 +2102,18 @@ $(document).ready(function() {
         $send_request(
 	    {
 	        method: "structure_get_list",
-                expert_mode: $("input#expert_mode").prop('checked'),
+                expert_mode: $("input#expert_mode").prop("checked"),
 	    },
 	    function($result) {
 
 	        if ($result == false || $result["error"])
 		    return false;
 
-	        $select_type_list = $('<select></select>')
-                         .attr("id", "select_type")
-	                 .attr("name", "type");
+	        $select_type_list = $("<select>").attr("id", "select_type")
+	                                         .attr("name", "type");
 
                 $result["list"].forEach(function($type) {
-		    $select_type_list.append(
-                        $("<option>").text($type));
+		    $select_type_list.append($("<option>").text($type));
 	        });
 
                 return -1;
@@ -2124,8 +2178,10 @@ $(document).ready(function() {
 
         $row.append($("<td>").text($name))
             .append($("<td>").append(
-                "<input id=\"" + $type + "_" + $name + "\" name=\"" + $name
-              + "\" class=\"option_" + $type + "\" type=\"checkbox\">"));
+                $("<input>").attr("id", $type + "_" + $name)
+                            .attr("name", $name)
+                            .attr("class", "option_" + $type)
+                            .attr("type", "checkbox")));
 
         return $row;
     }
@@ -2153,8 +2209,8 @@ $(document).ready(function() {
 
                     if ($result[$name] === "disabled")
                     {
-                        $structure_enable.prop('checked', false);
-                        $('body').css('background', ' #FFF');
+                        $structure_enable.prop("checked", false);
+                        $("body").css("background", " #fff");
                         $div_structure_enabled.hide();
                         $nav_data.hide();
                         continue;
@@ -2162,19 +2218,19 @@ $(document).ready(function() {
 
                     $structure_get();
 
-                    $structure_enable.prop('checked', true);
+                    $structure_enable.prop("checked", true);
                     $div_structure_enabled.show();
                     $nav_data.show();
                 }
 
                 $table_options_deploy.append($option_get_row($name, "deploy"));
 
-                $("input#deploy_" + $name).prop('checked', $result[$name])
+                $("input#deploy_" + $name).prop("checked", $result[$name])
                                           .change($option_set_plugins);
 
                 $table_options_test.append($option_get_row($name, "test"));
 
-                $("input#test_" + $name).prop('checked', $result[$name]);
+                $("input#test_" + $name).prop("checked", $result[$name]);
             }
 
             // do not display anything
@@ -2189,7 +2245,7 @@ $(document).ready(function() {
         $send_request(
 	    {
 	        method: "structure_enable",
-                enable: $(this).prop('checked'),
+                enable: $(this).prop("checked"),
 	    },
 	    function($result) {
 
@@ -2253,16 +2309,3 @@ $(document).ready(function() {
 	    });
     });
 });
-
-/*
-
-   $("button#data_clean").on("click", function($e) {
-   e.preventDefault();
-   $send_request({
-   "method": "data_clean",
-   });
-   });
-
-
-   var $title = $("h2").first();
-   var $data; */

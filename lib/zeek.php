@@ -1419,8 +1419,7 @@ class Zeek extends ZeekOutput {
 
 	// otherwise we create a generic index.html & css directory
 	if ($zlib->file_create($project_id, $user, 'html', 'index', 'html', true))
-            //&& $zlib->file_create($project_id, $user, 'css', $this->project_name, 'css'))
-	{
+ 	{
 	    return $this->file_get_list();
 	}
 
