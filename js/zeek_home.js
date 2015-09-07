@@ -344,10 +344,10 @@ $(document).ready(function() {
     Dropzone.autoDiscover = false;
 
     var $dropzone = new Dropzone("form#dropzone", {
+        method: "post",
         url: "upload.php",
         maxFilesize: 3, // MB
         acceptedFiles: "image/jpeg,image/png,image/gif",
-        method: "post",
         ignoreHiddenFiles: true,
         autoProcessQueue: true,
         createImageThumbnails: false,
@@ -627,8 +627,13 @@ $(document).ready(function() {
 		    "previous": $result["get"],
 		};
 
+                var $type = $result["type"];
+
+                if ($type === "js")
+                    $type = "javascript";
+
 		$editor.setValue($result["get"]);
-		$session.setMode("ace/mode/" + $result["type"]);
+		$session.setMode("ace/mode/" + $type);
 		$div_edition.show();
 
 	    });
@@ -809,8 +814,7 @@ $(document).ready(function() {
 	    });
 	};
 
-    var $file_create_html;
-    var $file_modify_html;
+    var $file_edit;
     var $file_get_type_list;
     var $files_type = {};
 
@@ -907,18 +911,15 @@ $(document).ready(function() {
 	    },
 	    function($result) {
 
-	        if ($result == false
-                            || ("type_list" in $result) == false)
+	        if ($result == false || ("type_list" in $result) == false)
 		    return false;
 
                 var $select_type_proposed = $("select#file_type_proposed");
 
                 // display & configure the type of file proposed
 	        $result["type_list"].forEach(function($type) {
-		    var $option = $("<option>");
-		    $option.text($type);
-
-		    $select_type_proposed.append($option);
+		    $select_type_proposed.append(
+                        $("<option>").text($type));
 	        });
 
                 $select_type_proposed.change(function() {
@@ -934,43 +935,49 @@ $(document).ready(function() {
 	           }); */
 
                 var $array =  [
-		{ name: "Filename",
-		  input: 'name="name" type="text"'},
-		{ name: "Extension",
-		  input: 'name="extension" type="text"'},
-		    { name: "Is in main directory",
-		      input: 'name="in_main_directory" type="checkbox"'},
-	        ];
+                    [ "Filename",
+		      $("<input>").attr("name", "name")
+                                  .attr("type", "text") ],
+		    [ "Extension",
+		      $("<input>").attr("name", "extension")
+                                  .attr("type", "text") ],
+		    [ "Is in main directory",
+		      $("<input>").attr("name", "in_main_directory")
+                                  .attr("type", "checkbox") ],
+                    [ "File",
+		      $("<form>").attr("id", "file_upload")
+                                 .attr("class", "dropzone")
+                                 .attr("action", "files[]") ]
+            	];
 
-                var $generate_html = function($array) {
-
-                    var $list = $('<select></select>');
-                    $list.attr("id", "select_type");
-                    $list.attr("name", "type");
+                $file_edit = function($no_upload)
+                {
+                    var $list = $("<select>").attr("id", "select_type")
+                                             .attr("name", "type");
 
                     $("td.editor_type").each(function() {
               	        $list.append($("<option>").text($(this).text()));
                     });
 
-                    return "<table><tr><td><b>Type</b></td><td>"
-	                 + $("<div></div>").append($list).html() + "</td></tr>"
-                         + Mustache.to_html("{{#foreach}}<tr><td><b>{{name}}</b></td>"
-                                          + "<td><input {{{input}}}/></td></tr>{{/foreach}}</table>",
-		                            { foreach: $array })
-                        + '<p id="final_create">Press enter to see the result!</p>'
-                };
+                    var $table = $("<table>").append(
+                        $("<tr>").append($("<td>").append($("<b>").text("Type")))
+                                 .append($("<td>").append($list)));
 
+                    for (var $idx in $array)
+                    {
+                        var $name  = $array[$idx][0];
+                        var $input = $array[$idx][1];
 
-	        $file_modify_html = function() {
-                    return $generate_html($array);
-                };
+                        if ($no_upload && $name == "File")
+                            continue;
 
-                $array.push({ name: "File",
-		              input: 'id="file_upload" type="file" name="files[]" multiple'});
+                        $table.append(
+                            $("<tr>").append($("<td>").append($("<b>").text($name)))
+                                     .append($("<td>").append($input)));
+                    }
 
-                $file_create_html = function() {
-                    return $generate_html($array)
-                        + '<div id="progress_bar"></div>';
+                    return $table.append($("<p>").attr("id", "final_create")
+                                                 .text("Press enter to see the result!"));
                 };
 	    });
     };
@@ -1062,16 +1069,41 @@ $(document).ready(function() {
         return $filename;
     }
 
+
+    var $file_dropzone;
+
     $file_create_on_click = function() {
 
 	// we check that the type is here
-	if ($file_create_html == null) {
+	if ($file_edit == null) {
 	    $danger.text("Error: type list not found!").show();
 	    $alert.show();
 	    return;
 	}
 
-	$div_modal.html($file_create_html());
+	$div_modal.html($file_edit(false));
+
+        if ($file_dropzone == null)
+        {
+            $file_dropzone = new Dropzone("form#file_upload", {
+                method: "post",
+                url: "upload.php",
+                maxFilesize: 3, // MB
+                acceptedFiles: "text/*",
+                createImageThumbnails: false,
+                autoProcessQueue: true,
+                addRemoveLinks: true,
+                clickable: true,
+                autoQueue: true,
+                paramName: "files[]",
+                parallelUploads: 1,
+                dictDefaultMessage: "Drop file here or click to upload.",
+
+                removedfile: function($file) {
+                    console.log("REMOVE!" + $file);
+                },
+            });
+        }
 
         var $filename = {};
 
@@ -1079,47 +1111,10 @@ $(document).ready(function() {
             $filename = $generate_filename();
         });
 
-	var $file_upload = $("input#file_upload");
-	var $need_to_upload = false;
-
 	$modal.dialog({
 	    minWidth: 400,
 	    open: function() {
-		$need_to_upload = false;
-
 		$(this).dialog("option", "title", "Create new file");
-
-		var $progress_bar = $("div#progress_bar").hide();
-
-		$file_upload.fileupload({
-		    replaceFileInput: false,
-		    url: 'upload.php',
-		    dataType: 'json',
-		    add: function($e, $data) {
-			$need_to_upload = true;
-
-			$("button#file_create_ok").on("click", function() {
-			    $data.submit();
-			});
-		    },
-		    progressall: function($e, $data) {
-			$progress_bar.progressbar({
-			    value: parseInt($data.loaded / $data.total * 100, 10)
-			});
-		    },
-		    error: function($e, $data) {
-                        $danger.text("Upload Error: " + $e).show();
-	                $alert.show();
-		    },
-		    done: function($e, $data) {
-		        /* $send_request($filename, function($result) {
-			   $last_edit_btn_type = "";
-
-			   $modal.dialog("close");
-			   $edit_update();
-			   }); */
-		    },
-		   });
 	    },
 	    buttons: {
 		"Create": {
@@ -1129,17 +1124,16 @@ $(document).ready(function() {
 
                         $filename["method"] = "file_create";
 
-			if ($need_to_upload)
-			    return;
-
                         $send_request($filename, function($result) {
-			    $last_edit_btn_type = "";
+
+                            $last_edit_btn_type = "";
 
 			    $modal.dialog("close");
+
 			    $edit_update($filename["extension"],
                                          $filename["user"],
                                          $filename["name"]);
-			});
+		        });
                     }
 		}
 	    }});
@@ -1154,13 +1148,13 @@ $(document).ready(function() {
 	    return;
 
 	// we check that the type is here
-	if ($file_modify_html == null) {
+	if ($file_edit == null) {
 	    $danger.text("Error: type list not found!").show();
 	    $alert.show();
 	    return;
 	}
 
-	$div_modal.html($file_modify_html());
+	$div_modal.html($file_edit(true));
 
         var $filename = {};
 
@@ -1290,8 +1284,7 @@ $(document).ready(function() {
 
 	if ($id == 'edit')
 	{
-            if ($file_create_html == null
-                || $file_modify_html == null)
+            if ($file_edit== null)
                 $file_get_type_list();
 
 	    $edit_update();
@@ -1307,8 +1300,7 @@ $(document).ready(function() {
 
         if ($id == 'configuration')
         {
-            if ($file_create_html == null
-                || $file_modify_html == null)
+            if ($file_edit == null)
                 $file_get_type_list();
 
             if (Object.keys($content_types) == 0)
@@ -1328,7 +1320,7 @@ $(document).ready(function() {
     var $div_modal = $("#modal");
 
     var $modal = $div_modal.dialog({
-        minWidth: 800,
+        minWidth: 500,
         autoOpen: false,
 	resizable: true,
 	modal: true,
@@ -2211,12 +2203,6 @@ $(document).ready(function() {
     $("button#deploy_validate").on("click", function() {
 
         var $dst = $("input#deploy_dst").val();
-
-        if ($dst === "/home/leo/zeek/" || $dst === "~/zeek/") {
-            $danger.text("This is really not a good idea!!").show();
-	    $alert.show();
-	    return;
-        }
 
         // we get all options choosed from the configuratio
         var $options = {};

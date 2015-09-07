@@ -50,8 +50,6 @@ include 'default/header.php';
 <link rel="stylesheet" href="css/jquery-ui.min.css">
 <link rel="stylesheet" href="css/jquery-ui.structure.min.css">
 <link rel="stylesheet" href="css/jquery-ui.theme.min.css">
-<link rel="stylesheet" href="css/jquery.fileupload.css">
-<link rel="stylesheet" href="css/jquery.fileupload-ui.css">
 <link rel='stylesheet' href='css/spectrum.css' />
 <link rel='stylesheet' href='css/dropzone.min.css' />
 <link rel="stylesheet" href="css/zeek_home.css">
@@ -373,8 +371,6 @@ include 'default/header.php';
 <script type="text/javascript" src="js/ace/ace.js"></script>
 <script type="text/javascript" src="js/mustache.js"></script>
 <script type="text/javascript" src="js/vendor/jquery.ui.widget.js"></script>
-<script type="text/javascript" src="js/jquery.iframe-transport.js"></script>
-<script type="text/javascript" src="js/jquery.fileupload.js"></script>
 <script type="text/javascript" src='js/spectrum.js'></script>
 <script type="text/javascript" src='js/JSON.safe.js'></script>
 <script type="text/javascript" src='js/dropzone.min.js'></script>

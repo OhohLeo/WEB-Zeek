@@ -79,9 +79,9 @@ nav#edit {
 }
 
 select {
-    width: 320px;
+    width: 230px;
     height: 40px;
-    margin: 20px;
+    margin: 20px 5px;
     font-size: 16px;
     font-weight: 400;
     white-space: nowrap;
