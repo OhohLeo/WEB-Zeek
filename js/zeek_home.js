@@ -1149,16 +1149,13 @@ $(document).ready(function() {
 
                         // Check if the extension is in the list of file types
                         $("select#select_type").children().each(function(){
-                            if (this.value == $extension.toLowerCase()) {
+                            if (this.value == $extension.toLowerCase())
                                 $(this).attr('selected', 'selected');
-                            }
                         });
 
                         // If empty, set input filename with the name of the file
                         if ($("input#filename").val() == "")
-                        {
                             $("input#filename").val($fileupload.substr(0, $offset));
-                        }
 
                         $filename = $generate_filename();
                     });
@@ -1841,18 +1838,20 @@ $(document).ready(function() {
 
 	        var $data = $structure[$name];
 
-                var $setup = "<table id=\"new_attribute\">";
+                $div_modal.empty();
+
+                var $table = $("<table>").attr("id", "new_attribute");
 
                 // we handle new structure
-                if ($name === "CREATE") {
-                    $setup +=
-                    "<tr><td><b>Structure name:</b></td>"
-                  + '<td><input id="structure_name" type="text"/></td></tr>';
+                if ($name === "CREATE")
+                {
+                    $table.append($("<tr>")
+                          .append($("<td>").append(
+                              $("<b>").text("Structure name:")))
+                          .append($("<td>").append(
+                              $("<input>").attr("id", "structure_name")
+                                          .attr("type", "text"))));
                 }
-
-                var $delete_attribute = $("<td>").append(
-                    $("<img>").attr("src", "img/delete.png")
-                              .attr("class", "attribute_delete")).html();
 
                 var $handle_delete_attribute = function() {
                     $("img.attribute_delete").on("click", function() {
@@ -1860,23 +1859,33 @@ $(document).ready(function() {
                     });
                 };
 
-                var $display_attribute = function($attribute, $type, $size)
+                var $display_attribute = function($table, $attribute, $type, $size)
                 {
+                    var $tr = $("<tr>").attr("class", "attribute")
+                                       .append($("<td>")
+                                                .attr("class", "name")
+                                                .append($("<b>").text($attribute)));
+
                     if ($is_expert_mode)
                     {
-                        $content = "<td class=\"db_type\">" + $type + "</td>"
-                                 + ($size != null && $size.length != 0)
-                            ? "<td class=\"db_size\">" + $size + "</td>" : "";
+                        $tr.append($("<td>").attr("class", "db_type")
+                                            .text($type));
+
+                        if ($size != null && $size.length != 0)
+                            $tr.append($("<td>").attr("class", "db_size")
+                                                .text($size));
                     }
                     else
                     {
-                        $content = "<td class=\"sp_type\">" + $type + "</td>";
+                        $tr.append($("<td>").attr("class", "sp_type")
+                                            .text($type));
                     }
 
-                    return "<tr class=\"attribute\">"
-                         + "<td class=\"name\"><b>" + $attribute + "</b></td>"
-                         + $content
-                         + "<td>" + $delete_attribute + "</td><td></td></tr>";
+                    $tr.append("<td>").append(
+                        $("<img>").attr("src", "img/delete.png")
+                                  .attr("class", "attribute_delete"));
+
+                    $table.append($tr);
                 };
 
                 if ($data != null)
@@ -1892,7 +1901,8 @@ $(document).ready(function() {
                             $type = "sp_type";
                         }
 
-                        $setup += $display_attribute(
+                        $display_attribute(
+                            $table,
                             $attribute,
                             $data[$attribute][$type],
                             $data[$attribute]["db_size"]);
@@ -1900,28 +1910,35 @@ $(document).ready(function() {
                 }
 
                 // we add new attributes
-                var $new_attribute =
-                "<tr class=\"add_attribute\"><td><b>Name</b></td><td>"
-              + "<input id=\"new_attribute\" name=\"name\" type=\"text\"/>"
-              + "</input></td></tr>"
-              + "<tr class=\"add_attribute\"><td><b>Type</b></td><td>"
-              + $("<div></div>").append($select_type_list).html()
-                    + "</td></tr>";
-
-                // if we are in expert mode : we ask for the type
-                if ($is_expert_mode)
+                var $new_attribute = function($table)
                 {
-                    $new_attribute +=
-                    "<tr class=\"add_attribute\"><td><b>Size</b></td>"
-                  + "<td><input id=\"attribute_size\" name=\"name\""
-                  + "type=\"number\"/></input></td>"
-                  + "</td></td></tr>";
+                    $table.append($("<tr>").attr("class", "add_attribute")
+                          .append($("<td>").append($("<b>").text("Name")))
+                          .append($("<td>").append(
+                              $("<input>").attr("id", "new_attribute")))
+                                          .attr("name", "name")
+                                          .attr("type", "text"))
+                          .append($("<tr>").attr("class", "add_attribute")
+                          .append($("<td>").append($("<b>").text("Type")))
+                          .append($("<td>").append($select_type_list)));
+
+                    // if we are in expert mode : we ask for the type
+                    if ($is_expert_mode)
+                    {
+                        $table.append($("<tr>").attr("class", "add_attribute")
+                              .append($("<td>").append($("<b>").text("Size")))
+                              .append($("<td>").append(
+                                  $("<input>").attr("id", "attribute_size")
+                                          .attr("name", "name")
+                                          .attr("type", "number"))));
+                    }
                 }
 
-                $setup += $new_attribute + "</table>"
-                        + "<button id=\"new_attribute\"> + </button>";
+                $new_attribute($table);
 
-                $div_modal.html($setup);
+                $div_modal.append($table)
+                          .append($("<button>").attr("id", "new_attribute")
+                                               .text("+"));
 
                 var $input_new_attribute = $("input#new_attribute");
                 var $previous_attribute_name;
@@ -1956,9 +1973,9 @@ $(document).ready(function() {
 
                     $("tr.add_attribute").remove();
 
-                    $("table#new_attribute").append(
-                        $display_attribute($name, $type, $size)
-                            + $new_attribute);
+                    var $table = $("table#new_attribute");
+                    $display_attribute($table, $name, $type, $size);
+                    $new_attribute($table);
 
                     $handle_delete_attribute();
                 });
@@ -2301,7 +2318,7 @@ $(document).ready(function() {
 
         var $this = $(this);
 
-        if ($this.attr('id') === "user") {
+        if ($this.attr("id") === "user") {
             $users_get_list();
         }
 
