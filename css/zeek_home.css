@@ -180,9 +180,13 @@ div#users_list {
     width:70%;
     margin-left:40%;
     margin-right:15%;
-};
+}
 
-.data_update, .data_delete, .user_delete {
+img.data_update, img.data_delete, img.user_delete {
+    cursor: pointer;
+}
+
+input.content_filename, img.content_delete, img.file_type_delete, img.content_type_delete {
     cursor: pointer;
 }
 
@@ -195,10 +199,6 @@ textarea#structure_explain {
     width: 550px;
     resize: none;
     overflow: hidden;
-}
-
-input.content_filename {
-    cursor: pointer;
 }
 
 p#final_destination {

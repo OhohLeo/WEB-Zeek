@@ -263,8 +263,12 @@ class Zeek extends ZeekOutput {
 		return $this->content_add(
                     $params["directory"], $params["files"]);
 
+           case 'content_modify':
+		return $this->content_modify(
+                    $params["directory"], $params["file"]);
+
             case 'content_move':
-		return $this->content_update(
+		return $this->content_move(
                     $params["old_directory"], $params["old_name"],
                     $params["new_directory"], $params["new_name"]);
 
@@ -1251,8 +1255,7 @@ class Zeek extends ZeekOutput {
  *
  * @method content_add
  * @param string directory name
- * @param string file input
- * @param string file name
+ * @param string file inputs
  */
     public function content_add($directory_name, $inputs)
     {
@@ -1294,6 +1297,48 @@ class Zeek extends ZeekOutput {
         }
 
 	$this->success("Content(s) stored in " . "'$directory_name'!");
+
+        $this->zlib->uploaded_files_delete();
+        return $result;
+    }
+
+/**
+ * Modify existing content
+ *
+ * @method content_modify
+ * @param string directory name
+ * @param string file to modify
+ */
+    public function content_modify($directory_name, $name)
+    {
+        if ($this->content_valid_directory($directory_name) == false)
+            return false;
+
+        // we check that the file already exist
+
+        // we check that the file to copy also exist
+
+        // Get the extension of the content
+        $extension = $zlib->file_get_extension($name);
+
+        // Remove the extension of the destination name
+        if ($zlib->file_get_extension($name) === $extension)
+            $name = substr($name, 0, strpos($name, '.'));
+
+        // we remove the existing file
+
+        // we copy the new file
+        $result = false;
+
+	if ($zlib->file_modify(
+	    $this->project_id, $_SESSION["login"], $file_to_move,
+            $directory_name, $name, $extension))
+	{
+	    $this->success(
+		"content '$file_to_move' stored as '$new_directory/$name.$extension'!");
+
+	    $result = true;
+	}
 
         $this->zlib->uploaded_files_delete();
         return $result;

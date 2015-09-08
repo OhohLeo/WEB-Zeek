@@ -135,7 +135,7 @@ $(document).ready(function() {
             .append(
                 $("<td>").append(
                     $("<img>").attr("src", "img/delete.png")
-                              .addClass("file_type_delete")
+                              .addClass("content_type_delete")
                               .on("click", function() {
                                   $contents_unset_type($name, $row);
                               })
@@ -285,6 +285,10 @@ $(document).ready(function() {
         var $list = $contents_list[
             $actual_content_type][$actual_content_directory]
 
+        var $on_modify_content = function() {
+
+        };
+
         for (var $idx in $list) {
 
             var $content = $list[$idx];
@@ -301,26 +305,28 @@ $(document).ready(function() {
                                 .attr("name", $content["filename"]
                                       + "." + $content["extension"]);
 
+            // We handle only images content for the moment
             var $value = $("<img>").attr("src", $fullpath)
                                    .on("click", function() {
-                                       $div_modal.html(
-                                           $("<img>").attr("src", $fullpath));
-                                       $modal.dialog({
-		                           open: function() {
-		                               $(this).dialog("option", "title",
-		                                              $fullpath);
-                                           }});
-                                       $modal.dialog("open");
+                                       new Darkroom(this,  {
+                                           // Canvas initialization size
+                                           minWidth: 100,
+                                           minHeight: 100,
+                                           maxWidth: 500,
+                                           maxHeight: 500,
+
+                                           initialize: function() {
+                                               // TODO STORE MODIFIED IMAGE
+                                           }
+                                       });
                                    });
 
             $row.append($("<td>").attr("class", "content_filename")
-                .append($("<input>").val($content["filename"])))
-                .append($("<td>").attr("class", "content_extension")
-                .text($content["extension"]))
-                .append($("<td>").attr("class", "content_size")
-                .text($content["size"]))
+                                 .append($("<b>").text($relativepath)))
                 .append($("<td>").attr("class", "content_value")
-                .append($value))
+                                 .append($value))
+                .append($("<td>").attr("class", "content_size")
+                                 .text($content["size"] / 100 + " ko"))
                 .append($("<td>").append(
                     $("<img>").attr("src", "img/delete.png")
                 .addClass("content_delete")
@@ -1279,7 +1285,8 @@ $(document).ready(function() {
 
 	var $filename = $actual_file["name"];
 
-        $div_modal.html("<p>Do you still want to delete <b>" + $filename + "</b> ?</p>");
+        $div_modal.html("<p>Do you still want to delete <b>"
+                        + $filename + "</b> ?</p>");
 
 	$modal.dialog({
 	    open: function() {
@@ -1402,11 +1409,17 @@ $(document).ready(function() {
         if ($data == null)
             return false;
 
+        $data["modify"] = 1;
+        $data["delete"] = 1;
+
 	$div_dynamic.html(Mustache.render(
 	    $html_dynamic, {
 		name: $name,
 		get_head: Object.keys($data)
 	    }));
+
+        delete $data["modify"];
+        delete $data["delete"];
 
 	$div_dynamic.show();
 
@@ -1497,8 +1510,6 @@ $(document).ready(function() {
 		    size: 100,
 		},
 		function($array) {
-		    if ($array == false)
-			return false;
 
 		    $tbody_data_get.empty(),
 
@@ -1516,11 +1527,12 @@ $(document).ready(function() {
                         $tr.append($("<td>").append(
                                 $("<img>").attr("item", $id)
                                           .attr("src", "img/update.png")
-                                          .attr("class", "data_update")))
-                           .append("<td>").append(
-                               $("<img>").attr("item", $id)
-                                         .attr("src", "img/delete.png")
-                                         .attr("class", "data_delete"));
+                                          .addClass("data_update")));
+
+                        $tr.append($("<td>").append(
+                            $("<img>").attr("item", $id)
+                                      .attr("src", "img/delete.png")
+                                      .addClass("data_delete")));
 
                         $tbody_data_get.append($tr);
 		    });
@@ -1699,7 +1711,8 @@ $(document).ready(function() {
     // we enable to delete the project
     $("button#project_delete").on("click", function($e) {
 
-        $div_modal.html("<p>Are you sure you still want to delete <b>" + $("h1#title").text() + "</b> ?</p>");
+        $div_modal.html("<p>Are you sure you still want to delete <b>"
+                        + $("h1#title").text() + "</b> ?</p>");
 
 	$modal.dialog({
 	    open: function() {
@@ -1832,7 +1845,6 @@ $(document).ready(function() {
                     "option", "title",
                     ($is_new_structure ? "New" :
                      "Modify '" + $name + "'") + " structure");
-
 
                 var $is_expert_mode = $("input#expert_mode").prop('checked');
 
