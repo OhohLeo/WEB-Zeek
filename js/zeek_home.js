@@ -973,7 +973,8 @@ $(document).ready(function() {
 
                 var $array =  [
                     [ "Filename",
-		      $("<input>").attr("name", "name")
+		      $("<input>").attr("id", "filename")
+                                  .attr("name", "name")
                                   .attr("type", "text") ],
 		    [ "Extension",
 		      $("<input>").attr("name", "extension")
@@ -1128,7 +1129,8 @@ $(document).ready(function() {
                 method: "post",
                 url: "upload.php",
                 maxFilesize: 3, // MB
-                acceptedFiles: "text/*",
+                maxFiles: 1,
+                acceptedFiles: "text/*, application/*",
                 createImageThumbnails: false,
                 autoProcessQueue: true,
                 addRemoveLinks: true,
@@ -1139,8 +1141,24 @@ $(document).ready(function() {
                 dictDefaultMessage: "Drop file here or click!",
                 init: function () {
                     this.on("complete", function ($file) {
+
                         $fileupload = $file["name"];
 
+                        var $offset = $fileupload .lastIndexOf('.');
+                        var $extension = $fileupload.substr($offset + 1);
+
+                        // Check if the extension is in the list of file types
+                        $("select#select_type").children().each(function(){
+                            if (this.value == $extension.toLowerCase()) {
+                                $(this).attr('selected', 'selected');
+                            }
+                        });
+
+                        // If empty, set input filename with the name of the file
+                        if ($("input#filename").val() == "")
+                        {
+                            $("input#filename").val($fileupload.substr(0, $offset));
+                        }
 
                         $filename = $generate_filename();
                     });
