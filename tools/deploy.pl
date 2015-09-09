@@ -15,7 +15,7 @@ use JavaScript::Minifier;
 
 use feature 'say';
 
-my %FORBIDDEN = map { $_ => 1 } qw(.. DEPLOY projects t tools var);
+my %FORBIDDEN = map { $_ => 1 } qw(.. projects t tools var build);
 
 my($action, $host, $login, $password, $directory, @input, $output, $force, $help);
 
@@ -169,8 +169,8 @@ while (my($src_directory, $src_files) = each %files)
 
             my($in, $out);
 
-            open($in, "$src_directory/$file") or die;
-            open($out, ">$dst_directory/$file") or die;
+            open($in, "$src_directory/$file") or die "Impossible to open $src_directory/$file";
+            open($out, ">$dst_directory/$file") or die "Impossible to open $dst_directory/$file";
 
             if ($ext eq 'js')
             {
@@ -192,10 +192,7 @@ while (my($src_directory, $src_files) = each %files)
 }
 
 
-unless ($action eq 'update')
-{
-    die "unknown action '$action'!\n";
-}
+exit unless ($action eq 'update');
 
 # unless (defined $login and defined $password and defined $host) {
 #     display_help();
