@@ -4,3 +4,4 @@ var/config.ini
 extends/piwik/tmp
 extends/piwik/config
 projects
+build
