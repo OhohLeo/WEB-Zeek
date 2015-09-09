@@ -375,7 +375,6 @@ include 'default/header.php';
 <script type="text/javascript" src='js/spectrum.js'></script>
 <script type="text/javascript" src='js/JSON.safe.js'></script>
 <script type="text/javascript" src='js/dropzone.min.js'></script>
-<script type="text/javascript" src="js/ckeditor/ckeditor.js"></script>
 <script type="text/javascript" src="js/fabric.min.js"></script>
 <script type="text/javascript" src="js/darkroom.js"></script>
 <script type="text/javascript" src="js/zeek_home.js"></script>

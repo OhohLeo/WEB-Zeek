@@ -1490,8 +1490,6 @@ $(document).ready(function() {
             $div_modal.append($input);
 	}
 
-        CKEDITOR.replaceAll("data");
-
 	var $tbody_data_get = $("tbody#data_get");
 
 	//we store the get html
@@ -1521,7 +1519,7 @@ $(document).ready(function() {
                         var $tr = $("<tr>").attr("class", "modal")
 
 			for (var $key in $obj) {
-			    $tr.append($("<td>").text($obj[$key]));
+			    $tr.append($("<td>").html($obj[$key]));
 			}
 
                         $tr.append($("<td>").append(
@@ -1551,8 +1549,7 @@ $(document).ready(function() {
             $("textarea.data").each(function() {
 
                 var $name = $(this).attr("name");
-
-                $values[$name] = CKEDITOR.instances[$name].getData();
+                $values[$name] = $(this).val();
             });
 
             $("select.data").each(function() {
@@ -1590,7 +1587,7 @@ $(document).ready(function() {
                 }
                 else if ($(this).is("textarea"))
                 {
-                    CKEDITOR.instances[$(this).attr("name")].setData($value);
+                    $(this).html($value);
                 }
                 else
                 {
@@ -1649,7 +1646,7 @@ $(document).ready(function() {
 
                 if ($(this).is("textarea"))
                 {
-                    CKEDITOR.instances[$(this).attr("name")].setData("");
+                    $(this).val("");
                 }
                 else
                 {
