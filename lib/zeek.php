@@ -7,6 +7,7 @@
 class Zeek extends ZeekOutput {
 
     public $global_path;
+    public $piwik_url;
     protected $project_id;
     protected $project_name;
     protected $zlib;
@@ -156,6 +157,9 @@ class Zeek extends ZeekOutput {
 	$global_path .=  "/";
 
 	$this->global_path = $global_path;
+
+        if (isset($config['piwik_url']))
+            $this->piwik_url  = $config['piwik_url'];
 
         // we initialise using $php_errormgs
         ini_set('track_errors', 1);
@@ -328,11 +332,11 @@ class Zeek extends ZeekOutput {
 		                       $params['data']);
 
 	    case 'test':
-	         return $this->test($params['options']);
+	        return $this->test($params['options']);
 
 	    case 'deploy':
-	    return $this->deploy($params['dst'],
-                                 $params['options']);
+	        return $this->deploy($params['dst'],
+                                     $params['options']);
 
             case 'option_get_plugins':
                 return $this->option_get("plugins");
@@ -393,6 +397,9 @@ class Zeek extends ZeekOutput {
 
             case 'project_set_dst':
                 return $this->project_set_destination($params["value"]);
+
+            case 'piwik_download':
+                return $this->project_download_piwik();
 
             case 'piwik_set_token':
                 return $this->project_set_piwik_token($params["value"]);
@@ -674,6 +681,29 @@ class Zeek extends ZeekOutput {
         }
 
         return false;
+    }
+
+/**
+ * Download & unzip the piwik project
+ *
+ * @method project_download_piwik
+ */
+    public function project_download_piwik()
+    {
+        // Set the default piwik url
+        if ($this->piwik_url == "")
+            $this->piwik_url = "http://builds.piwik.org/piwik.zip";
+
+        $dst = $this->global_path . "extends/piwik.zip";
+
+        if ($this->zlib->file_download($this->piwik_url, $dst) == false)
+            return false;
+
+        if ($this->zlib->unzip($dst, $this->global_path . "extends/") == false)
+            return false;
+
+        $this->success("Download Piwik OK!");
+        return true;
     }
 
 /**
@@ -2702,25 +2732,6 @@ class Zeek extends ZeekOutput {
 
         $this->error("unexpected type '$type'!");
         return false;
-    }
-
-/**
- * Store piwik token
- *
- * @method piwik_token_set
- * @param string piwik token
- */
-    public function piwik_token_set($token)
-    {
-    }
-
-/**
- * Get piwik token
- *
- * @method piwik_token_get
- */
-    public function piwik_token_get()
-    {
     }
 
 /**

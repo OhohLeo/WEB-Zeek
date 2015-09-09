@@ -665,5 +665,13 @@ class TestZeek extends PHPUnit_Framework_TestCase
         $this->zeek->environment_clean();
     }
 
+    public function test_install_piwik()
+    {
+        $zeek = $this->zeek;
+
+        $zeek->project_download_piwik();
+        $zeek->checkOutput("");
+    }
+
 }
 ?>

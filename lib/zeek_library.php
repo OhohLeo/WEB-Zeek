@@ -1284,10 +1284,9 @@ class ZeekLibrary extends ZeekOutput {
     private function file_remove($src)
     {
 	// we check that the file doesn't already exist
-	if (!file_exists($src))
+	if (file_exists($src) == false)
 	{
 	    $this->error("'$src' doesn't exist!");
-
 	    return false;
 	}
 
@@ -1570,6 +1569,122 @@ class ZeekLibrary extends ZeekOutput {
 
 	return false;
     }
+
+/**
+ * Ask to download file.
+ *
+ * @method file_download
+ * @param string url to download
+ * @param string path where to download file
+ */
+    public function file_download($url, $path)
+    {
+        $error = null;
+
+        try
+	{
+            $file = fopen($url, "rb");
+
+            try
+	    {
+                $f = fopen($path, "wb");
+
+                while(feof($file) == false)
+                {
+                    fwrite($f, fread($file, 1024 * 8 ), 1024 * 8 );
+                }
+
+                fclose($f);
+            }
+            catch (Exception $e)
+            {
+                $error = "Impossible to download '$url' to '$path': $e";
+            }
+
+            fclose($file);
+
+        }
+        catch (Exception $e)
+        {
+            $error = "Impossible to download '$url'";
+        }
+
+        if ($error)
+        {
+            $this->error($error);
+            return false;
+        }
+
+        return true;
+    }
+
+
+/**
+ * Ask to unzip file.
+ *
+ * @method file_unzip
+ * @param string file to unzip
+ * @param string destination to unzip
+ */
+    public function unzip($src, $dst)
+    {
+        $zip = zip_open($src);
+
+        if (is_resource($zip))
+        {
+            $tree = "";
+
+            while (($zip_entry = zip_read($zip)) !== false)
+            {
+                if (strpos(zip_entry_name($zip_entry),
+                           DIRECTORY_SEPARATOR) !== false)
+                {
+                    $last = strrpos(zip_entry_name($zip_entry),
+                                    DIRECTORY_SEPARATOR);
+                    $dir = $dst . substr(zip_entry_name($zip_entry), 0, $last);
+                    $file = substr(zip_entry_name($zip_entry),
+                                   strrpos(zip_entry_name($zip_entry),
+                                           DIRECTORY_SEPARATOR) + 1);
+
+                    if (is_dir($dir) == false)
+                    {
+                        if (@mkdir($dir, 0755, true) == false)
+                        {
+                            $this->error("Unable to create '$dir'");
+                            return false;
+                        }
+                    }
+
+                    if (strlen(trim($file)) > 0)
+                    {
+                        $return = @file_put_contents(
+                            $dir."/".$file, zip_entry_read(
+                                $zip_entry, zip_entry_filesize($zip_entry)));
+
+                        if ($return === false)
+                        {
+                            $this->error("Unable to write file '$dir/$file'");
+                            return false;
+                        }
+                    }
+                }
+                else
+                {
+                    file_put_contents($file,
+                                      zip_entry_read($zip_entry,
+                                                     zip_entry_filesize($zip_entry)));
+                }
+            }
+        }
+        else
+        {
+            $this->error("Unable to open zip file '$src'");
+            return false;
+        }
+
+        return $this->file_remove($src);
+    }
+
 
 /**
  * Return true if the directory received is valid, otherwise return false

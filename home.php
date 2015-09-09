@@ -92,9 +92,21 @@ include 'default/header.php';
             $is_piwik_installed = false;
             $piwik_config_path = $global_path . "extends/piwik/config/config.ini.php";
 
+            // Is piwik present ?
+            // we check if config/config.ini.php is defined
+            if ($is_master_user && file_exists($global_path . "extends/piwik") == false)
+            {
+            ?>
+                <a id="piwik_download">
+                    <button id="piwik_download" class="validate">
+                        Download Piwik
+                    </button>
+                </a>
+            <?php
+            }
             // Is piwik install ?
             // we check if config/config.ini.php is defined
-            if ($is_master_user && file_exists($piwik_config_path) == false)
+            else if ($is_master_user && file_exists($piwik_config_path) == false)
             {
             ?>
                 <a href="extends/piwik">
@@ -379,21 +391,56 @@ include 'default/header.php';
 <script type="text/javascript" src="js/darkroom.js"></script>
 <script type="text/javascript" src="js/zeek_home.js"></script>
 <?php
-if ($is_piwik_installed)
+if ($is_master_user)
 {
 ?>
 <script>
-$(document).ready(function() {
-    $input_validator(
-        ".piwik_set_token",
-        function()
-        {
-            console.log("CLIK!!")
-        })();
+ $(document).ready(function() {
+<?php
+if ($is_piwik_installed) {
+?>
+     $input_validator(
+         ".piwik_set_token",
+         function() {})();
+<?php
+} else {
+?>
+     var $btn_piwik_download = $("button#piwik_download");
+     var $a_piwik_download = $("a#piwik_download");
+
+     $a_piwik_download.on("click", function($e) {
+         $e.preventDefault();
+     });
+
+     $btn_piwik_download.on("click", function() {
+
+         $btn_piwik_download.text("WAIT!");
+
+     	 $send_request(
+             {
+	         method: "piwik_download"
+             },
+             function ($result) {
+                 if ($result["success"])
+                 {
+                     $a_piwik_download.unbind('click')
+                                      .attr("href", "extends/piwik");
+
+                     $btn_piwik_download.attr("id", "piwik_install")
+                                        .text("Install Piwik");
+                 }
+                 else
+                 {
+                     $btn_piwik_download.text("Download Piwik");
+                 }
+             });
+     });
+<?php
+}
+?>
 });
 </script>
 <?php
 }
-
 include 'default/footer.php';
 ?>
