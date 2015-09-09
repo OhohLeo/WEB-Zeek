@@ -145,16 +145,30 @@ class Zeek extends ZeekOutput {
     {
         $config = parse_ini_file($config_file);
 
+        if ($config == null)
+        {
+            $this->error("Impossible to read config file!");
+            return false;
+        }
+
         // we get the global_path
-        if (isset($config['global_path'])) {
+        if (isset($config['global_path']))
+        {
             $global_path = $config['global_path'];
-	} else if (isset($_SERVER['DOCUMENT_ROOT'])) {
-	    $global_path = $_SERVER['DOCUMENT_ROOT'];
-        } else {
-            $global_path = getcmd();
+	}
+        else
+        {
+            $global_path = getcwd();
         }
 
 	$global_path .=  "/";
+
+        // we search for the zeek library
+        if (file_exists($global_path . "index.php") == false)
+        {
+            $this->error("Wrong global_path : '$global_path/index.php' not found!");
+            return false;
+        }
 
 	$this->global_path = $global_path;
 
@@ -164,8 +178,10 @@ class Zeek extends ZeekOutput {
         // we initialise using $php_errormgs
         ini_set('track_errors', 1);
 
+        $zeek_lib_src = $global_path . "lib/zeek_library.php";
+
 	// we create de zeek_library object
-	require_once $global_path . "lib/zeek_library.php";
+	require_once $zeek_lib_src;
 
 	$zlib = new ZeekLibrary();
 	$zlib->global_path = $global_path;
