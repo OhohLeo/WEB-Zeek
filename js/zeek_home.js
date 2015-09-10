@@ -326,7 +326,7 @@ $(document).ready(function() {
                 .append($("<td>").attr("class", "content_value")
                                  .append($value))
                 .append($("<td>").attr("class", "content_size")
-                                 .text($content["size"] / 100 + " ko"))
+                                 .text($content["size"] / 1024 + " ko"))
                 .append($("<td>").append(
                     $("<img>").attr("src", "img/delete.png")
                 .addClass("content_delete")
