@@ -721,8 +721,9 @@ class ZeekLibrary extends ZeekOutput {
             // we check that the table name still exists
             if (array_key_exists($reel_table_name, $new_structure))
             {
-                $this->attributes_update($table_name,
-                                         $new_structure[$reel_table_name]);
+                if ($this->attributes_update(
+                    $table_name, $new_structure[$reel_table_name]) == false)
+                        return false;
             }
             // otherwise we remove the stored table from the database
             else if ($db->table_delete($table_name))

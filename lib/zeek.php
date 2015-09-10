@@ -23,12 +23,11 @@ class Zeek extends ZeekOutput {
         "TITLE"    => array("db_type" => "VARCHAR", "db_size" => 100),
         "TEXT"     => array("db_type" => "LONGTEXT"),
         "INTEGER"  => array("db_type" => "INTEGER"),
-        "NUMBER"   => array("db_type" => "BIGINT"),
-        "FLOAT"    => array("db_type" => "FLOAT"),
+        "NUMBER"   => array("db_type" => "REAL"),
         "DATE"     => array("db_type" => "DATE"),
         "TIME"     => array("db_type" => "TIME"),
         "YEAR"     => array("db_type" => "YEAR"),
-        "DATETIME" => array("db_type" => "TIMESTAMP"),
+        "DATETIME" => array("db_type" => "DATETIME"),
     );
 
     private $type_complex = array(
@@ -95,8 +94,8 @@ class Zeek extends ZeekOutput {
 
         "DATE"      => array("type" => "date"),
         "TIME"      => array("type" => "time"),
-        "TIMESTAMP" => array("type" => "datetime"),
-        "DATETIME"  => array("type" => "datetime"),
+        "DATETIME"  => array("type" => "datetime",
+                             "placeholder" => "yyyy-mm-dd hh:mm::ss"),
         "YEAR"      => array(
 	    "type" => "number",
 	    "min"  => 0,

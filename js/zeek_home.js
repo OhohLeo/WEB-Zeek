@@ -1831,7 +1831,10 @@ $(document).ready(function() {
             $buttons["Remove"] = function() {
                 delete $structure[$name];
                 $structure_set($structure);
-                $append_create_structure();
+
+                if (Object.keys($structure).length != 0)
+                    $append_create_structure();
+
                 $modal.dialog("close");
             };
         }
@@ -1949,29 +1952,40 @@ $(document).ready(function() {
                           .append($("<button>").attr("id", "new_attribute")
                                                .text("+"));
 
-                var $input_new_attribute = $("input#new_attribute");
-                var $previous_attribute_name;
+                var $auto_fill_new_attribute = function() {
 
-                $("select#select_type").change(function() {
-                    var $selected = $("select#select_type option:selected").val();
+                    var $input_new_attribute = $("input#new_attribute");
+                    var $previous_attribute_name;
 
-                    if ($input_new_attribute.val() === ""
-                        || $input_new_attribute.val() === $previous_attribute_name)
-                    {
-                        $input_new_attribute.val($selected.toLowerCase());
-                        $previous_attribute_name = $input_new_attribute.val()
-                    }
-                });
+                    $("select#select_type").on("click", function() {
+                        var $selected = $("select#select_type option:selected").val();
 
+                        if ($selected == "INTEGER")
+                            $selected = "counter";
+
+                        if ($input_new_attribute.val() === ""
+                            || $input_new_attribute.val() === $previous_attribute_name)
+                        {
+                            $input_new_attribute.val($selected.toLowerCase());
+                            $previous_attribute_name = $input_new_attribute.val()
+                        }
+                    });
+                };
+
+                $auto_fill_new_attribute();
                 $handle_delete_attribute();
 
                 $("button#new_attribute").on("click", function() {
-                    var $name = $("input#new_attribute").val();
+                    var $attr = $("input#new_attribute").val();
                     var $type = $("select#select_type option:selected").val();
-                    var $size = $("input#attribute_size").val()
+                    var $size = $("input#attribute_size").val();
+
+                    // we check that the name doesn't already exist
+                    if ($attr in $structure[$name])
+                        return;
 
                     // we check if the attribute name is empty or already exists
-                    if ($name == "" || $name.indexOf(" ") >= 0) {
+                    if ($attr == "" || $attr.indexOf(" ") >= 0) {
                         return;
                     }
 
@@ -1983,10 +1997,10 @@ $(document).ready(function() {
                     $("tr.add_attribute").remove();
 
                     var $table = $("table#new_attribute");
-                    $display_attribute($table, $name, $type, $size);
+                    $display_attribute($table, $attr, $type, $size);
                     $new_attribute($table);
-
                     $handle_delete_attribute();
+                    $auto_fill_new_attribute();
                 });
 	    },
 	    buttons: $buttons
