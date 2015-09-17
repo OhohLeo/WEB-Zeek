@@ -8,6 +8,7 @@ class Zeek extends ZeekOutput {
 
     public $global_path;
     public $piwik_url;
+
     protected $project_id;
     protected $project_name;
     protected $zlib;
@@ -18,6 +19,8 @@ class Zeek extends ZeekOutput {
     private $content_type_list;
     private $content_directory_list;
     private $mime_validator;
+
+    private $is_demo;
 
     private $type_simple = array(
         "TITLE"    => array("db_type" => "VARCHAR", "db_size" => 100),
@@ -172,7 +175,10 @@ class Zeek extends ZeekOutput {
 	$this->global_path = $global_path;
 
         if (isset($config['piwik_url']))
-            $this->piwik_url  = $config['piwik_url'];
+            $this->piwik_url = $config['piwik_url'];
+
+        if (isset($config['is_demo']))
+            $this->is_demo = 1;
 
         // we initialise using $php_errormgs
         ini_set('track_errors', 1);
@@ -310,9 +316,6 @@ class Zeek extends ZeekOutput {
                 return $this->contents_modify_type(
                     $params["name"], $params["options"]);
 
-            case 'contents_unset_type':
-                return $this->contents_unset_type($params["name"]);
-
 	    case 'file_create':
 	        return $this->file_create(
 		    strtolower($params["type"]),
@@ -396,7 +399,7 @@ class Zeek extends ZeekOutput {
 
         }
 
-        if ($this->user_master_only())
+        if ($this->user_master_only() || $this->demo_stop())
             return false;
 
         switch ($method)
@@ -434,6 +437,9 @@ class Zeek extends ZeekOutput {
 
             case 'data_clean_all':
 		return $this->data_clean_all();
+
+            case 'contents_unset_type':
+                return $this->contents_unset_type($params["name"]);
         }
 
         $this->error(
@@ -905,6 +911,9 @@ class Zeek extends ZeekOutput {
     public function user_change_password(
         $project_id, $login, $password_old, $password_new)
     {
+        if ($this->demo_stop())
+            return false;
+
         if (!(isset($password_old) or isset($password_new))) {
             $this->error("Expecting valid old and new passwords!");
             return false;
@@ -1716,20 +1725,37 @@ class Zeek extends ZeekOutput {
     {
 	$zlib = $this->zlib;
 
+        $status = false;
+
+        // we copy the file in the project directory
 	if ($zlib->file_set($this->project_id, $user, $name, $data))
-	{
+            $status = true;
+
+        // if the test directory exist: we copy it in the test directory
+        $destination = $this->global_path . $this->get_test_directory();
+
+        if (file_exists($destination))
+        {
+            $status = false;
+
+            // we generate the file informations
+            $file = $this->zlib->file_get_details($name);
+
+            if ($this->deploy_one_file($destination, $file, array()))
+                $status = true;
+        }
+
+        if ($status)
 	    $this->success(
 		$zlib->file_get_path($this->project_id, $name)
 	      . " correctly updated");
-	    return true;
-	}
 
-	return false;
+	return $status;
     }
 
 /**
  * Method that instantiate all the plugins.
- *x
+ *
  * @method plugins_init
  */
     public function plugins_init()
@@ -2031,8 +2057,7 @@ class Zeek extends ZeekOutput {
             return false;
         }
 
-        $dst = 'projects/' . $this->project_id
-	     . '/TEST/' . $_SESSION['login'];
+        $dst = $this->get_test_directory();
 
         // we deploy the files & apply all the data plugins
         if ($this->deploy_files(
@@ -2041,6 +2066,17 @@ class Zeek extends ZeekOutput {
 
 	$this->output_json(array('href' => $dst . '/index.html'));
         return true;
+    }
+
+ /**
+  * Method to get actual user test directory
+  *
+  * @method get_test_directory
+  */
+    private function get_test_directory()
+    {
+        return 'projects/' . $this->project_id
+	        . '/TEST/' . $_SESSION['login'];
     }
 
 /**
@@ -2052,14 +2088,6 @@ class Zeek extends ZeekOutput {
  */
     public function deploy($dst, $options)
     {
-        // if the deploy command doesn't come from a master user : we get from the database
-
-        // if the destination doesn't begin with '/':
-        // we add the global path before the destination
-        //$dst
-
-        // if the options are not set : we get them from the database
-
         // we check that the json is well formated
         $decode_options = $this->json_decode($options);
         if ($decode_options == NULL)
@@ -2075,16 +2103,12 @@ class Zeek extends ZeekOutput {
         if ($this->deploy_files($dst, $decode_options) == false)
             return false;
 
-        // we apply all the deploy plugins
-
-        // we store default dst & options
-
 	$this->success("Successfully deployed!");
         return true;
     }
 
 /**
- * Method to call to deploy the project on hisnal directory
+ * Method to call to deploy the project on the specified directory
  *
  * @method deploy_files
  * @param string destination to copy the files
@@ -2114,58 +2138,76 @@ class Zeek extends ZeekOutput {
 
         foreach ($files as $file)
         {
-            // check if the file directory exist
-            if ($file['in_main_directory'] == false
-                && $zlib->directory_create(
-                    $destination . '/' . $file['type']) == false)
-                        return false;
-
-            // we get the file content
-            $input = $zlib->file_get($project_id,
-                                     $_SESSION['login'],
-                                     $file['name']);
-            if ($input == false)
-                return false;
-
-            // we handle the options
-            foreach ($options as $option => $is_activated)
-            {
-                if (is_string($is_activated) && $is_activated === "disabled")
-                    continue;
-
-                if ($is_activated == false)
-                    continue;
-
-                // we handle the plugins here
-                if (array_key_exists($option, $this->plugins_list['files']))
-                {
-                    $plugin_obj = $this->plugins_list['files'][$option];
-
-                    if (in_array($file['type'], $plugin_obj->accept_files()) == false)
-                        continue;
-
-                    $input = $plugin_obj->on_input($input);
-                }
-                // otherwise we handle the file handler here as method
-                else
-                    $input = $this->$option($input, $file['type']);
-
-                if ($input == null)
-                {
-                    $input = "Error on '$option' functionnality: null output!";
-                    break;
-                }
-            }
-
-            // we write the file
-            if ($zlib->file_write(
-                $destination . '/' . $file['name'], $input) == false)
+            if ($this->deploy_one_file(
+                $destination, $file, $options) == false)
                     return false;
         }
 
         return true;
     }
 
+/**
+ * Method to call to deploy one file
+ *
+ * @method deploy_one_file
+ * @param file details
+ * @param hash options to activate for each file
+ */
+    public function deploy_one_file($destination, $file, $options)
+    {
+        $zlib = $this->zlib;
+        $project_id = $this->project_id;
+
+        // check if the file directory exist
+        if ($file['in_main_directory'] == false
+            && $zlib->directory_create(
+            $destination . '/' . $file['type']) == false)
+                return false;
+
+        // we get the file content
+        $input = $zlib->file_get($project_id,
+                                 $_SESSION['login'],
+                                 $file['name']);
+        if ($input == false)
+            return false;
+
+        // we handle the options
+        foreach ($options as $option => $is_activated)
+        {
+            if (is_string($is_activated) && $is_activated === "disabled")
+                continue;
+
+            if ($is_activated == false)
+                continue;
+
+            // we handle the plugins here
+            if (array_key_exists($option, $this->plugins_list['files']))
+            {
+                $plugin_obj = $this->plugins_list['files'][$option];
+
+                if (in_array($file['type'], $plugin_obj->accept_files()) == false)
+                    continue;
+
+                $input = $plugin_obj->on_input($input);
+            }
+            // otherwise we handle the file handler here as method
+            else
+                $input = $this->$option($input, $file['type']);
+
+            if ($input == null)
+            {
+                $input = "Error on '$option' functionnality: null output!";
+                break;
+            }
+        }
+
+        // we write the file
+        if ($zlib->file_write(
+            $destination . '/' . $file['name'], $input) == false)
+                return false;
+
+        return true;
+    }
 
 /**
  * Return the option wanted or an error if it is invalid or not already existing.
@@ -2760,6 +2802,21 @@ class Zeek extends ZeekOutput {
         $this->output_json(array("redirect" => $url));
     }
 
+/**
+ * Return false with a message error in case of demo option
+ *
+ * @method demo_stop
+ */
+    public function demo_stop()
+    {
+        if ($this->demo)
+        {
+            $this->error("Demo version: functionnality disabled!");
+            return true;
+        }
+
+        return false;
+    }
 
 /**
  * Return true if the string is not empty otherwise return false.

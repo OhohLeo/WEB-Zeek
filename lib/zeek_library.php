@@ -1151,7 +1151,6 @@ class ZeekLibrary extends ZeekOutput {
 	return true;
     }
 
-
 /**
 * We copy the file from src to dst.
 *
@@ -1398,6 +1397,39 @@ class ZeekLibrary extends ZeekOutput {
 	}
 
 	return $type;
+    }
+
+/**
+* We get the file details.
+*
+* Return true if the file exists, otherwise return false.
+*
+* @method file_get_details
+* @param string name
+*/
+    public function file_get_details($name, $get_type=null)
+    {
+        if ($get_type == null)
+        {
+            $idx = strrpos($name, '/');
+	    $get_type = substr($name, 0, $idx);
+        }
+
+	if ($get_type == "")
+	{
+            $idx = strrpos($name, '.');
+	    $type = substr($name, $idx + 1);
+            $in_main_directory = true;
+	}
+	else
+	{
+            $type = $get_type;
+            $in_main_directory = false;
+        }
+
+        return array('type' => $type,
+		     'name' => $name,
+                     'in_main_directory' => $in_main_directory);
     }
 
 /**

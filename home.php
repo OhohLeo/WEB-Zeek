@@ -191,6 +191,13 @@ include 'default/header.php';
 		   value=<?php echo $project_dst; ?>>
             <h3>Project options</h3>
             <table class="center" id="options_deploy"></table>
+            <h3>Project configure</h3>
+            <p>Add following on .htaccess file :</p>
+            <textarea class="explain" rows="3" readonly>
+RewriteEngine on
+RewriteCond %{REQUEST_URI} !^/{zeek_path}
+RewriteRule ^(.*)$ /{zeek_path}/<?php echo $project_url; ?>/$1 [L]
+            </textarea>
             <?php } ?>
             <button id="deploy_validate" class="danger">DEPLOY</button>
         </div>
@@ -335,7 +342,8 @@ include 'default/header.php';
             <h3>How to use a structure ?</h3>
             <p>A structure could be used in all type of files.</p>
             <p>Write as following:</p>
-            <textarea id="structure_explain" rows="3" readonly><zeek name="structure_name" limit="5" offset="1">
+            <textarea class="explain" rows="3" readonly>
+<zeek name="structure_name" size="5" offset="1" sort_by="{attribute_name(++/--)}">
        some stuff ... {{attribute_name}} ... some stuff
 </zeek>
             </textarea>

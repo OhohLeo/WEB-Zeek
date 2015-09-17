@@ -809,7 +809,21 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 	    file_exists($zlib->global_path . 'projects/test'));
 
 	// we check the type of file
-	$this->assertEquals($zlib->file_get_type('css/test2.hey'), 'css');
+	$this->assertEquals(
+            'css', $zlib->file_get_type('css/test2.hey'));
+
+        // we check 'file_get_detail'
+        $this->assertEquals(
+            array('type' => 'css',
+                  'name' => 'css/test2.hey',
+                  'in_main_directory' => false),
+            $zlib->file_get_details('css/test2.hey'));
+
+        $this->assertEquals(
+            array('type' => 'hey',
+                  'name' => 'test2.hey',
+                  'in_main_directory' => true),
+            $zlib->file_get_details('test2.hey'));
 
 	$zlib->environment_clean($this->db_name);
     }

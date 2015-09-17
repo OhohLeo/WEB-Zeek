@@ -195,10 +195,15 @@ input.content_filename, img.content_delete, img.file_type_delete, img.content_ty
     cursor: pointer;
 }
 
-textarea#structure_explain {
-    width: 550px;
+textarea.explain {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    width: 700px;
     resize: none;
     overflow: hidden;
+    border: 0px;
+    padding: 0px;
 }
 
 p#final_destination {
