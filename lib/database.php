@@ -143,9 +143,12 @@ class DataBase extends ZeekOutput {
          $result = $this->send_query(
              "SHOW DATABASES LIKE '$name'", false);
 
-        foreach ($result as $row) {
-            return true;
-        }
+         if ($result == null)
+             return false;
+
+         foreach ($result as $row) {
+             return true;
+         }
 
         return false;
     }
