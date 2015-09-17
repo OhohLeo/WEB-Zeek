@@ -1348,6 +1348,9 @@ class Zeek extends ZeekOutput {
                 $this->zlib->uploaded_files_delete();
                 return false;
             }
+
+            // TODO : if the test directory exist, we copy the added
+            // content into the test directory
         }
 
 	$this->success("Content(s) stored in " . "'$directory_name'!");
@@ -1393,6 +1396,9 @@ class Zeek extends ZeekOutput {
 
 	    $result = true;
 	}
+
+        // TODO : if the test directory exist, we copy the modifieed
+        // content into the test directory
 
         $this->zlib->uploaded_files_delete();
         return $result;
@@ -1442,6 +1448,9 @@ class Zeek extends ZeekOutput {
 	    $result = true;
 	}
 
+        // TODO : if the test directory exist, we move the
+        // content into the test directory
+
         $this->zlib->uploaded_files_delete();
         return $result;
     }
@@ -1466,6 +1475,9 @@ class Zeek extends ZeekOutput {
 
             return true;
         }
+
+        // TODO : if the test directory exist, we delete the 
+        // content from the test directory
 
         return false;
     }
@@ -1606,6 +1618,9 @@ class Zeek extends ZeekOutput {
 	    return true;
 	}
 
+        // TODO : if the test directory exist, we delete the
+        // file from the test directory
+
 	return false;
     }
 
@@ -1732,7 +1747,7 @@ class Zeek extends ZeekOutput {
             $status = true;
 
         // if the test directory exist: we copy it in the test directory
-        $destination = $this->global_path . $this->get_test_directory();
+        $destination = $this->global_path . $this->test_get_directory();
 
         if (file_exists($destination))
         {
@@ -2057,7 +2072,7 @@ class Zeek extends ZeekOutput {
             return false;
         }
 
-        $dst = $this->get_test_directory();
+        $dst = $this->test_get_directory();
 
         // we deploy the files & apply all the data plugins
         if ($this->deploy_files(
@@ -2069,11 +2084,21 @@ class Zeek extends ZeekOutput {
     }
 
  /**
+  * Method to set options specific to the user
+  *
+  * @method test_set_options
+  * @params string options associated
+  */
+    public function test_set_options($user, $options)
+    {
+    }
+
+ /**
   * Method to get actual user test directory
   *
-  * @method get_test_directory
+  * @method test_get_directory
   */
-    private function get_test_directory()
+    private function test_get_directory()
     {
         return 'projects/' . $this->project_id
 	        . '/TEST/' . $_SESSION['login'];

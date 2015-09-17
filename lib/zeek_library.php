@@ -140,9 +140,11 @@ class ZeekLibrary extends ZeekOutput {
 				  'db_size' => 25),
             'password'   => array('db_type' => 'CHAR',
 				  'db_size' => 32),
-            'is_master'  => array('db_type' => 'TINYINT'),
             'project_id' => array('db_type' => 'INT',
-				  'db_size' => 11)));
+				  'db_size' => 11)),
+            'is_master'  => array('db_type' => 'TINYINT'),
+	    'options'    => array('db_type' => 'VARCHAR',
+			          'db_size' => 2000));
 
         return true;
     }
@@ -326,6 +328,48 @@ class ZeekLibrary extends ZeekOutput {
         return false;
     }
 
+/**
+ * Return the value of an attribute from the specified user.
+ *
+ * @method user_get_attribute
+ * @param int user id
+ * @param string attribute name
+ */
+    public function user_get_attribute($user_id, $name)
+    {
+        $db = $this->db;
+
+        $result = $this->db->table_view(
+            'user', $name, NULL, 1, 0, $user_id);
+
+        if ($result)
+        {
+            $array = $this->value_fetch($result);
+
+            return $array[$name];
+        }
+
+        return NULL;
+    }
+
+/**
+ * Set the value of an attribute from the specified user.
+ *
+ * @method user_set_attribute
+ * @param int user id
+ * @param string attribute name
+ * @param string value to write
+ */
+    public function user_set_attribute($user_id, $name, $value)
+    {
+        if ($this->db->row_update(
+            'user', $user_id, array($name => $value)))
+        {
+            return true;
+        }
+
+        return false;
+    }
 
 /**
  * Parse projects.ini configuration file
