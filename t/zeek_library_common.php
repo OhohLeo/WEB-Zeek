@@ -77,6 +77,13 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($zlib->user_get(1, 'toto') == NULL);
 
+        $this->assertTrue(
+            $zlib->user_set_attribute(
+                1, 'toto', 'options', 'test'));
+
+        $this->assertEquals('test', $zlib->user_get_attribute(
+            1, 'toto', 'options'));
+
         $this->assertTrue($zlib->user_change_password(
             1, 'toto', 'toto', 'titi'));
 

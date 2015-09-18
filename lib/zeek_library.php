@@ -103,7 +103,7 @@ class ZeekLibrary extends ZeekOutput {
         {
                return $this->environment_setup(
                    $this->db_name, $this->db_login, $this->db_password);
-            }
+        }
 
         /* We will use only this database */
         $db->database_use($this->db_name);
@@ -159,10 +159,10 @@ class ZeekLibrary extends ZeekOutput {
             'password'   => array('db_type' => 'CHAR',
 				  'db_size' => 32),
             'project_id' => array('db_type' => 'INT',
-				  'db_size' => 11)),
+				  'db_size' => 11),
             'is_master'  => array('db_type' => 'TINYINT'),
 	    'options'    => array('db_type' => 'VARCHAR',
-			          'db_size' => 2000));
+			          'db_size' => 2000)));
 
         return true;
     }
@@ -257,9 +257,8 @@ class ZeekLibrary extends ZeekOutput {
             return false;
         }
 
-        if ($this->db->row_update(
-            'user', $user->id,
-            array('password' => md5($new_password)))) {
+        if ($this->db->row_update('user', $user->id,
+                                  array('password' => md5($new_password)))) {
             return true;
         }
 
@@ -350,15 +349,17 @@ class ZeekLibrary extends ZeekOutput {
  * Return the value of an attribute from the specified user.
  *
  * @method user_get_attribute
- * @param int user id
+ * @param int project id
+ * @param string user name
  * @param string attribute name
  */
-    public function user_get_attribute($user_id, $name)
+    public function user_get_attribute($project_id, $username, $name)
     {
         $db = $this->db;
 
         $result = $this->db->table_view(
-            'user', $name, NULL, 1, 0, $user_id);
+            'user', $name, NULL, 1, 0, array('project_id' => $project_id,
+                                             'name'       => $username));
 
         if ($result)
         {
@@ -374,14 +375,23 @@ class ZeekLibrary extends ZeekOutput {
  * Set the value of an attribute from the specified user.
  *
  * @method user_set_attribute
- * @param int user id
+ * @param int project id
+ * @param string user name
  * @param string attribute name
  * @param string value to write
  */
-    public function user_set_attribute($user_id, $name, $value)
+    public function user_set_attribute($project_id, $username, $name, $value)
     {
+        // we get the user
+        $user = $this->user_get($project_id, $username);
+        if ($user == NULL) {
+            $this->error(
+                "Can't change attribute : user '$username' doesn't exist!");
+            return false;
+        }
+
         if ($this->db->row_update(
-            'user', $user_id, array($name => $value)))
+            'user', $user->id, array($name => $value)))
         {
             return true;
         }
