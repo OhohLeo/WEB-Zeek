@@ -1,4 +1,5 @@
-/*
+<?php
+/**
  * Copyright (C) 2015  Léo Martin
  *
  * This program is free software; you can redistribute it and/or modify
@@ -15,8 +16,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-<?php
 
 class ZeekLibrary extends ZeekOutput {
 
@@ -181,20 +180,37 @@ class ZeekLibrary extends ZeekOutput {
 
     public function user_add($project_id, $username, $password, $is_master)
     {
-        /* We check if the user already exists */
+        // we check if the user already exists
         if ($this->user_check($project_id, $username, $password))
         {
             $this->error("user $username already exist!");
             return false;
         }
 
-        /* we insert the new project */
+        // we get the actual project options
+        $project_options = $this->project_get_plugins($project_id);
+
+        if ($project_options == false)
+            return false;
+
+        $plugins = array();
+
+        // only insert activated plugins
+        foreach ($project_options["plugins"] as $name => $status)
+        {
+            if (is_bool($status))
+                $plugins[$name] = $status;
+        }
+
+        // we insert the new project
         if ($this->db->row_insert(
             'user', array(
                 'project_id' => $project_id,
                 'name'       => $username,
                 'password'   => md5($password),
-                'is_master'  => $is_master)))
+                'is_master'  => $is_master,
+                'options'    => $this->json_encode(
+                    array('test' => $plugins)))))
         {
             return true;
         }
@@ -608,6 +624,25 @@ class ZeekLibrary extends ZeekOutput {
         return false;
     }
 
+/**
+ * Return the list of plugins configured from the specified project.
+ *
+ * @method project_get_plugins
+ * @param int project id
+ */
+    public function project_get_plugins($project_id)
+    {
+        // we get the plugins associated to the project
+        $project_options = $this->option_get($project_id);
+        if (is_array($project_options)
+            && array_key_exists("plugins", $project_options))
+        {
+            return $project_options;
+        }
+
+        $this->error("Invalid stored plugin list!");
+        return false;
+    }
 
 /**
  * Return the value of an attribute from the specified project.
@@ -915,7 +950,6 @@ class ZeekLibrary extends ZeekOutput {
 
         return false;
     }
-
 
 /**
  * Return the content of a type if it exists otherwise return

@@ -1,4 +1,5 @@
-/*
+<?php
+/**
  * Copyright (C) 2015  Léo Martin
  *
  * This program is free software; you can redistribute it and/or modify
@@ -14,14 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
-<?php
- /**
  * Zeek : all the function to handle the website & the backoffice.
  *
  * @package Zeek
  */
+
 class Zeek extends ZeekOutput {
 
     public $global_path;
@@ -293,6 +291,13 @@ class Zeek extends ZeekOutput {
             case 'user_change_password':
 		return $this->user_change_password(
 		    $project_id, $user, $password_old, $password_new);
+
+            case 'user_set_tests':
+		return $this->user_set_tests(
+		    $project_id, $user, $params["options"]);
+
+            case 'user_get_tests':
+		return $this->user_get_tests($project_id, $user);
 
             case 'content_add_directory':
 		return $this->content_add_directory(
@@ -941,6 +946,83 @@ class Zeek extends ZeekOutput {
             $project_id, $login, $password_old, $password_new)) {
             $this->success("User password correctly changed!");
             return true;
+        }
+
+        return false;
+    }
+
+/**
+ * Activate/Deactivate test options for the user.
+ *
+ * @method user_set_tests
+ * @param integer id of the current project
+ * @param login of user to change password
+ * @param json list of options
+ */
+    public function user_set_tests($project_id, $login, $options)
+    {
+        // we check if the plugins are valid
+        $decode_options = $this->plugins_are_valid($options);
+        if ($decode_options == false)
+            return false;
+
+        if ($this->zlib->user_set_attribute(
+            $project_id, $login, 'options', $this->json_encode(
+                array("test" => $decode_options))))
+        {
+            $this->success("User option 'test' successfully written!");
+            return true;
+        }
+
+        return false;
+    }
+
+/**
+ * Return output test options choosen by the user.
+ *
+ * @method user_get_tests
+ */
+    public function user_get_tests($project_id, $user)
+    {
+        $tests = $this->user_get_test_options($project_id, $user);
+
+        if ($tests)
+        {
+            $this->output_json($tests);
+            return true;
+        }
+
+        $this->error("No user option found with name 'test'!");
+        return false;
+    }
+
+/**
+ * Get test options choosen by the user.
+ *
+ * @method user_get_test_options
+ */
+    private function user_get_test_options($project_id=null, $user=null)
+    {
+        if ($project_id == null)
+            $project_id = $this->project_id;
+
+        if ($user == null)
+            $user = $_SESSION['login'];
+
+        $options_str = $this->zlib->user_get_attribute(
+            $project_id, $user, 'options');
+
+        // we check that the json is well formated
+        $options = $this->json_decode($options_str);
+        if ($options == NULL)
+        {
+            $this->error("Invalid input values '$options_str'!");
+            return false;
+        }
+
+        if (is_array($options) && array_key_exists('test', $options))
+        {
+            return $options['test'];
         }
 
         return false;
@@ -1846,7 +1928,48 @@ class Zeek extends ZeekOutput {
             return $result;
         }
 
+        var_dump($this->plugins_list);
+
         return array();
+    }
+
+/**
+ * Method that returns the decodes options if the plugins exist.
+ *
+ * @method plugins_are_valid
+ * @param json name of the plugin
+ */
+    public function plugins_are_valid($options)
+    {
+        // we check that the json is well formated
+        $decode_options = $this->json_decode($options);
+        if ($decode_options == NULL)
+        {
+            $this->error("Invalid plugin values '$options'!");
+            return false;
+        }
+
+        // we get the plugins associated to the project
+        $project_options = $this->zlib->project_get_plugins(
+            $this->project_id);
+
+        if ($project_options == false)
+            return false;
+
+        foreach ($decode_options as $name => $status)
+        {
+            if (array_key_exists($name, $project_options['plugins'])
+                && is_bool($project_options['plugins'][$name])
+                && is_bool($status))
+                    continue;
+
+            $this->error(
+                "Unknown '$name' plugin or invalid status '$status'!");
+
+            return false;
+        }
+
+        return $decode_options;
     }
 
  /**
@@ -2082,14 +2205,21 @@ class Zeek extends ZeekOutput {
   */
     public function test($options)
     {
-        // we check that the json is well formated
-        $decode_options = $this->json_decode($options);
-        if ($decode_options == NULL)
+        // we get the user test options
+        if ($options == null)
         {
-            $this->error("Invalid option values '$options'!");
-            return false;
+            $decode_options = $this->user_get_test_options();
+        }
+        // we check the specified options
+        else
+        {
+            $decode_options = $this->plugins_are_valid($options);
         }
 
+        if ($decode_options == false)
+            return false;
+
+        // we set the final destination
         $dst = $this->test_get_directory();
 
         // we deploy the files & apply all the data plugins
@@ -2099,16 +2229,6 @@ class Zeek extends ZeekOutput {
 
 	$this->output_json(array('href' => $dst . '/index.html'));
         return true;
-    }
-
- /**
-  * Method to set options specific to the user
-  *
-  * @method test_set_options
-  * @params string options associated
-  */
-    public function test_set_options($user, $options)
-    {
     }
 
  /**
@@ -2131,14 +2251,22 @@ class Zeek extends ZeekOutput {
  */
     public function deploy($dst, $options)
     {
-        // we check that the json is well formated
-        $decode_options = $this->json_decode($options);
-        if ($decode_options == NULL)
+        // we get the project deploy options
+        if ($options == null)
         {
-            $this->error("Invalid option values '$options'!");
-            return false;
+            $decode_options = $this->zlib->project_get_plugins(
+                $this->project_id);
+        }
+        // or we check the specified options
+        else
+        {
+            $decode_options = $this->plugins_are_valid($options);
         }
 
+        if ($decode_options == false)
+            return false;
+
+        // we set the final destination
         $dst = $this->zlib->project_get_attribute(
             $project_id, "destination");
 
@@ -2376,6 +2504,7 @@ class Zeek extends ZeekOutput {
 
         $plugins['zeekify'] = $is_enabled ? true : "disabled";
 
+        // update the project deployment options
         if ($this->zlib->option_set($this->project_id, "plugins", $plugins))
         {
             $this->structure_enabled = $is_enabled;

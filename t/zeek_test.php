@@ -206,11 +206,6 @@ class TestZeek extends PHPUnit_Framework_TestCase
         $this->assertTrue(
             $zeek->checkOutput('{"error":"Expecting valid user email!"}'));
 
-        $this->assertFalse($zeek->user_add(0,'test', 'test', false));
-
-        //$this->assertTrue(
-        //$zeek->checkOutput('{"error":"The user \'test\' already exist!"}'));
-        //
         $this->assertFalse($zeek->user_add(1,'test', 'test_zeek.fr', false));
 
         $this->assertTrue(
@@ -254,6 +249,32 @@ class TestZeek extends PHPUnit_Framework_TestCase
             $zeek->checkOutput(
                 '{"users":["test@zeek.fr","test2@zeek.fr","test3@zeek.fr"]}'));
 
+        // we set options to the user
+        $this->assertTrue(
+            $zeek->user_get_tests(1, 'test@zeek.fr'));
+
+        $this->assertTrue(
+            $zeek->checkOutput('{"MinifyCss":true,"MinifyJs":true}'));
+
+        $this->assertTrue($zeek->user_set_tests(1, 'test@zeek.fr', '{"MinifyCss": false,"MinifyJs":true}'));
+
+        $this->assertTrue(
+            $zeek->checkOutput('{"success":"User option \'test\' successfully written!"}'));
+
+        $this->assertTrue(
+            $zeek->user_get_tests(1, 'test@zeek.fr'));
+
+        $this->assertTrue(
+            $zeek->checkOutput('{"MinifyCss":false,"MinifyJs":true}'));
+
+        $this->assertFalse(
+            $zeek->user_set_tests(1, 'test@zeek.fr', '{"MinifyCss":false,"MinifyJs":true,"zeekify":true}'));
+
+        $this->assertTrue(
+            $zeek->checkOutput('{"error":"Unknown \'zeekify\' plugin or invalid status \'1\'!"}'));
+
+
+        // we delete users now
         $this->assertTrue($zeek->user_delete(1, 'test@zeek.fr'));
 
         $this->assertTrue(
@@ -411,7 +432,7 @@ class TestZeek extends PHPUnit_Framework_TestCase
     	        '{"success":"file \'test.css\' with type \'css\' created!"}'));
 
         // check test functionality
-        $zeek->test('{"zeekify":true,"MinifyCss":false,"MinifyJs":true}');
+        $zeek->test('{"MinifyCss":false,"MinifyJs":true}');
         $this->assertTrue(
             $zeek->checkOutput('{"href":"projects/1/TEST/test/index.html"}'));
 
