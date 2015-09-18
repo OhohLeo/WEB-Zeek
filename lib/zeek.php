@@ -444,7 +444,7 @@ class Zeek extends ZeekOutput {
 
             case 'user_add':
 	        return $this->user_add(
-                    $project_id, $project_name, $email, $is_master_user);
+                    $project_id, $project_name, $email, $is_admin_user);
 
             case 'user_delete':
 	        return $this->user_delete($project_id, $params["email"]);
@@ -501,7 +501,7 @@ class Zeek extends ZeekOutput {
                 return false;
             }
 
-            $_SESSION["is_master_user"] = $zlib->user_get_authorisation(
+            $_SESSION["is_admin_user"] = $zlib->user_get_authorisation(
                 $project_id, $login);
 
             // we store the session user
@@ -529,7 +529,7 @@ class Zeek extends ZeekOutput {
                 return true;
             }
             // only master user can create new project
-            else if ($_SESSION["is_master_user"] == false)
+            else if ($_SESSION["is_admin_user"] == false)
             {
                 $this->error("unexpected project name!");
                 return false;
@@ -791,7 +791,7 @@ class Zeek extends ZeekOutput {
  * @param email email to send new password to user
  * @param boolean true if master user
  */
-    public function user_add($project_id, $project_name, $email, $is_master_user)
+    public function user_add($project_id, $project_name, $email, $is_admin_user)
     {
         // we check if the email is set
         if ($this->check_string($email) == false)
@@ -800,13 +800,13 @@ class Zeek extends ZeekOutput {
             return false;
         }
 
-        if ($is_master_user == "")
-            $is_master_user = false;
-        else if ($is_master_user == "on")
-            $is_master_user = true;
+        if ($is_admin_user == "")
+            $is_admin_user = false;
+        else if ($is_admin_user == "on")
+            $is_admin_user = true;
         else
         {
-            $this->error("Expecting valid master user boolean, get '$is_master_user'!");
+            $this->error("Expecting valid master user boolean, get '$is_admin_user'!");
             return false;
         }
 
@@ -817,14 +817,14 @@ class Zeek extends ZeekOutput {
         if ($user != NULL)
         {
             // check if the user has the same authorisation
-            if ($user->is_master == $is_master_user)
+            if ($user->is_admin == $is_admin_user)
             {
                 $this->error("The user '$email' already exist!");
                 return false;
             }
 
             // otherwise we change de user authorisation
-            if ($zlib->user_change_authorisation($project_id, $user, $is_master_user))
+            if ($zlib->user_change_authorisation($project_id, $user, $is_admin_user))
             {
                 $this->success("Change user '$email' authorisations");
                 return true;
@@ -853,7 +853,7 @@ class Zeek extends ZeekOutput {
             . " - project_name : $project_name\n"))
         {
 
-            if ($zlib->user_add($project_id, $email, $password, $is_master_user))
+            if ($zlib->user_add($project_id, $email, $password, $is_admin_user))
             {
                 $this->success("User '$email' correctly added & informed!");
                 return true;
@@ -898,7 +898,7 @@ class Zeek extends ZeekOutput {
  */
     public function user_master_only()
     {
-        if ($_SESSION["is_master_user"])
+        if ($_SESSION["is_admin_user"])
             return false;
 
         $this->error("Only master user can do this!");
@@ -963,8 +963,8 @@ class Zeek extends ZeekOutput {
         if ($decode_options == false)
             return false;
 
-        // if the login is the same than the database one : nothing to store
-        if ($username === $this->db_login)
+        // if it is master user : nothing to store
+        if ($this->zlib->user_is_master($login))
         {
             $this->error("Only project options will be used!");
             return false;
@@ -1426,6 +1426,12 @@ class Zeek extends ZeekOutput {
             return false;
         }
 
+        // if the test directory exist, we will copy the added
+        // content into the test directory
+        $destination = $this->global_path . $this->test_get_directory();
+        $options = null;
+
+        // we get the user test options
         foreach ($decode_inputs as $input)
         {
             // Get the uploaded files
@@ -1451,8 +1457,24 @@ class Zeek extends ZeekOutput {
                 return false;
             }
 
-            // TODO : if the test directory exist, we copy the added
-            // content into the test directory
+            // Check that test directory exists
+            if (file_exists($destination) == false)
+                continue;
+
+            if ($options == null)
+                $options = $this->user_get_test_options();
+
+            // Generate the file informations
+            $file = $this->zlib->file_get_details(
+                "$directory_name/$name.$extension");
+
+            // Deploy the file to the test directory
+            if ($options && $this->deploy_one_file(
+                $destination, $file, $options) == false)
+            {
+                $this->zlib->uploaded_files_delete();
+                return false;
+            }
         }
 
 	$this->success("Content(s) stored in " . "'$directory_name'!");

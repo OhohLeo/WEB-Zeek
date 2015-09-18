@@ -8,7 +8,7 @@ $start_ts     = $_SESSION["start_ts"];
 $login        = $_SESSION["login"];
 $global_path  = $_SESSION["global_path"];
 
-$is_master_user = $_SESSION["is_master_user"];
+$is_admin_user = $_SESSION["is_admin_user"];
 
 $project_name = $_SESSION["project_name"];
 $project_id   = $_SESSION["project_id"];
@@ -94,7 +94,7 @@ include 'default/header.php';
 
             // Is piwik present ?
             // we check if config/config.ini.php is defined
-            if ($is_master_user && file_exists($global_path . "extends/piwik") == false)
+            if ($is_admin_user && file_exists($global_path . "extends/piwik") == false)
             {
             ?>
                 <a id="piwik_download">
@@ -106,7 +106,7 @@ include 'default/header.php';
             }
             // Is piwik install ?
             // we check if config/config.ini.php is defined
-            else if ($is_master_user && file_exists($piwik_config_path) == false)
+            else if ($is_admin_user && file_exists($piwik_config_path) == false)
             {
             ?>
                 <a href="extends/piwik">
@@ -118,7 +118,7 @@ include 'default/header.php';
             }
             // Is Piwik fully installed ?
             // we check the status 'installation_in_progress' in config/config.ini.php
-            else if ($is_master_user
+            else if ($is_admin_user
                 && strpos(file_get_contents($piwik_config_path), "installation_in_progress") > 0)
             {
             ?>
@@ -129,7 +129,7 @@ include 'default/header.php';
                 </a>
             <?php
             }
-            else if ($is_master_user && $piwik_token == "")
+            else if ($is_admin_user && $piwik_token == "")
             {
                 $is_piwik_installed = true;
             ?>
@@ -180,7 +180,7 @@ include 'default/header.php';
 	</div>
 	<div id="test" class="menu"></div>
 	<div id="deploy" class="menu">
-            <?php if ($is_master_user) { ?>
+            <?php if ($is_admin_user) { ?>
             <h3>Project url</h3>
 	    <input id="project_set_url"
                    type="text"
@@ -202,7 +202,7 @@ RewriteRule ^(.*)$ /{zeek_path}/<?php echo $project_url; ?>/$1 [L]
             <button id="deploy_validate" class="danger">DEPLOY</button>
         </div>
 	<div id="configuration" class="menu">
-            <?php if ($is_master_user) { ?>
+            <?php if ($is_admin_user) { ?>
 	    <div class="config">
 		<h3>Project</h3>
 		<div class="config-group danger-zone">
@@ -237,7 +237,7 @@ RewriteRule ^(.*)$ /{zeek_path}/<?php echo $project_url; ?>/$1 [L]
 		</div>
 	    </div>
             <hr>
-            <?php if ($is_master_user) { ?>
+            <?php if ($is_admin_user) { ?>
 	    <div class="config">
 		<h3 id="user">User</h3>
 		<div class="config-group">
@@ -249,7 +249,7 @@ RewriteRule ^(.*)$ /{zeek_path}/<?php echo $project_url; ?>/$1 [L]
                         </p>
                         <p>
                             <label>Is master user?</label>
-                            <input type="checkbox" name="is_master_user"">
+                            <input type="checkbox" name="is_admin_user"">
                         </p>
                     	<input type="submit" class="btn-block btn-success validate">
 		    </form>
@@ -399,7 +399,7 @@ RewriteRule ^(.*)$ /{zeek_path}/<?php echo $project_url; ?>/$1 [L]
 <script type="text/javascript" src="js/darkroom.js"></script>
 <script type="text/javascript" src="js/zeek_home.js"></script>
 <?php
-if ($is_master_user)
+if ($is_admin_user)
 {
 ?>
 <script>

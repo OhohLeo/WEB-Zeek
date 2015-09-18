@@ -159,7 +159,7 @@ class ZeekLibrary extends ZeekOutput {
 				  'db_size' => 32),
             'project_id' => array('db_type' => 'INT',
 				  'db_size' => 11),
-            'is_master'  => array('db_type' => 'TINYINT'),
+            'is_admin'   => array('db_type' => 'TINYINT'),
 	    'options'    => array('db_type' => 'VARCHAR',
 			          'db_size' => 2000)));
 
@@ -178,7 +178,7 @@ class ZeekLibrary extends ZeekOutput {
         $this->db->database_delete($name);
     }
 
-    public function user_add($project_id, $username, $password, $is_master)
+    public function user_add($project_id, $username, $password, $is_admin)
     {
         // we check if the user already exists
         if ($this->user_check($project_id, $username, $password))
@@ -188,18 +188,17 @@ class ZeekLibrary extends ZeekOutput {
         }
 
         // we get the actual project options
+        $plugins = array();
         $project_options = $this->project_get_plugins($project_id);
 
-        if ($project_options == false)
-            return false;
-
-        $plugins = array();
-
-        // only insert activated plugins
-        foreach ($project_options as $name => $status)
+        if ($project_options != false)
         {
-            if (is_bool($status))
-                $plugins[$name] = $status;
+            // only insert activated plugins
+            foreach ($project_options as $name => $status)
+            {
+                if (is_bool($status))
+                    $plugins[$name] = $status;
+            }
         }
 
         // we insert the new project
@@ -208,7 +207,7 @@ class ZeekLibrary extends ZeekOutput {
                 'project_id' => $project_id,
                 'name'       => $username,
                 'password'   => md5($password),
-                'is_master'  => $is_master,
+                'is_admin'  => $is_admin,
                 'options'    => $this->json_encode(
                     array('test' => $plugins)))))
         {
@@ -216,6 +215,11 @@ class ZeekLibrary extends ZeekOutput {
         }
 
         return false;
+    }
+
+    public function user_is_master($input)
+    {
+        return $input === $this->db_login;
     }
 
     public function user_get_authorisation($project_id, $username)
@@ -230,10 +234,10 @@ class ZeekLibrary extends ZeekOutput {
             return false;
         }
 
-        return !!$user->is_master;
+        return !!$user->is_admin;
     }
 
-    public function user_change_authorisation($project_id, $username, $is_master)
+    public function user_change_authorisation($project_id, $username, $is_admin)
     {
         if (is_string($username))
         {
@@ -248,7 +252,7 @@ class ZeekLibrary extends ZeekOutput {
             $user = $username;
 
         if ($this->db->row_update('user', $user->id,
-                                  array('is_master' => $is_master))) {
+                                  array('is_admin' => $is_admin))) {
             return true;
         }
 
