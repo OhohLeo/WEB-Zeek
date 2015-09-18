@@ -1981,7 +1981,7 @@ $(document).ready(function() {
                     var $size = $("input#attribute_size").val();
 
                     // we check that the name doesn't already exist
-                    if ($attr in $structure[$name])
+                    if ($name in $structure && $attr in $structure[$name])
                         return;
 
                     // we check if the attribute name is empty or already exists
@@ -2228,6 +2228,29 @@ $(document).ready(function() {
         });
     };
 
+   var $option_set_user_plugins = function () {
+
+        var $options = {};
+
+        $("input.option_test").each(function() {
+            $options[$(this).attr("name")] = $(this).prop("checked")
+        });
+
+        $send_request({
+	    method: "option_set_user",
+            options: JSON.stringify($options),
+	},
+        function($result) {
+
+	    if ($result == false || $result["error"])
+		return false;
+
+            $option_get_plugins();
+
+            // do not display result
+            return -1;
+        });
+    };
 
     var $option_get_row = function ($name, $type) {
 
@@ -2256,7 +2279,11 @@ $(document).ready(function() {
             $table_options_deploy.empty();
             $table_options_test.empty();
 
-            for (var $name in $result)
+            console.log($result);
+
+            $project = $result["project"];
+
+            for (var $name in $project)
             {
                 // special case concerning "zeekify" that can be disabled
                 if ($name === "zeekify")
@@ -2264,7 +2291,7 @@ $(document).ready(function() {
                     var $div_structure_enabled = $("div#structure_enabled");
                     var $nav_data = $("nav#data");
 
-                    if ($result[$name] === "disabled")
+                    if ($project[$name] === "disabled")
                     {
                         $structure_enable.prop("checked", false);
                         $("body").css("background", " #fff");
@@ -2282,12 +2309,18 @@ $(document).ready(function() {
 
                 $table_options_deploy.append($option_get_row($name, "deploy"));
 
-                $("input#deploy_" + $name).prop("checked", $result[$name])
+                $("input#deploy_" + $name).prop("checked", $project[$name])
                                           .change($option_set_plugins);
+            }
 
+            $user = $result["user"];
+
+            for (var $name in $user)
+            {
                 $table_options_test.append($option_get_row($name, "test"));
 
-                $("input#test_" + $name).prop("checked", $result[$name]);
+                $("input#test_" + $name).prop("checked", $user[$name])
+                                        .change($option_set_user_plugins);
             }
 
             // do not display anything
@@ -2317,7 +2350,7 @@ $(document).ready(function() {
 
         var $dst = $("input#deploy_dst").val();
 
-        // we get all options choosed from the configuratio
+        // we get all options choosed from the configuration
         var $options = {};
 
         $("input.option_deploy").each(function() {

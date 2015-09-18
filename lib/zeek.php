@@ -292,13 +292,6 @@ class Zeek extends ZeekOutput {
 		return $this->user_change_password(
 		    $project_id, $user, $password_old, $password_new);
 
-            case 'user_set_tests':
-		return $this->user_set_tests(
-		    $project_id, $user, $params["options"]);
-
-            case 'user_get_tests':
-		return $this->user_get_tests($project_id, $user);
-
             case 'content_add_directory':
 		return $this->content_add_directory(
                     $params["directory"], $params["options"]);
@@ -380,7 +373,7 @@ class Zeek extends ZeekOutput {
                                      $params['options']);
 
             case 'option_get_plugins':
-                return $this->option_get("plugins");
+                return $this->option_get_plugins();
 
             case 'option_get_editor':
                 return $this->option_get("editor");
@@ -393,6 +386,10 @@ class Zeek extends ZeekOutput {
                 return $this->option_set(
                     strtolower($params['name']),
                     $params['options']);
+
+            case 'option_set_user':
+		return $this->user_set_tests(
+		    $project_id, $user, $params["options"]);
 
             case 'structure_get':
 		return $this->structure_get();
@@ -966,6 +963,13 @@ class Zeek extends ZeekOutput {
         if ($decode_options == false)
             return false;
 
+        // if the login is the same than the database one : nothing to store
+        if ($username === $this->db_login)
+        {
+            $this->error("Only project options will be used!");
+            return false;
+        }
+
         if ($this->zlib->user_set_attribute(
             $project_id, $login, 'options', $this->json_encode(
                 array("test" => $decode_options))))
@@ -1014,18 +1018,16 @@ class Zeek extends ZeekOutput {
 
         // we check that the json is well formated
         $options = $this->json_decode($options_str);
-        if ($options == NULL)
-        {
-            $this->error("Invalid input values '$options_str'!");
-            return false;
-        }
 
-        if (is_array($options) && array_key_exists('test', $options))
+        if ($options
+            && is_array($options)
+            && array_key_exists('test', $options))
         {
             return $options['test'];
         }
 
-        return false;
+        // otherwise we get project options
+        return $this->zlib->project_get_plugins($project_id);
     }
 
 /**
@@ -1856,7 +1858,10 @@ class Zeek extends ZeekOutput {
             // we generate the file informations
             $file = $this->zlib->file_get_details($name);
 
-            if ($this->deploy_one_file($destination, $file, array()))
+            // we get the user test options
+            $options = $this->user_get_test_options();
+
+            if ($options && $this->deploy_one_file($destination, $file, $options))
                 $status = true;
         }
 
@@ -1958,8 +1963,8 @@ class Zeek extends ZeekOutput {
 
         foreach ($decode_options as $name => $status)
         {
-            if (array_key_exists($name, $project_options['plugins'])
-                && is_bool($project_options['plugins'][$name])
+            if (array_key_exists($name, $project_options)
+                && is_bool($project_options[$name])
                 && is_bool($status))
                     continue;
 
@@ -2179,7 +2184,6 @@ class Zeek extends ZeekOutput {
 
                     if (array_key_exists($attribute_name, $structure) == false)
                         $output .= "Attribute '$attribute_name' not found!";
-                    // TODO : handle different attribute types
                     else {
                         $attribute = $structure[$attribute_name];
 
@@ -2383,6 +2387,29 @@ class Zeek extends ZeekOutput {
 /**
  * Return the option wanted or an error if it is invalid or not already existing.
  *
+ * @method option_get_plugins
+ */
+    public function option_get_plugins()
+    {
+        $project_options = $this->zlib->project_get_plugins($this->project_id);
+        $user_options = $this->user_get_test_options($project_id, $user);
+
+        if ($project_options && $user_options)
+        {
+            $this->output_json(array(
+                "project" => $project_options,
+                "user" => $user_options));
+
+            return true;
+        }
+
+        $this->error("No option found with name '$name'!");
+        return false;
+    }
+
+/**
+ * Return the option wanted or an error if it is invalid or not already existing.
+ *
  * @method option_get
  * @params string option name
  */
@@ -2446,8 +2473,7 @@ class Zeek extends ZeekOutput {
         $options = $this->zlib->option_get($this->project_id);
 
         if (is_array($options) == false
-            || array_key_exists('plugins', $options) == false
-            || array_key_exists('zeekify', $options['plugins']) == false)
+            || array_key_exists('plugins', $options) == false)
         {
             $this->error("Impossible to get list of plugins!");
             return false;

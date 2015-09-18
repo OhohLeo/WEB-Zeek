@@ -196,7 +196,7 @@ class ZeekLibrary extends ZeekOutput {
         $plugins = array();
 
         // only insert activated plugins
-        foreach ($project_options["plugins"] as $name => $status)
+        foreach ($project_options as $name => $status)
         {
             if (is_bool($status))
                 $plugins[$name] = $status;
@@ -637,7 +637,7 @@ class ZeekLibrary extends ZeekOutput {
         if (is_array($project_options)
             && array_key_exists("plugins", $project_options))
         {
-            return $project_options;
+            return $project_options["plugins"];
         }
 
         $this->error("Invalid stored plugin list!");
