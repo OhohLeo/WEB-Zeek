@@ -2045,6 +2045,7 @@ class Zeek extends ZeekOutput {
    *  - table: name of the table used
    *  - offset : offset of the element
    *  - size: nb of elements
+   *  - sort_by: which element is used for sorting
    *
    * Inside the input, use  '{{...}}' symbol to get the attributes value
    *
