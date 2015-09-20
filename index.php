@@ -22,6 +22,7 @@
 	           name="project_name"
 		   placeholder="Project name"
 		   type="text" required>
+            <br>
 	    <button id="connect" class="success">Connect</button>
 	</div>
 	<div id="create" disabled="disabled">
