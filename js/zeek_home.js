@@ -875,6 +875,7 @@ $(document).ready(function() {
         if ($files_type[$name]) {
             return false;
         }
+        console.log($name);
 
         // othewise add new type
         $files_type[$name] = $color;
@@ -889,13 +890,25 @@ $(document).ready(function() {
                 $("<img>").attr("src", "img/delete.png")
                           .addClass("file_type_delete")
                           .on("click", function() {
-                              $option_set_editor();
+                              delete $files_type[$name];
+                              $option_set_editor(function()
+                                  {
+                                      $row.remove();
+                                  });;
                           })));
 
 	$table_type_accepted.append($row);
 
-        $("input#color_" + $name).change($option_set_editor)
-                                 .spectrum({
+        $("input#color_" + $name).change(function()
+            {
+                var $color = $(this).spectrum("get")
+                                    .toHexString();
+                $files_type[$name] = $color;
+                $option_set_editor(function() {
+                    $("button." + $name).css({ "color": "#fff",
+				               "background-color": $color });
+                });
+            }).spectrum({
             color: $color
         });
     };
@@ -920,26 +933,30 @@ $(document).ready(function() {
         });
     }
 
-    $option_set_editor = function () {
+    $option_set_editor = function($on_success, $new_name, $new_color) {
 
-        $files_type = {};
+        $types = {};
 
-        $("td.editor_type").each(function() {
-            var $name = $(this).text();
+        for (var $name in $files_type)
+        {
+            $types[$name] = $files_type[$name];
+        }
 
-            $files_type[$name] = $("input#color_" + $name).spectrum("get")
-                                                          .toHexString();
-        });
+        if ($new_name && $new_color)
+            $types[$new_name] = $new_color;
 
         $send_request({
 	    method: "option_set",
             name: "editor",
-            options: JSON.stringify($files_type),
+            options: JSON.stringify($types),
 	},
         function($result) {
 
 	    if ($result == false || $result["error"])
 		return false;
+
+            if ($.isFunction($on_success))
+                $on_success();
 
             $option_get_editor();
 
@@ -970,11 +987,10 @@ $(document).ready(function() {
 	        });
 
                 $select_type_proposed.change(function() {
-                    $on_new_editor_type(
+                    $option_set_editor(
+                        null,
                         $("select#file_type_proposed option:selected").val(),
                         "#f00");
-
-                    $option_set_editor();
                 });
 
                 var $array =  [
