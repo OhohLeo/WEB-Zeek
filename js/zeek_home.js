@@ -889,7 +889,7 @@ $(document).ready(function() {
                 $("<img>").attr("src", "img/delete.png")
                           .addClass("file_type_delete")
                           .on("click", function() {
-                              $row.remove();
+                              $option_set_editor();
                           })));
 
 	$table_type_accepted.append($row);

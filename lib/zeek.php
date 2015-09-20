@@ -194,7 +194,7 @@ class Zeek extends ZeekOutput {
             $this->piwik_url = $config['piwik_url'];
 
         if (isset($config['is_demo']))
-            $this->is_demo = 1;
+            $this->is_demo = true;
 
         // we initialise using $php_errormgs
         ini_set('track_errors', 1);
@@ -307,11 +307,6 @@ class Zeek extends ZeekOutput {
            case 'content_modify':
 		return $this->content_modify(
                     $params["directory"], $params["file"]);
-
-            case 'content_move':
-		return $this->content_move(
-                    $params["old_directory"], $params["old_name"],
-                    $params["new_directory"], $params["new_name"]);
 
             case 'content_delete':
 		return $this->content_delete(
@@ -1521,58 +1516,7 @@ class Zeek extends ZeekOutput {
 	    $result = true;
 	}
 
-        // TODO : if the test directory exist, we copy the modifieed
-        // content into the test directory
-
-        $this->zlib->uploaded_files_delete();
-        return $result;
-    }
-
-/**
- * Move existing image to another directory/name
- *
- * @method content_move
- * @param string old directory name
- * @param string old file name
- * @param string new directory name
- * @param string new file name
- */
-    public function content_move($old_directory, $old_name,
-                                 $new_directory, $name)
-    {
-        if ($this->content_valid_directory($old_directory) == false)
-            return false;
-
-        if ($this->content_valid_directory($new_directory) == false)
-            return false;
-
-        $zlib = $this->zlib;
-
-        $file_to_move =  "projects/" . $this->project_id
-                       . "/". $_SESSION["login"]
-                       . "/$old_directory/$old_name";
-
-        // Get the extension of the content
-        $extension = $zlib->file_get_extension($old_name);
-
-        // Remove the extension of the destination name
-        if ($zlib->file_get_extension($name) === $extension)
-            $name = substr($name, 0, strpos($name, '.'));
-
-        // Move source file to destination file
-        $result = false;
-
-	if ($zlib->file_modify(
-	    $this->project_id, $_SESSION["login"], $file_to_move,
-            $new_directory, $name, $extension))
-	{
-	    $this->success(
-		"content '$file_to_move' stored as '$new_directory/$name.$extension'!");
-
-	    $result = true;
-	}
-
-        // TODO : if the test directory exist, we move the
+        // TODO : if the test directory exist, we copy the modified
         // content into the test directory
 
         $this->zlib->uploaded_files_delete();
@@ -1597,11 +1541,11 @@ class Zeek extends ZeekOutput {
 	    $this->success(
 		"content '$directory_name/$name' correctly removed!");
 
+            // TODO : if the test directory exist, we delete the
+            // content from the test directory
+
             return true;
         }
-
-        // TODO : if the test directory exist, we delete the 
-        // content from the test directory
 
         return false;
     }
@@ -2278,7 +2222,7 @@ class Zeek extends ZeekOutput {
     public function deploy($dst, $options)
     {
         // we get the project deploy options
-        if ($options == null)
+        if ($options == null || count($options) == 0)
         {
             $decode_options = $this->zlib->project_get_plugins(
                 $this->project_id);
@@ -2465,6 +2409,9 @@ class Zeek extends ZeekOutput {
  */
     public function option_set($name, $values)
     {
+        if ($this->demo_stop())
+            return false;
+
         if ($this->check_string_and_size($name, 25) == false)
         {
             $this->error("Invalid option name '$name'!");
@@ -3029,7 +2976,7 @@ class Zeek extends ZeekOutput {
  */
     public function demo_stop()
     {
-        if ($this->demo)
+        if ($this->is_demo)
         {
             $this->error("Demo version: functionnality disabled!");
             return true;

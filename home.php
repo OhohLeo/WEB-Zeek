@@ -140,7 +140,7 @@ include 'default/header.php';
                        placeholder="piwik authentification token">
             <?php
             }
-            else
+            else if ($is_piwik_installed)
             {
             ?>
                 <iframe id="piwik_statistics" src="http://<?php echo "$host$uri"; ?>/extends/piwik/index.php?module=Widgetize&action=iframe&moduleToWidgetize=Dashboard&actionToWidgetize=index&idSite=1&period=week&date=yesterday&token_auth=<?php echo "$piwik_token"; ?>" frameborder="0" marginheight="0" marginwidth="0" width="100%" height="100%"></iframe>
