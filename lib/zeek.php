@@ -2222,7 +2222,7 @@ class Zeek extends ZeekOutput {
     public function deploy($dst, $options)
     {
         // we get the project deploy options
-        if ($options == null || count($options) == 0)
+        if ($options == null || $options == '{}')
         {
             $decode_options = $this->zlib->project_get_plugins(
                 $this->project_id);
