@@ -1,16 +1,19 @@
-[zeek_logo]: http://www.ohohleo.fr/img/complain.png
+[zeek_logo]: http://www.ohohleo.fr/img/complain.pn www.ohohleo.fr
 
-# *Zeek : www.ohohleo.fr*
+# *Zeek Project*
+
+![zeek_logo] www.ohohleo.fr
+
 ### Open Source Back-Office : Simply websites!
 
-![zeek_logo]
+This project is dedicated to simple website generation & administration.
 
-This project is dedicated to simple website administration.
-
-It offers the possibilities to
+It offers the possibilities to :
 - modify, test & deploy static websites
 - store data in database that will be displayed
 - can handle multiple projects & can be administrated by multiple users
+
+#### How to test it
 
 Actual state of art could be seen at this address : http://zeekadmin.free.fr/
 
