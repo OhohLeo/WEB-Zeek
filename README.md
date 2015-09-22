@@ -1,8 +1,8 @@
-[zeek_logo]: http://www.ohohleo.fr/img/complain.pn www.ohohleo.fr
+[zeek_logo]: http://www.ohohleo.fr/img/complain.pn "www.ohohleo.fr"
 
 # *Zeek Project*
 
-![zeek_logo] www.ohohleo.fr
+![zeek_logo]
 
 ### Open Source Back-Office : Simply websites!
 
