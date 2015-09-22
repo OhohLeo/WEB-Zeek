@@ -69,7 +69,7 @@ Moreover, once you have modified a file, the modified file is normally
 stored in the project directory. But if the user test directory exists,
 the modified file will also be copied into the user test directory.
 
-So you don't have to click all the time on "Test" button !!
+**So you don't have to click all the time on "Test" button !**
 
 You click it once to create the user test directory, then you only have to
 refresh the test web page! Practical, isn't it?
