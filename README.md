@@ -17,7 +17,7 @@ It offers the possibilities to :
 - store data in database that will be displayed
 - can handle multiple projects & can be administrated by multiple users
 
-#### How to test it
+#### How to test it ?
 
 Actual state of art could be seen at this address : http://zeekadmin.free.fr/
 
@@ -27,7 +27,7 @@ using following
  - Login : test
  - Password : test
 
-#### How to install it
+#### How to install it ?
 
 1. Copy all the files from the build directory on your server
 
@@ -49,7 +49,7 @@ administrator user, going in Configuration -> User, writing your email
 address to create the new user. You should receive a mail with your
 password that you can change, going to Configuration -> Password.
 
-#### What is happening when using Test & Deploy
+#### What is happening when using Test & Deploy ?
 
 When creating a new project, all the projects file are stored in the directory :
 
@@ -77,7 +77,7 @@ refresh the test web page! Practical, isn't it?
 In test mode, if you develop on Chromium or Firefox : don't hesitate to
 use Ctrl + Maj + c to enter in development tool box.
 
-#### How to use Zeek
+#### How to use Zeek ?
 
 By defaut Zeek is disabled. Go to Configuration -> Zeek -> Enable.
 
