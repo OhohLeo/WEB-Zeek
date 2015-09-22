@@ -49,6 +49,34 @@ administrator user, going in Configuration -> User, writing your email
 address to create the new user. You should receive a mail with your
 password that you can change, going to Configuration -> Password.
 
+#### What is happening when using Test & Deploy
+
+When creating a new project, all the projects file are stored in the directory :
+
+    {zeek_path}/projects/{project_id}/
+
+By clicking on "Test" : all the project files are actually copied
+into a specific user directory :
+
+    {zeek_path}/projects/{project_id}/TEST/{user_login}/
+
+By clicking on "Deploy" : all the project files are finally copied
+into a specific user directory :
+
+    {zeek_path}/projects/{project_id}/DEPLOY/
+
+Moreover, once you have modified a file, the modified file is normally
+stored in the project directory. But if the user test directory exists,
+the modified file will also be copied into the user test directory.
+
+So you don't have to click all the time on "Test" button !!
+
+You click it once to create the user test directory, then you only have to
+refresh the test web page! Practical, isn't it?
+
+In test mode, if you develop on Chromium or Firefox : don't hesitate to
+use Ctrl + Maj + c to enter in development tool box.
+
 #### How to use Zeek
 
 By defaut Zeek is disabled. Go to Configuration -> Zeek -> Enable.
