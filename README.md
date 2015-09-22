@@ -1,8 +1,10 @@
-[zeek_logo]: http://www.ohohleo.fr/img/complain.png "www.ohohleo.fr"
+[zeek_logo]: http://www.ohohleo.fr/img/complain.png
 
 # *Zeek Project*
 
 ![zeek_logo]
+
+Url of the project : [www.ohohleo.fr]( http://www.ohohleo.fr)
 
 ### Open Source Back-Office : Simply websites!
 
