@@ -1,8 +1,8 @@
-[zeek_logo]: http://www.ohohleo.fr/img/complain.png
-
 # *Zeek Project*
 
-![zeek_logo]
+<p align="center">
+  <img src="http://www.ohohleo.fr/img/complain.png?raw=true" alt="www.ohohleo.fr"/>
+</p>
 
 Url of the project : [www.ohohleo.fr]( http://www.ohohleo.fr)
 
