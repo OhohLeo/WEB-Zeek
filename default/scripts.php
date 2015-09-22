@@ -1,1 +1,2 @@
-/home/leo/git/WEB-Zeek/default/internal_scripts.php
+<script src="js/jquery-1.11.1.min.js"></script>
+<script src="js/zeek.js"></script>

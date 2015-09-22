@@ -232,6 +232,10 @@ $(document).ready(function() {
 
                               $actual_content_type = $(this).text();
 
+                              // we try to change the dropzone accepted files
+                              $dropzone.options.acceptedFiles =
+                                  $content_types[$actual_content_type][1];
+
                               // we display the selected border
                               $("button.content_type").removeClass("select");
                               $(this).addClass("select");
@@ -359,8 +363,7 @@ $(document).ready(function() {
     var $dropzone = new Dropzone("form#dropzone", {
         method: "post",
         url: "upload.php",
-        maxFilesize: 3, // MB
-        acceptedFiles: "image/*",
+        maxFilesize: 10, // MB
         ignoreHiddenFiles: true,
         autoProcessQueue: true,
         createImageThumbnails: false,
@@ -392,7 +395,8 @@ $(document).ready(function() {
                 $dropzone_files.push($file["name"]);
 
                 if (this.getUploadingFiles().length === 0
-                    && this.getQueuedFiles().length === 0) {
+                    && this.getQueuedFiles().length === 0
+                    && $dropzone_files.length != 0) {
 
                         $send_request({
                             "method": "content_add",
@@ -416,6 +420,7 @@ $(document).ready(function() {
             });
         },
     });
+
 
     var $dropzone_empty = function () {
         $dropzone.removeAllFiles()
@@ -875,6 +880,7 @@ $(document).ready(function() {
         if ($files_type[$name]) {
             return false;
         }
+        console.log($name);
 
         // othewise add new type
         $files_type[$name] = $color;
@@ -889,13 +895,25 @@ $(document).ready(function() {
                 $("<img>").attr("src", "img/delete.png")
                           .addClass("file_type_delete")
                           .on("click", function() {
-                              $row.remove();
+                              delete $files_type[$name];
+                              $option_set_editor(function()
+                                  {
+                                      $row.remove();
+                                  });;
                           })));
 
 	$table_type_accepted.append($row);
 
-        $("input#color_" + $name).change($option_set_editor)
-                                 .spectrum({
+        $("input#color_" + $name).change(function()
+            {
+                var $color = $(this).spectrum("get")
+                                    .toHexString();
+                $files_type[$name] = $color;
+                $option_set_editor(function() {
+                    $("button." + $name).css({ "color": "#fff",
+				               "background-color": $color });
+                });
+            }).spectrum({
             color: $color
         });
     };
@@ -920,26 +938,30 @@ $(document).ready(function() {
         });
     }
 
-    $option_set_editor = function () {
+    $option_set_editor = function($on_success, $new_name, $new_color) {
 
-        $files_type = {};
+        $types = {};
 
-        $("td.editor_type").each(function() {
-            var $name = $(this).text();
+        for (var $name in $files_type)
+        {
+            $types[$name] = $files_type[$name];
+        }
 
-            $files_type[$name] = $("input#color_" + $name).spectrum("get")
-                                                          .toHexString();
-        });
+        if ($new_name && $new_color)
+            $types[$new_name] = $new_color;
 
         $send_request({
 	    method: "option_set",
             name: "editor",
-            options: JSON.stringify($files_type),
+            options: JSON.stringify($types),
 	},
         function($result) {
 
 	    if ($result == false || $result["error"])
 		return false;
+
+            if ($.isFunction($on_success))
+                $on_success();
 
             $option_get_editor();
 
@@ -970,11 +992,10 @@ $(document).ready(function() {
 	        });
 
                 $select_type_proposed.change(function() {
-                    $on_new_editor_type(
+                    $option_set_editor(
+                        null,
                         $("select#file_type_proposed option:selected").val(),
                         "#f00");
-
-                    $option_set_editor();
                 });
 
                 var $array =  [
