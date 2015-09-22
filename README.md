@@ -6,7 +6,7 @@
     </a>
 </p>
 
-Url of the project : [www.ohohleo.fr]( http://www.ohohleo.fr)
+Url of the project : [www.ohohleo.fr](http://www.ohohleo.fr)
 
 ### Open Source Back-Office : Simply websites!
 

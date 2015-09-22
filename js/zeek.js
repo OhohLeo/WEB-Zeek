@@ -103,3 +103,19 @@ $input_validator = function($name_with_type, $on_success) {
         });
     };
 };
+
+$text_validator = function($input, $size_max) {
+
+    if ($input.match(/^[a-z_0-9]+$/i) && $input.length <= $size_max) {
+        $clean_alert();
+       return true;
+    }
+
+    $danger.text("Invalid input: '" + $input
+                 + "', only a-z, A-Z, 0-9 & _ and "
+                 + $size_max + " letter(s) accepted").show();
+    $alert.show();
+
+    return false;
+};
+

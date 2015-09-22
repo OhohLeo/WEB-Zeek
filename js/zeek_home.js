@@ -1819,7 +1819,7 @@ $(document).ready(function() {
                 var $structure_name = $is_new_structure ?
                     $("input#structure_name").val() : $name;
 
-                if ($structure_name == "") {
+                if ($text_validator($structure_name, 25) == false) {
                     return;
                 }
 
@@ -1833,6 +1833,10 @@ $(document).ready(function() {
                     var $sp_type = $($tr).children("td.sp_type").text();
                     var $db_type = $($tr).children("td.db_type").text();
                     var $db_size = $($tr).children("td.db_size").text();
+
+                    if ($text_validator($name, 25) == false) {
+                        return;
+                    }
 
                     $structure[$structure_name][$name] = {
                         "sp_type": $sp_type,
