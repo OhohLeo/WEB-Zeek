@@ -96,7 +96,7 @@ Using following parameters :
  - offset : where to begin
  - sort_by : which element use to sort (++ means in 'ASC' way, -- means in 'DEC' way)
 
-#### Next Features :
+#### Next features :
  - protect against CSRF attack
  - set up update process
  - get & set data from client side
