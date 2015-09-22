@@ -232,6 +232,10 @@ $(document).ready(function() {
 
                               $actual_content_type = $(this).text();
 
+                              // we try to change the dropzone accepted files
+                              $dropzone.options.acceptedFiles =
+                                  $content_types[$actual_content_type][1];
+
                               // we display the selected border
                               $("button.content_type").removeClass("select");
                               $(this).addClass("select");
@@ -359,8 +363,7 @@ $(document).ready(function() {
     var $dropzone = new Dropzone("form#dropzone", {
         method: "post",
         url: "upload.php",
-        maxFilesize: 3, // MB
-        acceptedFiles: "image/*",
+        maxFilesize: 10, // MB
         ignoreHiddenFiles: true,
         autoProcessQueue: true,
         createImageThumbnails: false,
@@ -392,7 +395,8 @@ $(document).ready(function() {
                 $dropzone_files.push($file["name"]);
 
                 if (this.getUploadingFiles().length === 0
-                    && this.getQueuedFiles().length === 0) {
+                    && this.getQueuedFiles().length === 0
+                    && $dropzone_files.length != 0) {
 
                         $send_request({
                             "method": "content_add",
@@ -416,6 +420,7 @@ $(document).ready(function() {
             });
         },
     });
+
 
     var $dropzone_empty = function () {
         $dropzone.removeAllFiles()
