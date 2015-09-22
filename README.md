@@ -1,4 +1,4 @@
-[zeek_logo]: http://www.ohohleo.fr/img/complain.pn "www.ohohleo.fr"
+[zeek_logo]: http://www.ohohleo.fr/img/complain.png "www.ohohleo.fr"
 
 # *Zeek Project*
 
