@@ -1,7 +1,9 @@
 # *Zeek Project*
 
 <p align="center">
-  <img src="http://www.ohohleo.fr/img/complain.png?raw=true" alt="www.ohohleo.fr"/>
+    <a href="http://www.ohohleo.fr">
+       <img src="http://www.ohohleo.fr/img/complain.png">
+    </a>
 </p>
 
 Url of the project : [www.ohohleo.fr]( http://www.ohohleo.fr)
