@@ -2303,8 +2303,6 @@ $(document).ready(function() {
             $table_options_deploy.empty();
             $table_options_test.empty();
 
-            console.log($result);
-
             $project = $result["project"];
 
             for (var $name in $project)
