@@ -1205,7 +1205,8 @@ $(document).ready(function() {
 		    id: "file_create_ok",
 		    click: function() {
 
-                        console.log($filename);
+                        if ($text_validator($filename["name"], 25))
+                            return;
 
                         $filename["method"] = "file_create";
 
@@ -2005,14 +2006,13 @@ $(document).ready(function() {
                     var $type = $("select#select_type option:selected").val();
                     var $size = $("input#attribute_size").val();
 
+                    // we check the attribute name is valid
+                    if ($text_validator($attr, 25) == false) {
+                        return;
+                    }
                     // we check that the name doesn't already exist
                     if ($name in $structure && $attr in $structure[$name])
                         return;
-
-                    // we check if the attribute name is empty or already exists
-                    if ($attr == "" || $attr.indexOf(" ") >= 0) {
-                        return;
-                    }
 
                     if ($size != null
                         && ($size.length == 0 || $.isNumeric($size) == false)) {

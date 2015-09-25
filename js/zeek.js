@@ -111,8 +111,8 @@ $text_validator = function($input, $size_max) {
        return true;
     }
 
-    $danger.text("Invalid input: '" + $input
-                 + "', only a-z, A-Z, 0-9 & _ and "
+    $danger.text("Invalid input '" + $input
+                 + "': only a-z, A-Z, 0-9 and _ and "
                  + $size_max + " letter(s) accepted").show();
     $alert.show();
 
