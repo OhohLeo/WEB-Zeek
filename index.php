@@ -4,7 +4,7 @@
 <body>
     <div id="main_title">
 	<h1 id="main_title">Zeek</h1>
-	<p id="subtitle">"Simply administrate websites."</p>
+	<p id="subtitle">"Simply websites."</p>
     </div>
     <div id="access">
 	<div class="alert">
