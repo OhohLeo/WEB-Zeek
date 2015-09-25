@@ -2190,15 +2190,34 @@ class Zeek extends ZeekOutput {
         if ($decode_options == false)
             return false;
 
-        // we set the final destination
-        $dst = $this->test_get_directory();
+        $test_with_options = false;
 
-        // we deploy the files & apply all the data plugins
-        if ($this->deploy_files(
-            $this->global_path . $dst, $decode_options) == false)
-            return false;
 
-	$this->output_json(array('href' => $dst . '/index.html'));
+        // we check if an option is activated
+        foreach ($decode_options as $option => $is_activated)
+        {
+            if ($is_activated == false
+                || (is_string($is_activated) && $is_activated === "disabled"))
+                continue;
+
+            $test_with_options = true;
+        }
+
+        if ($test_with_options)
+        {
+            // we set the final destination
+            $dst = $this->test_get_directory();
+
+            // we deploy the files & apply all the data plugins
+            if ($this->deploy_files(
+                $this->global_path . $dst, $decode_options) == false)
+                    return false;
+
+	    $this->output_json(array('href' => $dst));
+            return true;
+        }
+
+        $this->output_json(array('href' => 'projects/' . $this->project_id));
         return true;
     }
 
@@ -2360,6 +2379,13 @@ class Zeek extends ZeekOutput {
     {
         $project_options = $this->zlib->project_get_plugins($this->project_id);
         $user_options = $this->user_get_test_options($project_id, $user);
+
+        // remove the user options deactivated
+        foreach ($user_options as $option => $status)
+        {
+            if (is_string($status) && $status == "disabled")
+                unset($user_options[$option]);
+        }
 
         if ($project_options && $user_options)
         {
