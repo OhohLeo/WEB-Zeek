@@ -2237,8 +2237,7 @@ $(document).ready(function() {
         });
 
         $send_request({
-	    method: "option_set",
-            name: "plugins",
+	    method: "option_set_plugins",
             options: JSON.stringify($options),
 	},
         function($result) {

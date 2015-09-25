@@ -434,7 +434,7 @@ class TestZeek extends PHPUnit_Framework_TestCase
         // check test functionality
         $zeek->test('{"MinifyCss":false,"MinifyJs":true}');
         $this->assertTrue(
-            $zeek->checkOutput('{"href":"projects/1/TEST/test/index.html"}'));
+            $zeek->checkOutput('{"href":"projects/1/TEST/test"}'));
 
         // check the files have been correctly set & deploy
         $this->assertTrue($zeek->file_get('TEST_test', 'index.html'));
@@ -666,18 +666,18 @@ class TestZeek extends PHPUnit_Framework_TestCase
             $zeek->checkOutput('["ceci","est","un","test"]'));
 
         // check we can modified an option
-        $this->assertTrue($zeek->option_set(
-            'plugins', json_encode(array('zeekify'   => true,
-                                         'MinifyCss' => false,
-                                         'MinifyJs'  => false))));
+        $this->assertTrue($zeek->option_set_plugins(
+            json_encode(array('zeekify'   => true,
+                              'MinifyCss' => false,
+                              'MinifyJs'  => false))));
         $this->assertTrue(
             $zeek->checkOutput(
-                '{"success":"Option \'plugins\' successfully written!"}'));
+                '{"success":"Plugins list successfully updated!"}'));
 
-        $this->assertTrue($zeek->option_get('plugins'));
+        $this->assertTrue($zeek->option_get_plugins());
         $this->assertTrue(
             $zeek->checkOutput(
-                '{"zeekify":true,"MinifyCss":false,"MinifyJs":false}'));
+                '{"project":{"zeekify":"disabled","MinifyCss":true,"MinifyJs":true},"user":{"MinifyCss":true,"MinifyJs":true}}'));
 
         $this->assertTrue($zeek->option_get('test'));
         $this->assertTrue(

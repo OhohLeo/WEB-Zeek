@@ -370,6 +370,9 @@ class Zeek extends ZeekOutput {
             case 'option_get_plugins':
                 return $this->option_get_plugins();
 
+            case 'option_set_plugins':
+                return $this->option_set_plugins($params['options']);
+
             case 'option_get_editor':
                 return $this->option_get("editor");
 
@@ -961,7 +964,7 @@ class Zeek extends ZeekOutput {
         // if it is master user : nothing to store
         if ($this->zlib->user_is_master($login))
         {
-            $this->error("Only project options will be used!");
+            $this->error("Master user : project options will be used!");
             return false;
         }
 
@@ -2378,7 +2381,8 @@ class Zeek extends ZeekOutput {
     public function option_get_plugins()
     {
         $project_options = $this->zlib->project_get_plugins($this->project_id);
-        $user_options = $this->user_get_test_options($project_id, $user);
+        $user_options = $this->user_get_test_options(
+            $this->project_id, $_SESSION['login']);
 
         // remove the user options deactivated
         foreach ($user_options as $option => $status)
@@ -2397,6 +2401,72 @@ class Zeek extends ZeekOutput {
         }
 
         $this->error("No option found with name '$name'!");
+        return false;
+    }
+
+
+/**
+ * Store the new plugin option wanted or an error if it is invalid.
+ *
+ * @method option_set_plugins
+ */
+    public function option_set_plugins($values)
+    {
+        if ($this->demo_stop())
+            return false;
+
+        // we check that the json is well formated
+        $decode_values = $this->json_decode($values);
+        if ($decode_values == NULL)
+        {
+            $this->error("Invalid option values '$values'!");
+            return false;
+        }
+
+        // we get the actual options
+        $actual_values = $this->zlib->project_get_plugins($this->project_id);
+
+        if ($actual_values == false)
+            return false;
+
+        $has_changed = false;
+
+        // we check that the options specified
+        foreach ($decode_values as $name => $status)
+        {
+            if (array_key_exists($name, $actual_values) == false)
+            {
+                $this->error("Invalid plugin option '$name'!");
+                return false;
+            }
+
+            if (is_bool($status) == false)
+            {
+                $this->error("Invalid plugin option '$name' value!");
+                return false;
+            }
+
+            if ($actual_values[$name] == $decode_values[$name])
+                continue;
+
+            $actual_values[$name] = $status;
+            $has_changed = true;
+        }
+
+        if ($has_changed == false)
+        {
+            $this->success("Nothing changed!");
+            return true;
+        }
+
+        // we set the options
+        if ($this->zlib->option_set($this->project_id, "plugins", $actual_values))
+        {
+            $this->success("Plugins list successfully updated!");
+            return true;
+        }
+
+        $this->error("Error while setting option '$name'!");
         return false;
     }
 

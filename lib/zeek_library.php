@@ -1216,7 +1216,7 @@ class ZeekLibrary extends ZeekOutput {
     {
 	$files_list = array();
 
-	if (directory_scan($src, $files_lists, true) == false)
+	if ($this->directory_scan($src, $files_lists, true) == false)
 	    return false;
 
 	foreach ($files_list as $file)
