@@ -198,6 +198,10 @@ RewriteEngine on
 RewriteCond %{REQUEST_URI} !^/{zeek_path}
 RewriteRule ^(.*)$ /{zeek_path}/<?php echo $project_url; ?>/$1 [L]
             </textarea>
+            <p>For security, don't forget to add following in the same file :</p>
+            <textarea class="explain" rows="1" readonly>
+RewriteRule ^/?{zeek_path}/config\.ini$ - [F,L]
+            </textarea>
             <?php } ?>
             <button id="deploy_validate" class="danger">DEPLOY</button>
         </div>
@@ -248,7 +252,7 @@ RewriteRule ^(.*)$ /{zeek_path}/<?php echo $project_url; ?>/$1 [L]
 			           placeholder="enter new e-mail adress"></input>
                         </p>
                         <p>
-                            <label>Is master user?</label>
+                            <label>Is admin user?</label>
                             <input type="checkbox" name="is_admin_user"">
                         </p>
                     	<input type="submit" class="btn-block btn-success validate">
@@ -361,6 +365,9 @@ RewriteRule ^(.*)$ /{zeek_path}/<?php echo $project_url; ?>/$1 [L]
             <p>You can still come back in this configuration mode</p>
             <p>by clicking on Configuration Menu -> Project structure -> Modify</p>
             <button id="structure_cancel" class="danger">Cancel</button>
+            <h3>Deactivate</h3>
+            <p>You can still disable in this configuration mode</p>
+            <p>by turning off Configuration Menu -> Project structure -> Enable</p>
         </div>
         <?php } ?>
 	<div id="dynamic" class="menu">

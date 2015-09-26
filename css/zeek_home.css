@@ -106,6 +106,10 @@ td.content_value img {
     cursor: pointer;
 }
 
+div.config h3 {
+    cursor: pointer;
+}
+
 button.add {
     margin-left: 0;
     border-left: 0;
@@ -119,6 +123,14 @@ button.select {
 input.validate, button.validate {
     color: #fff;
     background-color: #6f5499;
+}
+
+input.invisible {
+    box-shadow: none;
+    font-size: 14px;
+    border: none;
+    outline: 0;
+    cursor: pointer;
 }
 
 ul.sidebar li {

@@ -318,19 +318,44 @@ $(document).ready(function() {
                                            minHeight: 100,
                                            maxWidth: 500,
                                            maxHeight: 500,
+                                           plugins: {
+                                               save: {
+                                                   callback: function() {
+                                                       console.log('saved!');
 
-                                           initialize: function() {
-                                               // TODO STORE MODIFIED IMAGE
-                                           }
+                                                       /* var oMyForm = new FormData();
+                                                       oMyForm.append("ContentID", $('#ID').val());
+                                                       oMyForm.append("Title", $('#Title').val());
+                                                       oMyForm.append("ContentType", 'content');
+                                                       //Now the file (large version)
+                                                       var oBlob = dkrm.sourceImage.toDataURL();
+
+                                                       oMyForm.append("ImgFile", oBlob);
+
+                                                       oReq = new XMLHttpRequest();
+                                                       oReq.open("POST", "image_header_upload.php");
+                                                       oReq.onreadystatechange = ClientSideUpdate;
+                                                       oReq.send(oMyForm); */
+                                                       return true;
+                                                   }
+                                               }
+                                           },
                                        });
                                    });
 
             $row.append($("<td>").attr("class", "content_filename")
-                                 .append($("<b>").text($relativepath)))
+                                 .append($("<input>").attr("type", "text")
+                                                     .attr('size', $relativepath.length)
+                                                     .attr("id", "contents_" + $idx)
+                                                     .addClass("invisible")
+                                                     .prop('readonly', true)
+
+                                                     .val($relativepath)))
                 .append($("<td>").attr("class", "content_value")
                                  .append($value))
                 .append($("<td>").attr("class", "content_size")
-                                 .text($content["size"] / 1024 + " ko"))
+                                 .text(($content["size"] / 1024).toFixed(2)
+                                         + " ko"))
                 .append($("<td>").append(
                     $("<img>").attr("src", "img/delete.png")
                 .addClass("content_delete")
@@ -355,6 +380,53 @@ $(document).ready(function() {
         }
 
         $div_content_directory.show();
+
+        var $contents_names = [];
+
+        $("td.content_filename").on("click", function() {
+
+            var $input = $(this).children();
+            var $id = $input.attr("id");
+
+            if ($contents_names[$id])
+            {
+                $input.addClass("invisible")
+                      .prop('readonly', true)
+                      .val($contents_names[$id]);
+
+                $("button#" + $id).remove();
+
+                delete $contents_names[$id]
+            }
+
+        // Select with on click
+        }).children().on("click", function() {
+            $(this).select();
+
+        // Rename with double click
+        }).on("dblclick", function() {
+
+            $size_directory = $actual_content_directory.length + 1;
+            $old_value = $(this).val();
+
+            $contents_names[$(this).attr("id")] = $old_value;
+
+            $name = $old_value.substr(
+               $size_directory,
+                $old_value.lastIndexOf(".") - $size_directory);
+
+            $(this).removeClass("invisible")
+                   .prop('readonly', false)
+                   .val($name);
+
+            $input_validator("#" + $(this).attr("id"),
+                             function($new_value) {
+                                 return $text_validator($new_value, 25);
+                             }, function($new_value) {
+                                 $(this).addClass("invisible")
+                                        .prop('readonly', true);
+                             })();
+        });
     });
 
     // Disable auto discover for all elements:
@@ -1707,12 +1779,16 @@ $(document).ready(function() {
     $input_validator(
         "#project_set_name",
         function($new_value) {
+            return $text_validator($new_value, 25);
+        },
+        function($new_value) {
             $("h1#title").text($new_value);
         })();
 
     // we configure to set project url
     $input_validator(
         "#project_set_url",
+        $no_space_validator,
         function($new_value) {
 
             if ($new_value.substring(0, 4) === "www.")
@@ -1724,6 +1800,7 @@ $(document).ready(function() {
     // we configure to set project destination
     $input_validator(
         "#project_set_dst",
+        $no_space_validator,
         function() {
         })();
 
@@ -2100,7 +2177,7 @@ $(document).ready(function() {
 
 	        // we store the structure
 	        $structure = $result["structure"];
-
+                console.log($structure);
 	        if ($structure)
 	        {
                     $structure_set($structure);

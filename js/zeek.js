@@ -61,7 +61,7 @@ $send_request = (function($data, $handle_rsp) {
 });
 
 
-$input_validator = function($name_with_type, $on_success) {
+$input_validator = function($name_with_type, $validator, $on_success) {
 
     var $name = $name_with_type.substring(1);
     var $button_name = "button#" + $name;
@@ -79,7 +79,11 @@ $input_validator = function($name_with_type, $on_success) {
                                  .text("OK")
                                  .on("click", function() {
 
-                                     $value = $("input" + $name_with_type).val()
+                                     $value = $("input" + $name_with_type).val();
+
+                                     if ($validator
+                                         && ($validator($value) == false))
+                                         return false;
 
                                      $send_request(
                                          {
@@ -93,6 +97,7 @@ $input_validator = function($name_with_type, $on_success) {
                                              $($button_name).remove();
                                              $on_success($value);
 
+                                             $start_value = $value;
                                          });
                                  }));
             }
@@ -106,8 +111,9 @@ $input_validator = function($name_with_type, $on_success) {
 
 $text_validator = function($input, $size_max) {
 
+    $clean_alert();
+
     if ($input.match(/^[a-z_0-9]+$/i) && $input.length <= $size_max) {
-        $clean_alert();
        return true;
     }
 
@@ -119,3 +125,16 @@ $text_validator = function($input, $size_max) {
     return false;
 };
 
+$no_space_validator = function($input) {
+
+    $clean_alert();
+
+    if ($input.match(/\s+/)) {
+        $danger.text("Invalid input '" + $input
+                   + "': no space accepted").show();
+        $alert.show();
+        return false;
+    }
+
+    return true;
+};
