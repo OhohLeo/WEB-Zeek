@@ -694,5 +694,14 @@ class TestZeek extends PHPUnit_Framework_TestCase
            $zeek->checkOutput(""); */
     }
 
+    public function test_check()
+    {
+        $zeek = $this->zeek;
+
+        $this->assertTrue($zeek->check_input("AAtoto_09"));
+        $this->assertFalse($zeek->check_input("A  Atoto_09"));
+        $this->assertFalse($zeek->check_input("A%Atoto_09"));
+        $this->assertFalse($zeek->check_input("AAtoto_090SAAtoto_090SAAtoto_090S"));
+    }
 }
 ?>

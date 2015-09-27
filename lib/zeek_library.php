@@ -1138,7 +1138,7 @@ class ZeekLibrary extends ZeekOutput {
 		}
 
                 // we get the content type
-                $mime = ""; //mime_content_type($filepath);
+                $mime = mime_content_type($filepath);
 
                 if ($len_to_remove > 0)
 		{
@@ -1293,7 +1293,7 @@ class ZeekLibrary extends ZeekOutput {
     }
 
 /**
-* We move the file  from src to dst.
+* We move the file from src to dst.
 *
 * Return true if the file is correctly move, otherwise return false.
 *
@@ -1301,7 +1301,7 @@ class ZeekLibrary extends ZeekOutput {
 * @param string src
 * @param string dst
 */
-    private function file_move($src, $dst)
+    public function file_move($src, $dst)
     {
 	// we check that the source exists
 	if (file_exists($src) == false)
@@ -1391,7 +1391,7 @@ class ZeekLibrary extends ZeekOutput {
 * @method file_remove
 * @param string src
 */
-    private function file_remove($src)
+    public function file_remove($src)
     {
 	// we check that the file doesn't already exist
 	if (file_exists($src) == false)

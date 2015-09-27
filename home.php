@@ -52,7 +52,6 @@ include 'default/header.php';
 <link rel="stylesheet" href="css/jquery-ui.theme.min.css">
 <link rel='stylesheet' href='css/spectrum.css' />
 <link rel='stylesheet' href='css/dropzone.min.css' />
-<link rel='stylesheet' href='css/darkroom.css' />
 <link rel="stylesheet" href="css/zeek_home.css">
 </head>
 <body>
@@ -402,8 +401,6 @@ RewriteRule ^/?{zeek_path}/config\.ini$ - [F,L]
 <script type="text/javascript" src='js/spectrum.js'></script>
 <script type="text/javascript" src='js/JSON.safe.js'></script>
 <script type="text/javascript" src='js/dropzone.min.js'></script>
-<script type="text/javascript" src="js/fabric.min.js"></script>
-<script type="text/javascript" src="js/darkroom.js"></script>
 <script type="text/javascript" src="js/zeek_home.js"></script>
 <?php
 if ($is_admin_user)

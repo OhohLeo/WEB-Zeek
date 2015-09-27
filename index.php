@@ -5,6 +5,7 @@
     <div id="main_title">
 	<h1 id="main_title">Zeek</h1>
 	<p id="subtitle">"Simply websites"</p>
+        <p id="version">1.0.0</p>
     </div>
     <div id="access">
 	<div class="alert">

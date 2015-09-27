@@ -103,7 +103,6 @@ button.create {
 td.content_value img {
     max-width: 400px;
     height: 200px;
-    cursor: pointer;
 }
 
 div.config h3 {

@@ -16,6 +16,11 @@ p#subtitle {
     margin-top: 1%;
 }
 
+p#version {
+    font-size: 1em;
+    margin-top: 1%;
+}
+
 div#access {
     display: inline-block;
     width: 43%;

@@ -43,7 +43,10 @@ $(document).ready(function() {
 		    return false;
 
                 $content_get_type_list();
-                $structure_get_list();
+
+                // we update structure liste with the new added content
+                if ($structure_enable.prop("checked"))
+                    $structure_get_list();
             });
     };
 
@@ -83,6 +86,7 @@ $(document).ready(function() {
 		    return false;
 
                 $row.remove();
+                delete $content_types[$name];
                 $content_get_type_list();
             });
     };
@@ -233,8 +237,12 @@ $(document).ready(function() {
                               $actual_content_type = $(this).text();
 
                               // we try to change the dropzone accepted files
-                              $dropzone.options.acceptedFiles =
-                                  $content_types[$actual_content_type][1];
+                              var $mime = $content_types[$actual_content_type][1];
+
+                              if ($mime == "*/*")
+                                  $mime = "";
+
+                              $dropzone.options.acceptedFiles = $mime;
 
                               // we display the selected border
                               $("button.content_type").removeClass("select");
@@ -289,13 +297,13 @@ $(document).ready(function() {
         var $list = $contents_list[
             $actual_content_type][$actual_content_directory]
 
-        var $on_modify_content = function() {
-
-        };
-
         for (var $idx in $list) {
 
             var $content = $list[$idx];
+
+            var $mime = $content["mime"];
+            var $main_mime = $mime.substr(0, $mime.lastIndexOf("/"));
+
             var $fullpath = $content["path"]
                           + "/" + $content["filename"]
                           + "." + $content["extension"];
@@ -309,39 +317,31 @@ $(document).ready(function() {
                                 .attr("name", $content["filename"]
                                       + "." + $content["extension"]);
 
+            console.log($content);
+
+
             // We handle only images content for the moment
-            var $value = $("<img>").attr("src", $fullpath)
-                                   .on("click", function() {
-                                       new Darkroom(this,  {
-                                           // Canvas initialization size
-                                           minWidth: 100,
-                                           minHeight: 100,
-                                           maxWidth: 500,
-                                           maxHeight: 500,
-                                           plugins: {
-                                               save: {
-                                                   callback: function() {
-                                                       console.log('saved!');
+            var $value;
 
-                                                       /* var oMyForm = new FormData();
-                                                       oMyForm.append("ContentID", $('#ID').val());
-                                                       oMyForm.append("Title", $('#Title').val());
-                                                       oMyForm.append("ContentType", 'content');
-                                                       //Now the file (large version)
-                                                       var oBlob = dkrm.sourceImage.toDataURL();
-
-                                                       oMyForm.append("ImgFile", oBlob);
-
-                                                       oReq = new XMLHttpRequest();
-                                                       oReq.open("POST", "image_header_upload.php");
-                                                       oReq.onreadystatechange = ClientSideUpdate;
-                                                       oReq.send(oMyForm); */
-                                                       return true;
-                                                   }
-                                               }
-                                           },
-                                       });
-                                   });
+            switch ($main_mime)
+            {
+                case "image":
+                $value = $("<img>")
+                            .attr("src", $fullpath);
+                break;
+                case "audio":
+                $value = $("<audio>")
+                            .prop("controls", true)
+                            .attr("src", $fullpath);
+                break;
+                case "video":
+                $value = $("<video>")
+                            .prop("controls", true)
+                            .attr("src", $fullpath);
+                break;
+                default:
+                $value = "No previews";
+            }
 
             $row.append($("<td>").attr("class", "content_filename")
                                  .append($("<input>").attr("type", "text")
@@ -396,10 +396,10 @@ $(document).ready(function() {
 
                 $("button#" + $id).remove();
 
-                delete $contents_names[$id]
+                delete $contents_names[$id];
             }
 
-        // Select with on click
+            // Select with on click
         }).children().on("click", function() {
             $(this).select();
 
@@ -412,19 +412,46 @@ $(document).ready(function() {
             $contents_names[$(this).attr("id")] = $old_value;
 
             $name = $old_value.substr(
-               $size_directory,
+                $size_directory,
                 $old_value.lastIndexOf(".") - $size_directory);
 
-            $(this).removeClass("invisible")
-                   .prop('readonly', false)
-                   .val($name);
+            var $input = $(this).removeClass("invisible")
+                                .prop('readonly', false)
+                                .val($name);
 
-            $input_validator("#" + $(this).attr("id"),
+            var $id = $input.attr("id");
+
+            $input_validator("#" + $id,
                              function($new_value) {
                                  return $text_validator($new_value, 25);
                              }, function($new_value) {
-                                 $(this).addClass("invisible")
-                                        .prop('readonly', true);
+
+                                 var $new_value = $actual_content_directory
+                                                + "/" + $new_value
+                                                + $old_value.substr(
+                                                    $old_value.lastIndexOf("."));
+
+                                 // delete the row with the same address if it exists
+                                 $("td.content_filename").each(function($obj) {
+
+                                     var $in = $(this).children();
+
+                                     if ($in != $input && $in.val() == $new_value)
+                                         $(this).parent().remove();
+                                 });
+
+                                 $input.val($new_value)
+                                       .addClass("invisible")
+                                       .prop('readonly', true);
+
+                                 $input.parent()
+                                       .parent()
+                                       .attr("name", $new_value.substr($size_directory));
+                                 delete $contents_names[$id];
+                             },
+                             {
+                                 "method": "content_rename",
+                                 "src": $old_value,
                              })();
         });
     });
@@ -435,7 +462,6 @@ $(document).ready(function() {
     var $dropzone = new Dropzone("form#dropzone", {
         method: "post",
         url: "upload.php",
-        maxFilesize: 10, // MB
         ignoreHiddenFiles: true,
         autoProcessQueue: true,
         createImageThumbnails: false,
@@ -462,7 +488,22 @@ $(document).ready(function() {
 
            var $dropzone_files = [];
 
+            var $on_error = false;
+
+            this.on("error", function($file, $response) {
+
+                $clean_alert();
+                $danger.text($response).show();
+                $alert.show();
+                $on_error = true;
+            });
+
             this.on("complete", function ($file) {
+
+                if ($on_error) {
+                    $on_error = false;
+                    return;
+                }
 
                 $dropzone_files.push($file["name"]);
 
@@ -508,6 +549,9 @@ $(document).ready(function() {
 
         var $generate_name = function() {
             var $name = $("input#content_name").val();
+
+            if ($text_validator($name, 25) == false)
+                return false;
 
             if ($name != "") {
                 $name = "/" + $name
@@ -630,6 +674,9 @@ $(document).ready(function() {
                         var $type = $contents_opt["type"];
                         var $directory = $generate_name();
 
+                        if ($directory == false)
+                            return;
+
                         $contents_opt["dst"] = $directory;
 
                         // TODO: validate options
@@ -725,13 +772,7 @@ $(document).ready(function() {
     // we configure ace editor
     var $editor = ace.edit("editor");
 
-    var $session = $editor.getSession();
-    $editor.setTheme("ace/theme/twilight");
-    $editor.setFontSize("16px");
-    $editor.resize();
-    $session.setTabSize(4);
-    $session.setUseWrapMode(true);
-    $session.setMode("ace/mode/html");
+    var $old_sessions = [];
 
     var $actual_file = null;
 
@@ -755,8 +796,28 @@ $(document).ready(function() {
                 if ($type === "js")
                     $type = "javascript";
 
+                var $session;
+
+                // if no session of this file exists
+                if ($old_sessions[$name] == null)
+                {
+                    $session = ace.createEditSession($name);
+                    $session.setMode("ace/mode/" + $type);
+                    $editor.setTheme("ace/theme/twilight");
+                    $editor.setFontSize("16px");
+                    $editor.resize();
+                    $session.setTabSize(4);
+                    $session.setUseWrapMode(true);
+                    $editor.setSession($session);
+                    $old_sessions[$name] = $session;
+                }
+                else
+                {
+                    $session = $old_sessions[$name];
+                }
+
+                $editor.setSession($session);
 		$editor.setValue($result["get"]);
-		$session.setMode("ace/mode/" + $type);
 		$div_edition.show();
 
 	    });
@@ -1227,7 +1288,7 @@ $(document).ready(function() {
             $file_dropzone = new Dropzone("form#file_upload", {
                 method: "post",
                 url: "upload.php",
-                maxFilesize: 3, // MB
+                maxFilesize: 50, // MB
                 maxFiles: 1,
                 acceptedFiles: "text/*, application/*",
                 createImageThumbnails: false,
@@ -1277,7 +1338,7 @@ $(document).ready(function() {
 		    id: "file_create_ok",
 		    click: function() {
 
-                        if ($text_validator($filename["name"], 25))
+                        if ($text_validator($filename["name"], 25) == false)
                             return;
 
                         $filename["method"] = "file_create";

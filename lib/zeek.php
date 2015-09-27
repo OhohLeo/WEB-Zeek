@@ -304,9 +304,9 @@ class Zeek extends ZeekOutput {
 		return $this->content_add(
                     $params["directory"], $params["files"]);
 
-           case 'content_modify':
-		return $this->content_modify(
-                    $params["directory"], $params["file"]);
+           case 'content_rename':
+		return $this->content_rename(
+                    $params["src"], $params["value"]);
 
             case 'content_delete':
 		return $this->content_delete(
@@ -1426,7 +1426,7 @@ class Zeek extends ZeekOutput {
 
         // if the test directory exist, we will copy the added
         // content into the test directory
-        $destination = $this->global_path . $this->test_get_directory();
+        $destination = $this->test_get_directory();
         $options = null;
 
         // we get the user test options
@@ -1482,48 +1482,67 @@ class Zeek extends ZeekOutput {
     }
 
 /**
- * Modify existing content
+ * Check if image exists
  *
- * @method content_modify
- * @param string directory name
- * @param string file to modify
+ * @method content_check
+ * @param string src filepath
  */
-    public function content_modify($directory_name, $name)
+    public function content_check($src)
     {
+        if (file_exists($this->global_path
+                      . 'projects/' . $this->project_id
+                      . "/$src") == false)
+        {
+            $this->error("Content '$src' not found!");
+            return false;
+        }
+
+        return true;
+    }
+
+/**
+ * Rename existing content
+ *
+ * @method content_rename
+ * @param string actual source file
+ * @param string new name
+ */
+    public function content_rename($actual_src, $new_name)
+    {
+        $directory_name = $this->zlib->file_get_type($actual_src);
+
+        // check that the directory name is still valid
         if ($this->content_valid_directory($directory_name) == false)
             return false;
 
-        // we check that the file already exist
+        // check that the content already exists
+        if ($this->content_check($actual_src) == false)
+            return false;
 
-        // we check that the file to copy also exist
+        // check that the new name is valid
+        if ($this->check_input($new_name) == false)
+            return false;
 
         // Get the extension of the content
-        $extension = $zlib->file_get_extension($name);
+        $extension = $this->zlib->file_get_extension($actual_src);
+        $new_extension = $this->zlib->file_get_extension($new_name);
 
-        // Remove the extension of the destination name
-        if ($zlib->file_get_extension($name) === $extension)
-            $name = substr($name, 0, strpos($name, '.'));
+        // Preserve same file extension
+        if ($new_extension == "" || $new_extension != $extension)
+            $new_name = "$new_name.$extension";
 
-        // we remove the existing file
+        $project_dst = $this->global_path . 'projects/' . $this->project_id;
 
-        // we copy the new file
-        $result = false;
+        if ($this->zlib->file_move(
+            "$project_dst/$actual_src",
+            "$project_dst/$directory_name/$new_name") == false
+          || $this->test_move_file("$actual_src",
+                                   "$directory_name/$new_name") == false)
+              return false;
 
-	if ($zlib->file_modify(
-	    $this->project_id, $_SESSION["login"], $file_to_move,
-            $directory_name, $name, $extension))
-	{
-	    $this->success(
-		"content '$file_to_move' stored as '$new_directory/$name.$extension'!");
+        $this->success("Content '$directory_name/$new_name' successfully renamed!");
 
-	    $result = true;
-	}
-
-        // TODO : if the test directory exist, we copy the modified
-        // content into the test directory
-
-        $this->zlib->uploaded_files_delete();
-        return $result;
+        return true;
     }
 
 /**
@@ -1539,18 +1558,14 @@ class Zeek extends ZeekOutput {
             return false;
 
         if ($this->zlib->file_delete($this->project_id, $_SESSION["login"],
-                                     $directory_name . "/" . $name))
-        {
-	    $this->success(
-		"content '$directory_name/$name' correctly removed!");
+                                     $directory_name . "/" . $name) == false
+         || $this->test_delete_file("$directory_name/$name") == false)
+                return false;
 
-            // TODO : if the test directory exist, we delete the
-            // content from the test directory
+	$this->success(
+	    "content '$directory_name/$name' correctly removed!");
 
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
 /**
@@ -1683,16 +1698,12 @@ class Zeek extends ZeekOutput {
     public function file_delete($name)
     {
 	if ($this->zlib->file_delete(
-	    $this->project_id, $_SESSION["login"], $name))
-	{
-	    $this->success("The file '$name' successfully deleted!");
-	    return true;
-	}
+	    $this->project_id, $_SESSION["login"], $name) == false
+         || $this->test_delete_file("$name") == false)
+	     return false;
 
-        // TODO : if the test directory exist, we delete the
-        // file from the test directory
-
-	return false;
+	$this->success("The file '$name' successfully deleted!");
+	return true;
     }
 
 /**
@@ -1818,7 +1829,7 @@ class Zeek extends ZeekOutput {
             $status = true;
 
         // if the test directory exist: we copy it in the test directory
-        $destination = $this->global_path . $this->test_get_directory();
+        $destination = $this->test_get_directory();
 
         if (file_exists($destination))
         {
@@ -2208,31 +2219,73 @@ class Zeek extends ZeekOutput {
 
         if ($test_with_options)
         {
-            // we set the final destination
-            $dst = $this->test_get_directory();
-
             // we deploy the files & apply all the data plugins
             if ($this->deploy_files(
-                $this->global_path . $dst, $decode_options) == false)
+               $this->test_get_directory(), $decode_options) == false)
                     return false;
 
-	    $this->output_json(array('href' => $dst));
+	    $this->output_json(array(
+                'href' => $this->test_get_relative_directory()));
+
             return true;
         }
 
         $this->output_json(array('href' => 'projects/' . $this->project_id));
+
         return true;
     }
 
  /**
-  * Method to get actual user test directory
+  * Method to get actual user test directory relative path
+  *
+  * @method test_get_relative_directory
+  */
+    private function test_get_relative_directory()
+    {
+        return 'projects/' . $this->project_id
+	        . '/TEST/' . $_SESSION['login'];
+    }
+
+ /**
+  * Method to get actual user test directory absolute path
   *
   * @method test_get_directory
   */
     private function test_get_directory()
     {
-        return 'projects/' . $this->project_id
-	        . '/TEST/' . $_SESSION['login'];
+        return $this->global_path . $this->test_get_relative_directory();
+    }
+
+ /**
+  * Method to move file from/to test directory
+  *
+  * @method test_delete_file
+  */
+    private function test_move_file($src, $dst)
+    {
+        $test = $this->test_get_directory();
+
+        if (file_exists($test) == false
+         || file_exists("$test/$src") == false)
+            return true;
+
+	return $this->zlib->file_move("$test/$src", "$test/$dst");
+    }
+
+ /**
+  * Method to delete file from test directory
+  *
+  * @method test_delete_file
+  */
+    private function test_delete_file($filepath)
+    {
+        $test = $this->test_get_directory();
+
+        if (file_exists($test) == false
+         || file_exists("$test/$filepath") == false)
+            return true;
+
+	return $this->zlib->file_remove("$test/$filepath");
     }
 
 /**
@@ -3026,11 +3079,11 @@ class Zeek extends ZeekOutput {
         $action = NULL;
         $result = '';
 
-        /* we check if it is specified type  */
+        // we check if it is specified type
         if ($zlib->type_check($this->project_name, $type)) {
             $result = $this->display_get_and_set($type);
         }
-        /* we handle other cases */
+        // we handle other cases
         else if (file_exists($this->global_path . "view/$type.html")) {
             $file = $this->global_path . "view/$type.html";
 
@@ -3082,13 +3135,33 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
+
+ /**
+ * Return true if the string is not empty and with a size below
+ * maximum expected and respect [A-Za-z0-9_] otherwise return false.
+ *
+ * @method check_string_and_size
+ * @param string string to check
+ */
+    public function check_input($input)
+    {
+        if (preg_match("/^[a-zA-Z0-9_]{1,25}\z/", $input) == 1)
+        {
+            return true;
+        }
+
+        $this->error("Invalid input '$input': only a-z, A-Z, 0-9 and _ and 25 letter(s) accepted");
+        return false;
+    }
+
 /**
  * Return true if the string is not empty otherwise return false.
  *
  * @method check_string
  * @param string string to check
  */
-    private function check_string($input) {
+    private function check_string($input)
+    {
         return isset($input) and $input != '';
     }
 
@@ -3100,7 +3173,8 @@ class Zeek extends ZeekOutput {
  * @param string string to check
  * @param integer maximum size
  */
-    private function check_string_and_size($input, $size) {
+    private function check_string_and_size($input, $size)
+    {
         return isset($input) and $input != ''
            and strlen($input) <= $size;
     }

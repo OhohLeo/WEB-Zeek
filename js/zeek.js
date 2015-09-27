@@ -61,11 +61,16 @@ $send_request = (function($data, $handle_rsp) {
 });
 
 
-$input_validator = function($name_with_type, $validator, $on_success) {
+$input_validator = function($name_with_type, $validator, $on_success, $send_parameters) {
 
     var $name = $name_with_type.substring(1);
     var $button_name = "button#" + $name;
     var $start_value = $("input" + $name_with_type).val();
+
+    if ($send_parameters == null)
+        $send_parameters = { "method": $name };
+
+    console.log($send_parameters);
 
     return function() {
 
@@ -85,11 +90,10 @@ $input_validator = function($name_with_type, $validator, $on_success) {
                                          && ($validator($value) == false))
                                          return false;
 
+                                     $send_parameters["value"] = $value;
+
                                      $send_request(
-                                         {
-                                             "method": $name,
-                                             "value": $value,
-                                         },
+                                         $send_parameters,
                                          function($result) {
 	                                     if ($result == false || $result["error"])
 		                                 return false;
