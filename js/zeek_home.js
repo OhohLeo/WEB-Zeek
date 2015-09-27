@@ -550,10 +550,11 @@ $(document).ready(function() {
         var $generate_name = function() {
             var $name = $("input#content_name").val();
 
-            if ($text_validator($name, 25) == false)
-                return false;
-
             if ($name != "") {
+
+                if ($text_validator($name, 25) == false)
+                    return false;
+
                 $name = "/" + $name
             }
 
