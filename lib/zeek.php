@@ -1750,30 +1750,30 @@ class Zeek extends ZeekOutput {
  */
     public function file_get_type_list($is_json_output = false)
     {
-	$type_list = $this->zlib->file_get_type_list();
+	    $type_list = $this->zlib->file_get_type_list();
 
-	if (is_array($type_list) && count($type_list) > 0)
-	{
+	    if (is_array($type_list) && count($type_list) > 0)
+	    {
             $res = array();
 
-	    foreach ($type_list as $file)
-	    {
-	        $name = $file["name"];
+	        foreach ($type_list as $file)
+	        {
+	            $name = $file["name"];
 
-		if (substr($name, 0, 5) == "mode-")
-		    array_push($res, substr($name, 5, -3));
+		        if (substr($name, 0, 5) == "mode-")
+		            array_push($res, substr($name, 5, -3));
+	        }
+
+	        // we store the list
+	        if ($is_json_output)
+		        $this->output_json(array('type_list' => $res));
+
+	        $this->type_list = $res;
+
+	        return true;
 	    }
 
-	    // we store the list
-	    if ($is_json_output)
-		$this->output_json(array('type_list' => $res));
-
-	    $this->type_list = $res;
-
-	    return true;
-	}
-
-	return false;
+	    return false;
     }
 
 
@@ -1790,23 +1790,23 @@ class Zeek extends ZeekOutput {
     public function file_get($user, $name)
     {
         if ($this->check_string($user) == false
-           || $this->check_string($user) == false)
+         || $this->check_string($name) == false)
         {
             $this->error("user '$user' or/and name '$name' field are invalid!");
             return false;
         }
 
-	$zlib = $this->zlib;
-	$get = $zlib->file_get($this->project_id, $user, $name);
+	    $zlib = $this->zlib;
+	    $get = $zlib->file_get($this->project_id, $user, $name);
 
-	if ($get)
-	{
-	    $this->output_json(array('get' => stripslashes($get),
-				     'type' => $zlib->file_get_type($name)));
-	    return true;
-	}
+	    if ($get)
+	    {
+	        $this->output_json(array('get' => $get,
+				                     'type' => $zlib->file_get_type($name)));
+	        return true;
+	    }
 
-	return false;
+	    return false;
     }
 
 
@@ -1820,12 +1820,12 @@ class Zeek extends ZeekOutput {
  */
     public function file_set($user, $name, $data)
     {
-	$zlib = $this->zlib;
+	    $zlib = $this->zlib;
 
         $status = false;
 
         // we copy the file in the project directory
-	if ($zlib->file_set($this->project_id, $user, $name, $data))
+	    if ($zlib->file_set($this->project_id, $user, $name, $data))
             $status = true;
 
         // if the test directory exist: we copy it in the test directory
@@ -1846,11 +1846,11 @@ class Zeek extends ZeekOutput {
         }
 
         if ($status)
-	    $this->success(
-		$zlib->file_get_path($this->project_id, $name)
-	      . " correctly updated");
+	        $this->success(
+		        $zlib->file_get_path($this->project_id, $name)
+	          . " correctly updated");
 
-	return $status;
+	    return $status;
     }
 
 /**

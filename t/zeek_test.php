@@ -388,6 +388,14 @@ class TestZeek extends PHPUnit_Framework_TestCase
     	    $zeek->checkOutput(
     	        '{"success":"file \'toto.css\' with type \'css\' created!"}'));
 
+        $this->assertTrue($zeek->file_set('test', 'toto.css', ' \d \e'));
+        $this->assertTrue(
+            $zeek->checkOutput('{"success":"/home/lmartin/zeek/projects//toto.css correctly updated"}'));
+
+        $this->assertTrue($zeek->file_get('test', 'toto.css'));
+        $this->assertTrue(
+            $zeek->checkOutput('{"get":" \\\d \\\e","type":"css"}'));
+
         $this->assertTrue($zeek->file_create('css', 'tutu', 'css', false,
     					     'projects/css/toto.css'));
         $this->assertTrue(
@@ -677,7 +685,7 @@ class TestZeek extends PHPUnit_Framework_TestCase
         $this->assertTrue($zeek->option_get_plugins());
         $this->assertTrue(
             $zeek->checkOutput(
-                '{"project":{"zeekify":"disabled","MinifyCss":true,"MinifyJs":true},"user":{"MinifyCss":true,"MinifyJs":true}}'));
+                '{"project":{"zeekify":"disabled","MinifyCss":false,"MinifyJs":false},"user":{"MinifyCss":false,"MinifyJs":false}}'));
 
         $this->assertTrue($zeek->option_get('test'));
         $this->assertTrue(
