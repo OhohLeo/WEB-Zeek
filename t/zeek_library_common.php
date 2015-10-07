@@ -163,7 +163,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($zlib->project_delete('test'));
 
-	$this->assertTrue(
+	    $this->assertTrue(
             $zlib->checkOutput(
                 '{"error":"no existing project delete \'test\' in database!"}'));
 
@@ -172,354 +172,354 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
     public function test_projects()
     {
-	$zlib = $this->zlib;
+	    $zlib = $this->zlib;
 
-	$this->assertTrue($zlib->connect_to_database());
+	    $this->assertTrue($zlib->connect_to_database());
 
-	$structure = $zlib->projects_get('t/projects.ini');
+	    $structure = $zlib->projects_get('t/projects.ini');
 
-	$this->assertEquals($structure,
-			    array(
-	    "test" => array(
-		"artist" => array(
-		    "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
-		    "surname"   => array("db_type" => "VARCHAR", "db_size" => 100),
-		    "age"       => array("db_type" => "INT_U"),
-		    "subtitle"  => array("db_type" => "VARCHAR", "db_size" => 300),
-		    "biography" => array("db_type" => "TEXT", "db_size" => 1000),
-		    "skill"     => array("db_type" => "VARCHAR", "db_size" => 100)),
-		"show"   => array(
-		    "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
-		    "date"      => array("db_type" => "DATE"),
-		    "hour"      => array("db_type" => "TIME"),
-		    "location"  => array("db_type" => "VARCHAR", "db_size" => 300)),
-		"news"   => array(
-		    "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
-		    "date"      => array("db_type" => "DATE"),
-		    "comments"  => array("db_type" => "VARCHAR", "db_size" => 100)),
-		"album"  => array(
-		    "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
-		    "duration"  => array("db_type" => "INT_U"),
-		    "comments"  => array("db_type" => "TEXT", "db_size" => 1000)),
-		"music"  => array(
-		    "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
-		    "date"      => array("db_type" => "DATE"),
-		    "duration"  => array("db_type" => "INT_U"),
-		    "comments"  => array("db_type" => "TEXT", "db_size" => 1000)),
-		"video"  => array(
-		    "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
-		    "date"      => array("db_type" => "DATE"),
-		    "duration"  => array("db_type" => "INT_U"),
-		    "comments"  => array("db_type" => "TEXT", "db_size" => 1000)),
-		"media"  => array(
-		    "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
-		    "date"      => array("db_type" => "DATE"),
-		    "comments"  => array("db_type" => "TEXT", "db_size" => 1000))),
-	    "test2" => array(
-		"test1" => array(
-		    "name"      => array("db_type" => "VARCHAR", "db_size" => 25),
-		    "since"     => array("db_type" => "DATE"),
-		    "subtitle"  => array("db_type" => "VARCHAR", "db_size" => 300),
-		    "biography" => array("db_type" => "TEXT", "db_size" => 1000)))));
+	    $this->assertEquals($structure,
+			                array(
+	                            "test" => array(
+		                            "artist" => array(
+		                                "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
+		                                "surname"   => array("db_type" => "VARCHAR", "db_size" => 100),
+		                                "age"       => array("db_type" => "INT_U"),
+		                                "subtitle"  => array("db_type" => "VARCHAR", "db_size" => 300),
+		                                "biography" => array("db_type" => "TEXT", "db_size" => 1000),
+		                                "skill"     => array("db_type" => "VARCHAR", "db_size" => 100)),
+		                            "show"   => array(
+		                                "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
+		                                "date"      => array("db_type" => "DATE"),
+		                                "hour"      => array("db_type" => "TIME"),
+		                                "location"  => array("db_type" => "VARCHAR", "db_size" => 300)),
+		                            "news"   => array(
+		                                "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
+		                                "date"      => array("db_type" => "DATE"),
+		                                "comments"  => array("db_type" => "VARCHAR", "db_size" => 100)),
+		                            "album"  => array(
+		                                "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
+		                                "duration"  => array("db_type" => "INT_U"),
+		                                "comments"  => array("db_type" => "TEXT", "db_size" => 1000)),
+		                            "music"  => array(
+		                                "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
+		                                "date"      => array("db_type" => "DATE"),
+		                                "duration"  => array("db_type" => "INT_U"),
+		                                "comments"  => array("db_type" => "TEXT", "db_size" => 1000)),
+		                            "video"  => array(
+		                                "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
+		                                "date"      => array("db_type" => "DATE"),
+		                                "duration"  => array("db_type" => "INT_U"),
+		                                "comments"  => array("db_type" => "TEXT", "db_size" => 1000)),
+		                            "media"  => array(
+		                                "name"      => array("db_type" => "VARCHAR", "db_size" => 100),
+		                                "date"      => array("db_type" => "DATE"),
+		                                "comments"  => array("db_type" => "TEXT", "db_size" => 1000))),
+	                            "test2" => array(
+		                            "test1" => array(
+		                                "name"      => array("db_type" => "VARCHAR", "db_size" => 25),
+		                                "since"     => array("db_type" => "DATE"),
+		                                "subtitle"  => array("db_type" => "VARCHAR", "db_size" => 300),
+		                                "biography" => array("db_type" => "TEXT", "db_size" => 1000)))));
 
-	$wrong_tests = array(
-	    't/projects/no_project_name.ini',
-	    't/projects/wrong_project_name.ini',
-	    't/projects/wrong_table_name.ini',
-	    't/projects/no_table_name.ini',
-	    't/projects/wrong_attribute_name.ini',
-	    't/projects/ignore_attribute_name.ini',
-	);
+	    $wrong_tests = array(
+	        't/projects/no_project_name.ini',
+	        't/projects/wrong_project_name.ini',
+	        't/projects/wrong_table_name.ini',
+	        't/projects/no_table_name.ini',
+	        't/projects/wrong_attribute_name.ini',
+	        't/projects/ignore_attribute_name.ini',
+	    );
 
-	foreach ($wrong_tests as $filename) {
-	    $this->assertFalse($zlib->projects_get($filename));
-	    $this->assertTrue($zlib->checkOutput('{"error":"structure not defined!"}'));
-	}
+	    foreach ($wrong_tests as $filename) {
+	        $this->assertFalse($zlib->projects_get($filename));
+	        $this->assertTrue($zlib->checkOutput('{"error":"structure not defined!"}'));
+	    }
 
-	$this->assertFalse($zlib->projects_get('t/projects/unknown.ini'));
-	$this->assertTrue($zlib->checkOutput(
-	    '{"error":"Can\'t find projects configuration file \'t/projects/unknown.ini\'!"}'));
+	    $this->assertFalse($zlib->projects_get('t/projects/unknown.ini'));
+	    $this->assertTrue($zlib->checkOutput(
+	        '{"error":"Can\'t find projects configuration file \'t/projects/unknown.ini\'!"}'));
 
-	$zlib->environment_clean($this->db_name);
+	    $zlib->environment_clean($this->db_name);
     }
 
 
     public function test_type()
     {
-	$zlib = $this->zlib;
+	    $zlib = $this->zlib;
 
-	$this->assertFalse(
-	    $zlib->type_check('test', 'failed'));
+	    $this->assertFalse(
+	        $zlib->type_check('test', 'failed'));
 
-	$this->assertFalse(
-	    $zlib->type_get('test', 'failed'));
+	    $this->assertFalse(
+	        $zlib->type_get('test', 'failed'));
 
-	$this->assertTrue($zlib->connect_to_database());
+	    $this->assertTrue($zlib->connect_to_database());
 
-	$zlib->environment_clean($this->db_name);
+	    $zlib->environment_clean($this->db_name);
     }
 
     public function test_value()
     {
-	$zlib = $this->zlib;
+	    $zlib = $this->zlib;
 
-	$this->assertTrue($zlib->connect_to_database());
+	    $this->assertTrue($zlib->connect_to_database());
 
-	$structure = $zlib->projects_get('t/projects.ini');
+	    $structure = $zlib->projects_get('t/projects.ini');
 
-	$zlib->environment_clean($this->db_name);
+	    $zlib->environment_clean($this->db_name);
 
-	$this->assertTrue(
-	    $zlib->project_add('test', 'dst'));
+	    $this->assertTrue(
+	        $zlib->project_add('test', 'dst'));
 
-	$project_id = $zlib->project_get_id('test');
+	    $project_id = $zlib->project_get_id('test');
 
-	$zlib->project_id = $project_id;
-	$this->assertEquals($zlib->project_id, 1);
+	    $zlib->project_id = $project_id;
+	    $this->assertEquals($zlib->project_id, 1);
 
-	# we add a new value here
-	$this->assertTrue(
-	    $zlib->value_insert(
-		$project_id,
-		'artist',
-		array('name'      => 'test_name',
-		      'surname'   => 'test_surname',
-		      'age'       => 27,
-		      'subtitle'  => 'test_subtitle',
-		      'biography' => 'la vie de ce test sera très courte',
-		      'skill'     => 'skill_test')));
+	    # we add a new value here
+	    $this->assertTrue(
+	        $zlib->value_insert(
+		        $project_id,
+		        'artist',
+		        array('name'      => 'test_name',
+		              'surname'   => 'test_surname',
+		              'age'       => 27,
+		              'subtitle'  => 'test_subtitle',
+		              'biography' => 'la vie de ce test sera',
+		              'skill'     => 'skill_test')));
 
-	$result = $zlib->value_get($project_id, 'artist');
+	    $result = $zlib->value_get($project_id, 'artist');
 
-	$row = $zlib->value_fetch($result);
+	    $row = $zlib->value_fetch($result);
 
-	$this->assertEquals($row["id"], 1);
-	$this->assertEquals($row["name"], 'test_name');
-	$this->assertEquals($row["surname"], 'test_surname');
-	$this->assertEquals($row["age"], 27);
-	$this->assertEquals($row["subtitle"], 'test_subtitle');
-	$this->assertEquals($row["biography"], 'la vie de ce test sera très courte');
-	$this->assertEquals($row["skill"], 'skill_test');
+	    $this->assertEquals(1, $row["id"]);
+	    $this->assertEquals('test_name', $row["name"]);
+	    $this->assertEquals('test_surname', $row["surname"]);
+	    $this->assertEquals(27, $row["age"]);
+	    $this->assertEquals('test_subtitle', $row["subtitle"]);
+	    $this->assertEquals('la vie de ce test sera', $row["biography"]);
+	    $this->assertEquals('skill_test', $row["skill"]);
 
-	# we add a new value again
-	$this->assertTrue(
-	    $zlib->value_insert(
-		$project_id,
-		'artist',
-		array('name'      => 'test_name2',
-		      'surname'   => 'test_surname2',
-		      'age'       => 272,
-		      'subtitle'  => 'test_subtitle2',
-		      'biography' => 'la vie de ce test sera très très courte',
-		      'skill'     => 'skill_test2')));
+	    # we add a new value again
+	    $this->assertTrue(
+	        $zlib->value_insert(
+		        $project_id,
+		        'artist',
+		        array('name'      => 'test_name2',
+		              'surname'   => 'test_surname2',
+		              'age'       => 272,
+		              'subtitle'  => 'test_subtitle2',
+		              'biography' => 'la vie de ce test sera',
+		              'skill'     => 'skill_test2')));
 
-	# we add a new value again
-	$this->assertTrue(
-	    $zlib->value_insert(
-		$project_id,
-		'artist',
-		array('name'      => 'test_name3',
-		      'surname'   => 'test_surname3',
-		      'age'       => 273,
-		      'subtitle'  => 'test_subtitle3',
-		      'biography' => 'la vie de ce test sera très très très courte',
-		      'skill'     => 'skill_test3')));
+	    # we add a new value again
+	    $this->assertTrue(
+	        $zlib->value_insert(
+		        $project_id,
+		        'artist',
+		        array('name'      => 'test_name3',
+		              'surname'   => 'test_surname3',
+		              'age'       => 273,
+		              'subtitle'  => 'test_subtitle3',
+		              'biography' => 'la vie de ce test sera',
+		              'skill'     => 'skill_test3')));
 
-	$result = $zlib->value_get($project_id, 'artist', NULL, 1, 1);
+	    $result = $zlib->value_get($project_id, 'artist', NULL, 1, 1);
 
-	$row = $zlib->value_fetch($result);
+	    $row = $zlib->value_fetch($result);
 
-	$this->assertEquals($row["id"], 2);
-	$this->assertEquals($row["name"], 'test_name2');
-	$this->assertEquals($row["surname"], 'test_surname2');
-	$this->assertEquals($row["age"], 272);
-	$this->assertEquals($row["subtitle"], 'test_subtitle2');
-	$this->assertEquals($row["biography"], 'la vie de ce test sera très très courte');
-	$this->assertEquals($row["skill"], 'skill_test2');
+	    $this->assertEquals($row["id"], 2);
+	    $this->assertEquals($row["name"], 'test_name2');
+	    $this->assertEquals($row["surname"], 'test_surname2');
+	    $this->assertEquals($row["age"], 272);
+	    $this->assertEquals($row["subtitle"], 'test_subtitle2');
+	    $this->assertEquals($row["biography"], 'la vie de ce test sera');
+	    $this->assertEquals($row["skill"], 'skill_test2');
 
-	# we add a new value again
-	$this->assertTrue(
-	    $zlib->value_update(
-		$project_id, 'artist', 3,
-		array('name'      => 'test_update',
-		      'surname'   => 'test_surname-update')));
+	    # we add a new value again
+	    $this->assertTrue(
+	        $zlib->value_update(
+		        $project_id, 'artist', 3,
+		        array('name'      => 'test_update',
+		              'surname'   => 'test_surname-update')));
 
-	$result = $zlib->value_get($project_id, 'artist', NULL, 1, 2);
+	    $result = $zlib->value_get($project_id, 'artist', NULL, 1, 2);
 
-	$row = $zlib->value_fetch($result);
+	    $row = $zlib->value_fetch($result);
 
-	$this->assertEquals($row["id"], 3);
-	$this->assertEquals($row["name"], 'test_update');
-	$this->assertEquals($row["surname"], 'test_surname-update');
-	$this->assertEquals($row["age"], 273);
-	$this->assertEquals($row["subtitle"], 'test_subtitle3');
-	$this->assertEquals($row["biography"], 'la vie de ce test sera très très très courte');
-	$this->assertEquals($row["skill"], 'skill_test3');
+	    $this->assertEquals($row["id"], 3);
+	    $this->assertEquals($row["name"], 'test_update');
+	    $this->assertEquals($row["surname"], 'test_surname-update');
+	    $this->assertEquals($row["age"], 273);
+	    $this->assertEquals($row["subtitle"], 'test_subtitle3');
+	    $this->assertEquals($row["biography"], 'la vie de ce test sera');
+	    $this->assertEquals($row["skill"], 'skill_test3');
 
-	$this->assertEquals($zlib->table_count($project_id, 'artist'), 3);
+	    $this->assertEquals($zlib->table_count($project_id, 'artist'), 3);
 
-	# we delete the last value
-	$this->assertTrue($zlib->value_delete(
-	    $project_id, 'artist', 3));
+	    # we delete the last value
+	    $this->assertTrue($zlib->value_delete(
+	        $project_id, 'artist', 3));
 
-	$this->assertFalse(
-	    $zlib->value_update(
-		$project_id, 'artist', 3,
-		array('name'      => 'test_update',
-		      'surname'   => 'test_surname-update')));
+	    $this->assertFalse(
+	        $zlib->value_update(
+		        $project_id, 'artist', 3,
+		        array('name'      => 'test_update',
+		              'surname'   => 'test_surname-update')));
 
-	$this->assertFalse(
-	    $zlib->value_insert(
-		$project_id, 'failed',
-		array('name'      => 'test_name3',
-		      'surname'   => 'test_surname3',
-		      'age'       => 273,
-		      'subtitle'  => 'test_subtitle3',
-		      'biography' => 'la vie de ce test sera très très très courte',
-		      'skill'     => 'skill_test3')));
+	    $this->assertFalse(
+	        $zlib->value_insert(
+		        $project_id, 'failed',
+		        array('name'      => 'test_name3',
+		              'surname'   => 'test_surname3',
+		              'age'       => 273,
+		              'subtitle'  => 'test_subtitle3',
+		              'biography' => 'la vie de ce test sera',
+		              'skill'     => 'skill_test3')));
 
-	$this->assertFalse(
-	    $zlib->value_update(
-		$project_id, 'failed', 3,
-		array('name'      => 'test_update',
-		      'surname'   => 'test_surname-update')));
+	    $this->assertFalse(
+	        $zlib->value_update(
+		        $project_id, 'failed', 3,
+		        array('name'      => 'test_update',
+		              'surname'   => 'test_surname-update')));
 
-	$zlib->environment_clean($this->db_name);
+	    $zlib->environment_clean($this->db_name);
     }
 
     function launch_test($zlib, $id, $table, $attribute, $input)
     {
-	print "check '$table $attribute' ";
+	    print "check '$table $attribute' ";
 
-	$var_type;
-	$opt_size;
+	    $var_type;
+	    $opt_size;
 
-	if (is_array($input)) {
-	    $var_type = $input[0];
-	    $opt_size = $input[1];
-	    print "($var_type, $opt_size)\n";
-	} else {
-	    $var_type = $input;
-	    print "($var_type)\n";
-	}
-
-	$values = $this->get_value_from_format($var_type);
-
-	if (is_array($values)) {
-	    $size = count($values);
-	    for ($i=0; $i < $size; $i++) {
-		$this->assertTrue(
-		    $this->check_value(
-			$zlib, $id, $table, $attribute, $values[$i]));
+	    if (is_array($input)) {
+	        $var_type = $input[0];
+	        $opt_size = $input[1];
+	        print "($var_type, $opt_size)\n";
+	    } else {
+	        $var_type = $input;
+	        print "($var_type)\n";
 	    }
-	}
+
+	    $values = $this->get_value_from_format($var_type);
+
+	    if (is_array($values)) {
+	        $size = count($values);
+	        for ($i=0; $i < $size; $i++) {
+		        $this->assertTrue(
+		            $this->check_value(
+			            $zlib, $id, $table, $attribute, $values[$i]));
+	        }
+	    }
     }
 
 
     function check_value($zlib, $project_id, $table, $attribute, $value)
     {
-	print "=> insert $project_id, $table, $attribute, $value\n";
+	    print "=> insert $project_id, $table, $attribute, $value\n";
 
-	if ($zlib->value_insert(
-	    $project_id, $table, array($attribute => $value)) == false) {
-	    print "error insert!\n";
-	    return false;
-	}
+	    if ($zlib->value_insert(
+	        $project_id, $table, array($attribute => $value)) == false) {
+	        print "error insert!\n";
+	        return false;
+	    }
 
-	$result = $zlib->value_get($project_id, $table, NULL, 1, 0);
-	if ($result == false) {
-	    print "error get!\n";
-	    return false;
-	}
+	    $result = $zlib->value_get($project_id, $table, NULL, 1, 0);
+	    if ($result == false) {
+	        print "error get!\n";
+	        return false;
+	    }
 
-	$row = $zlib->value_fetch($result);
-	if ($row == NULL) {
-	    print "error fetch!\n";
-	    return false;
-	}
+	    $row = $zlib->value_fetch($result);
+	    if ($row == NULL) {
+	        print "error fetch!\n";
+	        return false;
+	    }
 
-	if ($row->$attribute != $value) {
-	    print "error insert '$value', get '". $row->$attribute . "'!\n";
-	}
+	    if ($row->$attribute != $value) {
+	        print "error insert '$value', get '". $row->$attribute . "'!\n";
+	    }
 
-	if ($zlib->value_delete($project_id, $table, $row->id) == false) {
-	    print "error delete!\n";
-	    return false;
-	}
+	    if ($zlib->value_delete($project_id, $table, $row->id) == false) {
+	        print "error delete!\n";
+	        return false;
+	    }
 
-	return true;
+	    return true;
     }
 
     private function get_value_from_format($format, $opt_size=NULL)
     {
-	switch ($format) {
-	    case "TINYINT":
-		return array(-128, 127);
-	    case "TINYINT_U":
-		return array(0, 255);
-	    case "SMALLINT":
-		return array(-32768, 32767);
-	    case "SMALLINT_U":
-		return array(0,  65535);
-	    case "MEDIUMINT":
-		return array(-8388608, 8388607);
-	    case "MEDIUMINT_U":
-		return array(0,  16777215);
-	    case "INT":
-	    case "INTEGER":
-		return array(-2147483648,  2147483647);
-	    case "INT_U":
-	    case "INTEGER_U":
-		return array(0, 4294967295);
-	    case "BIGINT":
-		return array(-9223372036854775808,  9223372036854775807);
-	    case "BIGINT_U":
-		return array(0, 18446744073709551615);
-	    case "FLOAT":
-		return array(-3.40282E+38, -1.5, 0, 1.5,
-			     1.17549E-38, 3.40282E+38);
-	    case "FLOAT_U":
-		return array(0, 1.5, 1.175494351E-38, 3.402823466E+38);
-	    case "DOUBLE":
-		return array(
-		    -1.7976931348623e308,  -1.5, -2.2250738585072E-308,
-		    0, 2.2250738585072E-308, 1.5, 1.7976931348623e308);
-	    case "DOUBLE_U":
-		return array(0, 2.2250738585072E-308, 1.5, 1.7976931348623e308);
-	    case "DECIMAL":
-		return array(-9999999999, -555, 0, 1231, 9999999999);
+	    switch ($format) {
+	        case "TINYINT":
+		        return array(-128, 127);
+	        case "TINYINT_U":
+		        return array(0, 255);
+	        case "SMALLINT":
+		        return array(-32768, 32767);
+	        case "SMALLINT_U":
+		        return array(0,  65535);
+	        case "MEDIUMINT":
+		        return array(-8388608, 8388607);
+	        case "MEDIUMINT_U":
+		        return array(0,  16777215);
+	        case "INT":
+	        case "INTEGER":
+		        return array(-2147483648,  2147483647);
+	        case "INT_U":
+	        case "INTEGER_U":
+		        return array(0, 4294967295);
+	        case "BIGINT":
+		        return array(-9223372036854775808,  9223372036854775807);
+	        case "BIGINT_U":
+		        return array(0, 18446744073709551615);
+	        case "FLOAT":
+		        return array(-3.40282E+38, -1.5, 0, 1.5,
+			                 1.17549E-38, 3.40282E+38);
+	        case "FLOAT_U":
+		        return array(0, 1.5, 1.175494351E-38, 3.402823466E+38);
+	        case "DOUBLE":
+		        return array(
+		            -1.7976931348623e308,  -1.5, -2.2250738585072E-308,
+		            0, 2.2250738585072E-308, 1.5, 1.7976931348623e308);
+	        case "DOUBLE_U":
+		        return array(0, 2.2250738585072E-308, 1.5, 1.7976931348623e308);
+	        case "DECIMAL":
+		        return array(-9999999999, -555, 0, 1231, 9999999999);
 
 
-	    case "DATE":
-		return array('1000-01-01', '2014-09-16', '9999-12-31');
-	    case "DATETIME":
-		return array('1000-01-01 00:00:00', '2014-09-16 11:25:15',
-			     '9999-12-31 23:59:59');
-	    case "TIMESTAMP":
-		return array('1971-01-01 00:00:01',  '2014-09-16 11:25:15');
-	    case "TIME":
-		return array('-838:59:59', '12:21:22', '838:59:59');
-	    case "YEAR":
-		return array(1901, 2014, 2155);
+	        case "DATE":
+		        return array('1000-01-01', '2014-09-16', '9999-12-31');
+	        case "DATETIME":
+		        return array('1000-01-01 00:00:00', '2014-09-16 11:25:15',
+			                 '9999-12-31 23:59:59');
+	        case "TIMESTAMP":
+		        return array('1971-01-01 00:00:01',  '2014-09-16 11:25:15');
+	        case "TIME":
+		        return array('-838:59:59', '12:21:22', '838:59:59');
+	        case "YEAR":
+		        return array(1901, 2014, 2155);
 
-	    case "CHAR":
-	    case "VARCHAR":
-		return array('toto', '', 'titi est malade');
-	    case "TINYTEXT":
-	    case "TEXT":
-	    case "MEDIUMTEXT":
-	    case "LONGTEXT":
-	    case "TINYBLOB":
-	    case "BLOB":
-	    case "MEDIUMBLOB":
-	    case "LONGBLOB":
-		return array("turlututu \n chapeau poitu!!");
-	}
+	        case "CHAR":
+	        case "VARCHAR":
+		        return array('toto', '', 'titi est malade');
+	        case "TINYTEXT":
+	        case "TEXT":
+	        case "MEDIUMTEXT":
+	        case "LONGTEXT":
+	        case "TINYBLOB":
+	        case "BLOB":
+	        case "MEDIUMBLOB":
+	        case "LONGBLOB":
+		        return array("turlututu \n chapeau poitu!!");
+	    }
     }
 
     public function test_structure()
     {
-	$zlib = $this->zlib;
+	    $zlib = $this->zlib;
 
         $this->assertTrue(
             $zlib->connect_to_database());
@@ -691,15 +691,15 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
                     ))));
 
         // we insert new elements in this project
-	$this->assertTrue(
-	    $zlib->value_insert(
-		$project_id, 'artist',
+	    $this->assertTrue(
+	        $zlib->value_insert(
+		        $project_id, 'artist',
                 array('name'      => 'test_name',
-		      'surname'   => 'test_surname')));
+		              'surname'   => 'test_surname')));
 
-	$result = $zlib->value_get($project_id, 'artist');
-	$row = $zlib->value_fetch($result);
-	$this->assertEquals(
+	    $result = $zlib->value_get($project_id, 'artist');
+	    $row = $zlib->value_fetch($result);
+	    $this->assertEquals(
             $row, array("id"     => 1,
                         "name"   => 'test_name',
                         "surname"=> 'test_surname'));
@@ -725,9 +725,9 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
                         )))));
 
         // we check how is modified the project
-	$result = $zlib->value_get($project_id, 'artist');
-	$row = $zlib->value_fetch($result);
-	$this->assertEquals(
+	    $result = $zlib->value_get($project_id, 'artist');
+	    $row = $zlib->value_fetch($result);
+	    $this->assertEquals(
             $row, array("id"   => 1,
                         "name" => 'test_name',
                         "age"  => '0'));
@@ -738,85 +738,85 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
 
     public function test_files()
     {
-	$zlib = $this->zlib;
+	    $zlib = $this->zlib;
 
         $this->assertTrue(
             $zlib->connect_to_database());
 
         $zlib->environment_clean($this->db_name);
 
-	// we create type file
-	$this->assertTrue($zlib->file_create(
-	    'test', 'user', 'type', 'test1', 'type', true));
-	$this->assertTrue(
-	    file_exists($zlib->global_path . 'projects/test/test1.type'));
+	    // we create type file
+	    $this->assertTrue($zlib->file_create(
+	        'test', 'user', 'type', 'test1', 'type', true));
+	    $this->assertTrue(
+	        file_exists($zlib->global_path . 'projects/test/test1.type'));
 
-	// we can't create similar file
-	$this->assertFalse($zlib->file_create(
-	    'test', 'user', 'type', 'test1', 'type', true));
+	    // we can't create similar file
+	    $this->assertFalse($zlib->file_create(
+	        'test', 'user', 'type', 'test1', 'type', true));
 
-	// we check the type of file
-	$this->assertEquals($zlib->file_get_type('test1.type'), 'type');
+	    // we check the type of file
+	    $this->assertEquals($zlib->file_get_type('test1.type'), 'type');
 
-	// we create css file
-	$this->assertTrue($zlib->file_create(
-	    'test', 'user', 'css', 'test2', 'css'));
-	$this->assertTrue(
-	    file_exists($zlib->global_path . 'projects/test/css/test2.css'));
+	    // we create css file
+	    $this->assertTrue($zlib->file_create(
+	        'test', 'user', 'css', 'test2', 'css'));
+	    $this->assertTrue(
+	        file_exists($zlib->global_path . 'projects/test/css/test2.css'));
 
-	// we can't create similar file
-	$this->assertFalse($zlib->file_create(
-	    'test', 'user', 'css', 'test2', 'css'));
+	    // we can't create similar file
+	    $this->assertFalse($zlib->file_create(
+	        'test', 'user', 'css', 'test2', 'css'));
 
-	// we check the type of file
-	$this->assertEquals($zlib->file_get_type('/css/test2.css'), 'css');
+	    // we check the type of file
+	    $this->assertEquals($zlib->file_get_type('/css/test2.css'), 'css');
 
-	// we check that we can set the value
-	$this->assertTrue($zlib->file_set('test', 'user', 'test1.type',
-					  'Ceci est un test!'));
+	    // we check that we can set the value
+	    $this->assertTrue($zlib->file_set('test', 'user', 'test1.type',
+					                      'Ceci est un test!'));
 
-	// we check that we can get the value
-	$this->assertEquals($zlib->file_get('test', 'user', 'test1.type'),
-			    'Ceci est un test!');
+	    // we check that we can get the value
+	    $this->assertEquals($zlib->file_get('test', 'user', 'test1.type'),
+			                'Ceci est un test!');
 
-	// we check the list of file
-	$this->assertEquals($zlib->file_get_list('test'),
-			    array(array('mime' => '',
-					'name' => 'css/test2.css',
-					'type' => 'css',
+	    // we check the list of file
+	    $this->assertEquals(array(array('mime' => 'text/plain',
+					                    'name' => 'css/test2.css',
+					                    'type' => 'css',
                                         'in_main_directory' => false),
-				  array('mime' => '',
-					'name' => 'test1.type',
-					'type' => 'type',
-                                        'in_main_directory' => true)));
+				                  array('mime' => 'text/plain',
+					                    'name' => 'test1.type',
+					                    'type' => 'type',
+                                        'in_main_directory' => true)),
+                            $zlib->file_get_list('test'));
 
-	// we modify the 2nd file
-	$this->assertTrue($zlib->file_modify(
-	    'test', 'user', 'projects/test/css/test2.css', 'type', 'test3', 'type'));
-	$this->assertFalse(
-	    file_exists($zlib->global_path . 'projects/test/css/test2.css'));
-	$this->assertTrue(
-	    file_exists($zlib->global_path . 'projects/test/type/test3.type'));
+	    // we modify the 2nd file
+	    $this->assertTrue($zlib->file_modify(
+	        'test', 'user', 'projects/test/css/test2.css', 'type', 'test3', 'type'));
+	    $this->assertFalse(
+	        file_exists($zlib->global_path . 'projects/test/css/test2.css'));
+	    $this->assertTrue(
+	        file_exists($zlib->global_path . 'projects/test/type/test3.type'));
 
 
-	// we check that we can delete the file
-	$this->assertTrue($zlib->file_delete('test', 'user', '/css/test2.css'));
-	$this->assertFalse(
-	    file_exists($zlib->global_path . 'projects/test/css/test2.css'));
+	    // we check that we can delete the file
+	    $this->assertTrue($zlib->file_delete('test', 'user', '/css/test2.css'));
+	    $this->assertFalse(
+	        file_exists($zlib->global_path . 'projects/test/css/test2.css'));
 
-	$this->assertTrue($zlib->file_delete('test', 'user', '/type/test3.type'));
-	$this->assertFalse(
-	    file_exists($zlib->global_path . 'projects/test/type/test3.type'));
+	    $this->assertTrue($zlib->file_delete('test', 'user', '/type/test3.type'));
+	    $this->assertFalse(
+	        file_exists($zlib->global_path . 'projects/test/type/test3.type'));
 
-	// we delete everything
-	$this->assertTrue($zlib->files_delete('test'));
+	    // we delete everything
+	    $this->assertTrue($zlib->files_delete('test'));
 
-	// we check that whole directory has disappeared
-	$this->assertFalse(
-	    file_exists($zlib->global_path . 'projects/test'));
+	    // we check that whole directory has disappeared
+	    $this->assertFalse(
+	        file_exists($zlib->global_path . 'projects/test'));
 
-	// we check the type of file
-	$this->assertEquals(
+	    // we check the type of file
+	    $this->assertEquals(
             'css', $zlib->file_get_type('css/test2.hey'));
 
         // we check 'file_get_detail'
@@ -832,7 +832,7 @@ class TestZeekLibraryCommon extends PHPUnit_Framework_TestCase
                   'in_main_directory' => true),
             $zlib->file_get_details('test2.hey'));
 
-	$zlib->environment_clean($this->db_name);
+	    $zlib->environment_clean($this->db_name);
     }
 
 

@@ -51,62 +51,62 @@ class Zeek extends ZeekOutput {
 
     private $type_complex = array(
         "TINYINT" => array(
-	    "type" => "number",
-	    "min"  => -128,
-	    "max"  => 127,
-	    "step" => 1),
+	        "type" => "number",
+	        "min"  => -128,
+	        "max"  => 127,
+	        "step" => 1),
         "TINYINT_U" => array(
-	    "type" => "number",
-	    "min"  => 0,
-	    "max"  => 255,
-	    "step" => 1),
+	        "type" => "number",
+	        "min"  => 0,
+	        "max"  => 255,
+	        "step" => 1),
         "SMALLINT" => array(
-	    "type" => "number",
-	    "min"  => -32768,
-	    "max"  => 32767,
-	    "step" => 1),
+	        "type" => "number",
+	        "min"  => -32768,
+	        "max"  => 32767,
+	        "step" => 1),
         "SMALLINT_U" => array(
-	    "type" => "number",
-	    "min"  => 0,
-	    "max"  => 65535,
-	    "step" => 1),
+	        "type" => "number",
+	        "min"  => 0,
+	        "max"  => 65535,
+	        "step" => 1),
         "MEDIUMINT" => array(
-	    "type" => "number",
-	    "min"  => -8388608,
-	    "max"  => 8388607,
-	    "step" => 1),
+	        "type" => "number",
+	        "min"  => -8388608,
+	        "max"  => 8388607,
+	        "step" => 1),
         "MEDIUMINT_U" => array(
-	    "type" => "number",
-	    "min"  => 0,
-	    "max"  => 16777215,
-	    "step" => 1),
+	        "type" => "number",
+	        "min"  => 0,
+	        "max"  => 16777215,
+	        "step" => 1),
         "INT" => array(
-	    "type" => "number",
-	    "min"  => -2147483648,
-	    "max"  => 2147483647,
-	    "step" => 1),
+	        "type" => "number",
+	        "min"  => -2147483648,
+	        "max"  => 2147483647,
+	        "step" => 1),
         "INT_U" => array(
-	    "type" => "number",
-	    "min"  => 0,
-	    "max"  => 4294967295,
-	    "step" => 1),
+	        "type" => "number",
+	        "min"  => 0,
+	        "max"  => 4294967295,
+	        "step" => 1),
         "BIGINT" => array(
-	    "type" => "number",
-	    "min"  => -9223372036854775808,
-	    "max"  => 9223372036854775807,
-	    "step" => 1),
+	        "type" => "number",
+	        "min"  => -9223372036854775808,
+	        "max"  => 9223372036854775807,
+	        "step" => 1),
         "BIGINT_U" => array(
-	    "type" => "number",
-	    "min"  => 0,
-	    "max"  => 18446744073709551615,
-	    "step" => 1),
+	        "type" => "number",
+	        "min"  => 0,
+	        "max"  => 18446744073709551615,
+	        "step" => 1),
 
         "DECIMAL" => array(
-	    "type" => "number",
-	    "step" => 1),
+	        "type" => "number",
+	        "step" => 1),
         "INTEGER" => array(
-	    "type" => "number",
-	    "step" => 1),
+	        "type" => "number",
+	        "step" => 1),
         "FLOAT"   => array("type" => "number"),
         "DOUBLE"  => array("type" => "number"),
         "REAL"    => array("type" => "number"),
@@ -116,49 +116,49 @@ class Zeek extends ZeekOutput {
         "DATETIME"  => array("type" => "datetime",
                              "placeholder" => "yyyy-mm-dd hh:mm::ss"),
         "YEAR"      => array(
-	    "type" => "number",
-	    "min"  => 0,
-	    "max"  => 9999,
-	    "step" => 1),
+	        "type" => "number",
+	        "min"  => 0,
+	        "max"  => 9999,
+	        "step" => 1),
 
-	"CHAR" => array(
-	    "type" => "text",
-	    "size" => 1),
+	    "CHAR" => array(
+	        "type" => "text",
+	        "size" => 1),
         "VARCHAR" => array(
-	    "type" => "text",
-	    "size" => 1),
+	        "type" => "text",
+	        "size" => 1),
         "TINYTEXT" => array(
-	    "type" => "text",
-	    "size" => 255),
+	        "type" => "text",
+	        "size" => 255),
         "TEXT" => array(
-	    "type" => "textarea",
-	    "size" => 65535),
+	        "type" => "textarea",
+	        "size" => 65535),
         "MEDIUMTEXT" => array(
-	    "type" => "textarea",
-	    "size" => 16777215),
+	        "type" => "textarea",
+	        "size" => 16777215),
         "LONGTEXT" => array(
-	    "type" => "textarea",
-	    "size" => 4294967295),
+	        "type" => "textarea",
+	        "size" => 4294967295),
         "TINYBLOB" => array(
-	    "type" => "text",
-	    "size" => 255),
+	        "type" => "text",
+	        "size" => 255),
         "BLOB" => array(
-	    "type" => "text",
-	    "size" => 65535),
+	        "type" => "text",
+	        "size" => 65535),
         "MEDIUMBLOB" => array(
-	    "type" => "text",
-	    "size" => 16777215),
+	        "type" => "text",
+	        "size" => 16777215),
         "LONGBLOB" => array(
-	    "type" => "text",
-	    "size" => 4294967295));
+	        "type" => "text",
+	        "size" => 4294967295));
 
 
-/**
- * Startup zeek file.
- *
- * @method start
- * @param string configuration file
- */
+    /**
+     * Startup zeek file.
+     *
+     * @method start
+     * @param string configuration file
+     */
     public function start($config_file)
     {
         $config = parse_ini_file($config_file);
@@ -173,13 +173,13 @@ class Zeek extends ZeekOutput {
         if (isset($config['global_path']))
         {
             $global_path = $config['global_path'];
-	}
+	    }
         else
         {
             $global_path = getcwd();
         }
 
-	$global_path .=  "/";
+	    $global_path .=  "/";
 
         // we search for the zeek library
         if (file_exists($global_path . "index.php") == false)
@@ -188,7 +188,7 @@ class Zeek extends ZeekOutput {
             return false;
         }
 
-	$this->global_path = $global_path;
+	    $this->global_path = $global_path;
 
         if (isset($config['piwik_url']))
             $this->piwik_url = $config['piwik_url'];
@@ -201,31 +201,31 @@ class Zeek extends ZeekOutput {
 
         $zeek_lib_src = $global_path . "lib/zeek_library.php";
 
-	// we create de zeek_library object
-	require_once $zeek_lib_src;
+	    // we create de zeek_library object
+	    require_once $zeek_lib_src;
 
-	$zlib = new ZeekLibrary();
-	$zlib->global_path = $global_path;
-	$zlib->config($config);
+	    $zlib = new ZeekLibrary();
+	    $zlib->global_path = $global_path;
+	    $zlib->config($config);
 
-	// we establish the connection with the database
-	if ($zlib->connect_to_database() == false)
+	    // we establish the connection with the database
+	    if ($zlib->connect_to_database() == false)
             return false;
 
-	$this->zlib = $zlib;
+	    $this->zlib = $zlib;
 
         // we initialize the plugins
         $this->plugins_init();
 
-	return true;
+	    return true;
     }
 
-/**
- * Received all the commands from client side.
- *
- * @method input
- * @param string command => project_id
- */
+    /**
+     * Received all the commands from client side.
+     *
+     * @method input
+     * @param string command => project_id
+     */
     public function input($params)
     {
         // we check if the params is defined
@@ -248,69 +248,69 @@ class Zeek extends ZeekOutput {
         if (isset($params['params']))
             parse_str($params['params']);
 
-	// we handle the connection method 1st
+	    // we handle the connection method 1st
         if ($method == 'connect')
-           return $this->connect($project_name, $login, $password);
+            return $this->connect($project_name, $login, $password);
 
-	// otherwise we check if the connection is ok
+	    // otherwise we check if the connection is ok
         if ($_SESSION["login"] == false)
-	{
-	    $this->error("unexpected login error!");
+	    {
+	        $this->error("unexpected login error!");
             return false;
-	}
+	    }
 
-	// we create the project
-	if ($method == 'project_create')
-	    return $this->project_create($params['project_name']);
+	    // we create the project
+	    if ($method == 'project_create')
+	        return $this->project_create($params['project_name']);
 
-	// all other commands need that the project name & id need to be used
+	    // all other commands need that the project name & id need to be used
         $project_name = $_SESSION["project_name"];
         $project_id   = $_SESSION["project_id"];
         $user = $_SESSION["login"];
 
         if (!(isset($project_name) && isset($project_id)))
-	{
-	    $this->error("unexpected project error!");
+	    {
+	        $this->error("unexpected project error!");
             return false;
-	}
+	    }
 
         // we store project name and id
-	$this->project_name = $project_name;
+	    $this->project_name = $project_name;
         $this->project_id   = $project_id;
 
         switch ($method)
-	{
+	    {
             case 'disconnect':
-		$this->disconnect();
-		$this->success("disconnect now!");
-		return true;
+		    $this->disconnect();
+		    $this->success("disconnect now!");
+		    return true;
 
             case 'users_get_list':
-	       return $this->users_get_list($project_id);
+	        return $this->users_get_list($project_id);
 
             case 'user_change_password':
-		return $this->user_change_password(
-		    $project_id, $user, $password_old, $password_new);
+		    return $this->user_change_password(
+		        $project_id, $user, $password_old, $password_new);
 
             case 'content_add_directory':
-		return $this->content_add_directory(
-                    $params["directory"], $params["options"]);
+		    return $this->content_add_directory(
+                $params["directory"], $params["options"]);
 
             case 'content_remove_directory':
 	        return $this->content_remove_directory(
-                    $params["directory"]);
+                $params["directory"]);
 
             case 'content_add':
-		return $this->content_add(
-                    $params["directory"], $params["files"]);
+		    return $this->content_add(
+                $params["directory"], $params["files"]);
 
-           case 'content_rename':
-		return $this->content_rename(
-                    $params["src"], $params["value"]);
+            case 'content_rename':
+		    return $this->content_rename(
+                $params["src"], $params["value"]);
 
             case 'content_delete':
-		return $this->content_delete(
-                    $params["directory"], $params["name"]);
+		    return $this->content_delete(
+                $params["directory"], $params["name"]);
 
             case 'contents_get_list':
 	        return $this->contents_get_list($project_id);
@@ -319,101 +319,101 @@ class Zeek extends ZeekOutput {
 	        return $this->contents_get_type_list($project_id);
 
             case 'contents_set_type':
-                return $this->contents_set_type(
-                    $params["name"], $params["directory"], $params["mime"],
-                    $params["options"]);
+            return $this->contents_set_type(
+                $params["name"], $params["directory"], $params["mime"],
+                $params["options"]);
 
             case 'contents_modify_type':
-                return $this->contents_modify_type(
-                    $params["name"], $params["options"]);
+            return $this->contents_modify_type(
+                $params["name"], $params["options"]);
 
-	    case 'file_create':
+	        case 'file_create':
 	        return $this->file_create(
-		    strtolower($params["type"]),
-		    strtolower($params["name"]),
-		    strtolower($params["extension"]),
-		    $params["in_main_directory"] === "true",
-		    $params["upload"] ? "files/" . $params["upload"] : null);
+		        strtolower($params["type"]),
+		        strtolower($params["name"]),
+		        strtolower($params["extension"]),
+		        $params["in_main_directory"] === "true",
+		        $params["upload"] ? "files/" . $params["upload"] : null);
 
-	    case 'file_modify':
+	        case 'file_modify':
 	        return $this->file_create(
-		    strtolower($params["type"]),
-		    strtolower($params["name"]),
-		    strtolower($params["extension"]),
- 		    $params["in_main_directory"] === "true",
-		    "projects/" . $project_id . "/" . $params["src"]);
+		        strtolower($params["type"]),
+		        strtolower($params["name"]),
+		        strtolower($params["extension"]),
+ 		        $params["in_main_directory"] === "true",
+		        "projects/" . $project_id . "/" . $params["src"]);
 
-	    case 'file_delete':
+	        case 'file_delete':
 	        return $this->file_delete(strtolower($params['name']));
 
-	    case 'file_get_list':
+	        case 'file_get_list':
 	        return $this->file_get_list();
 
-	    case 'file_get_type_list':
+	        case 'file_get_type_list':
 	        return $this->file_get_type_list(true);
 
-	    case 'file_get':
+	        case 'file_get':
 	        return $this->file_get($user, $params['name']);
 
-	    case 'file_set':
+	        case 'file_set':
 	        return $this->file_set($user,
-		                       strtolower($params['name']),
-		                       $params['data']);
+		                           strtolower($params['name']),
+		                           $params['data']);
 
-	    case 'test':
+	        case 'test':
 	        return $this->test($params['options']);
 
-	    case 'deploy':
+	        case 'deploy':
 	        return $this->deploy($params['dst'],
-                                     $params['options']);
+                                 $params['options']);
 
             case 'option_get_plugins':
-                return $this->option_get_plugins();
+            return $this->option_get_plugins();
 
             case 'option_set_plugins':
-                return $this->option_set_plugins($params['options']);
+            return $this->option_set_plugins($params['options']);
 
             case 'option_get_editor':
-                return $this->option_get("editor");
+            return $this->option_get("editor");
 
             case 'option_get':
-                return $this->option_get(
-                    strtolower($params['name']));
+            return $this->option_get(
+                strtolower($params['name']));
 
             case 'option_set':
-                return $this->option_set(
-                    strtolower($params['name']),
-                    $params['options']);
+            return $this->option_set(
+                strtolower($params['name']),
+                $params['options']);
 
             case 'option_set_user':
-		return $this->user_set_tests(
-		    $project_id, $user, $params["options"]);
+		    return $this->user_set_tests(
+		        $project_id, $user, $params["options"]);
 
             case 'structure_get':
-		return $this->structure_get();
+		    return $this->structure_get();
 
             case 'structure_get_list':
 	        return $this->structure_get_list(
-                    $params['expert_mode']  === "true");
+                $params['expert_mode']  === "true");
 
             case 'data_get':
-		return $this->data_get(
-		    strtolower($params['name']),
-		    strtolower($params['offset']),
-		    strtolower($params['size']));
+		    return $this->data_get(
+		        strtolower($params['name']),
+		        strtolower($params['offset']),
+		        strtolower($params['size']));
 
             case 'data_set':
-		return $this->data_set(strtolower($params['type']),
-				       $params['values']);
+		    return $this->data_set(strtolower($params['type']),
+				                   $params['values']);
 
             case 'data_update':
-		return $this->data_update(strtolower($params['name']),
-					  strtolower($params['id']),
-					  $params['values']);
+		    return $this->data_update(strtolower($params['name']),
+					                  strtolower($params['id']),
+					                  $params['values']);
 
             case 'data_delete':
-		return $this->data_delete(strtolower($params['name']),
-					  strtolower($params['id']));
+		    return $this->data_delete(strtolower($params['name']),
+					                  strtolower($params['id']));
 
         }
 
@@ -421,28 +421,28 @@ class Zeek extends ZeekOutput {
             return false;
 
         switch ($method)
-	{
+	    {
             case 'project_delete':
-		return $this->project_delete($project_name);
+		    return $this->project_delete($project_name);
 
             case 'project_set_name':
-                return $this->project_set_name($params["value"]);
+            return $this->project_set_name($params["value"]);
 
             case 'project_set_url':
-                return $this->project_set_url($params["value"]);
+            return $this->project_set_url($params["value"]);
 
             case 'project_set_dst':
-                return $this->project_set_destination($params["value"]);
+            return $this->project_set_destination($params["value"]);
 
             case 'piwik_download':
-                return $this->project_download_piwik();
+            return $this->project_download_piwik();
 
             case 'piwik_set_token':
-                return $this->project_set_piwik_token($params["value"]);
+            return $this->project_set_piwik_token($params["value"]);
 
             case 'user_add':
 	        return $this->user_add(
-                    $project_id, $project_name, $email, $is_admin_user);
+                $project_id, $project_name, $email, $is_admin_user);
 
             case 'user_delete':
 	        return $this->user_delete($project_id, $params["email"]);
@@ -454,10 +454,10 @@ class Zeek extends ZeekOutput {
 	        return $this->structure_set($params['structure']);
 
             case 'data_clean_all':
-		return $this->data_clean_all();
+		    return $this->data_clean_all();
 
             case 'contents_unset_type':
-                return $this->contents_unset_type($params["name"]);
+            return $this->contents_unset_type($params["name"]);
         }
 
         $this->error(
@@ -467,15 +467,15 @@ class Zeek extends ZeekOutput {
     }
 
 
-/**
- * Establish connection with database.
- * Create project name if login and password are valid
- *
- * @method connect
- * @param string project name to create
- * @param string login
- * @param string password to check login
- */
+    /**
+     * Establish connection with database.
+     * Create project name if login and password are valid
+     *
+     * @method connect
+     * @param string project name to create
+     * @param string login
+     * @param string password to check login
+     */
     public function connect($project_name, $login, $password)
     {
         $zlib = $this->zlib;
@@ -487,8 +487,8 @@ class Zeek extends ZeekOutput {
         // we check the validity of the login & password
         if ($this->check_string_and_size($project_name, 25)
             and $this->check_string_and_size($login, 25)
-	    and $this->check_string_and_size($password, 32)
-	    and $zlib->user_check($project_id, $login, $password))
+	            and $this->check_string_and_size($password, 32)
+	                and $zlib->user_check($project_id, $login, $password))
         {
             // if the project path is used, we accept only project name
             // already defined in this project path
@@ -545,11 +545,11 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Disconnect session and unset all data.
- *
- * @method disconnect
- */
+    /**
+     * Disconnect session and unset all data.
+     *
+     * @method disconnect
+     */
     public function disconnect()
     {
         // we destroy the session here
@@ -559,19 +559,19 @@ class Zeek extends ZeekOutput {
         session_unset();
     }
 
-/**
- * Create new project.
- *
- * @method project_create
- * @param string project name to create
- * @param string project destination
- * @param array options associated to the the project
- */
+    /**
+     * Create new project.
+     *
+     * @method project_create
+     * @param string project name to create
+     * @param string project destination
+     * @param array options associated to the the project
+     */
     public function project_create($project_name, $project_dst=null, $options=null)
     {
         $zlib = $this->zlib;
 
-	// we check the session id
+	    // we check the session id
         if ($this->check_string_and_size($project_name, 25))
         {
             // we check if the project_name does not exist
@@ -603,21 +603,21 @@ class Zeek extends ZeekOutput {
                         'plugins' => $plugins);
                 }
 
-		// we create the project
-		if ($zlib->project_add($project_name, $project_dst, $options) == false)
-		    return false;
+		        // we create the project
+		        if ($zlib->project_add($project_name, $project_dst, $options) == false)
+		            return false;
 
-		// we store it
-		$_SESSION["project_name"] = $project_name;
+		        // we store it
+		        $_SESSION["project_name"] = $project_name;
 
-		$project_id = $zlib->project_get_id($project_name);
-		if ($project_id == false)
-		{
-		    $this->error('Impossible to get project id!');
-		    return false;
-		}
+		        $project_id = $zlib->project_get_id($project_name);
+		        if ($project_id == false)
+		        {
+		            $this->error('Impossible to get project id!');
+		            return false;
+		        }
 
-		$_SESSION["project_id"] = $zlib->project_get_id($project_name);
+		        $_SESSION["project_id"] = $zlib->project_get_id($project_name);
                 $_SESSION["has_project_path"] = isset($projects_path);
                 $_SESSION["project_url"] = $zlib->project_get_attribute(
                     $project_id, "url");
@@ -625,31 +625,31 @@ class Zeek extends ZeekOutput {
                     $project_id, "destination");
                 $_SESSION["global_path"]  = $this->global_path;
 
-		$this->project_name = $project_name;
-		$this->project_id   = $project_id;
+		        $this->project_name = $project_name;
+		        $this->project_id   = $project_id;
 
-		// we redirect to the home
-		$this->redirect('home.php');
-		return true;
+		        // we redirect to the home
+		        $this->redirect('home.php');
+		        return true;
             }
             else
             {
-		$this->error('Project already existing!');
-		return false;
+		        $this->error('Project already existing!');
+		        return false;
             }
         }
 
         $this->error("Project name '" . $project_name
-		    . "'  too long or unsupported, change the name!");
+		           . "'  too long or unsupported, change the name!");
         return false;
     }
 
-/**
- * Remove current project.
- *
- * @method project_delete
- * @param string project name to delete
- */
+    /**
+     * Remove current project.
+     *
+     * @method project_delete
+     * @param string project name to delete
+     */
     public function project_delete($project_name)
     {
         if ($this->zlib->project_delete($project_name)) {
@@ -665,12 +665,12 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Set the name of a project.
- *
- * @method project_set_name
- * @param string new name of the projet
- */
+    /**
+     * Set the name of a project.
+     *
+     * @method project_set_name
+     * @param string new name of the projet
+     */
     public function project_set_name($value)
     {
 
@@ -683,12 +683,12 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Set the url of a project.
- *
- * @method project_set_url
- * @param string new url of the projet
- */
+    /**
+     * Set the url of a project.
+     *
+     * @method project_set_url
+     * @param string new url of the projet
+     */
     public function project_set_url($value)
     {
         if (strpos($value, "www.") == 0)
@@ -704,12 +704,12 @@ class Zeek extends ZeekOutput {
     }
 
 
-/**
- * Set the destination of a project.
- *
- * @method project_set_destination
- * @param string new destination of the projet
- */
+    /**
+     * Set the destination of a project.
+     *
+     * @method project_set_destination
+     * @param string new destination of the projet
+     */
     public function project_set_destination($value)
     {
 
@@ -722,11 +722,11 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Download & unzip the piwik project
- *
- * @method project_download_piwik
- */
+    /**
+     * Download & unzip the piwik project
+     *
+     * @method project_download_piwik
+     */
     public function project_download_piwik()
     {
         // Set the default piwik url
@@ -745,12 +745,12 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Set the piwik_token of a project.
- *
- * @method project_set_piwik_token
- * @param string new piwik token
- */
+    /**
+     * Set the piwik_token of a project.
+     *
+     * @method project_set_piwik_token
+     * @param string new piwik token
+     */
     public function project_set_piwik_token($value)
     {
         if ($this->project_set_attribute($this->project_id, "piwik_token", $value))
@@ -762,14 +762,14 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Set the value of an attribute from the specified project.
- *
- * @method project_set_attribute
- * @param int project id
- * @param string attribute name
- * @param string value to write
- */
+    /**
+     * Set the value of an attribute from the specified project.
+     *
+     * @method project_set_attribute
+     * @param int project id
+     * @param string attribute name
+     * @param string value to write
+     */
     public function project_set_attribute($project_id, $name, $value)
     {
         if ($this->zlib->project_set_attribute($project_id, $name, $value))
@@ -781,14 +781,14 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Authorised new user to connect with this project.
- *
- * @method user_add
- * @param integer id of the current project
- * @param email email to send new password to user
- * @param boolean true if master user
- */
+    /**
+     * Authorised new user to connect with this project.
+     *
+     * @method user_add
+     * @param integer id of the current project
+     * @param email email to send new password to user
+     * @param boolean true if master user
+     */
     public function user_add($project_id, $project_name, $email, $is_admin_user)
     {
         // we check if the email is set
@@ -847,8 +847,8 @@ class Zeek extends ZeekOutput {
             "Access to Zeek '$project_name'",
             "Welcome to Zeek '$project_name':\n\n"
             . " - login: $email\n"
-            . " - password : $password\n"
-            . " - project_name : $project_name\n"))
+          . " - password : $password\n"
+          . " - project_name : $project_name\n"))
         {
 
             if ($zlib->user_add($project_id, $email, $password, $is_admin_user))
@@ -864,13 +864,13 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Don't authorized user to connect with this project.
- *
- * @method user_delete
- * @param integer id of the current project
- * @param email email of user to remove
- */
+    /**
+     * Don't authorized user to connect with this project.
+     *
+     * @method user_delete
+     * @param integer id of the current project
+     * @param email email of user to remove
+     */
     public function user_delete($project_id, $email)
     {
         /* we check if the email is set */
@@ -889,11 +889,11 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Return true and display an error if it isn't a master user.
- *
- * @method user_master_only
- */
+    /**
+     * Return true and display an error if it isn't a master user.
+     *
+     * @method user_master_only
+     */
     public function user_master_only()
     {
         if ($_SESSION["is_admin_user"])
@@ -903,29 +903,29 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Return the list of users associated to the current project.
- *
- * @method users_get_list
- * @param integer id of the current project
- */
+    /**
+     * Return the list of users associated to the current project.
+     *
+     * @method users_get_list
+     * @param integer id of the current project
+     */
     public function users_get_list($project_id)
     {
         $this->output_json(
             array('users' => $this->zlib->users_get_list($project_id)));
 
-	return true;
+	    return true;
     }
 
-/**
- * Change password of the user.
- *
- * @method user_change_password
- * @param integer id of the current project
- * @param login of user to change password
- * @param string old password
- * @param string new password
- */
+    /**
+     * Change password of the user.
+     *
+     * @method user_change_password
+     * @param integer id of the current project
+     * @param login of user to change password
+     * @param string old password
+     * @param string new password
+     */
     public function user_change_password(
         $project_id, $login, $password_old, $password_new)
     {
@@ -946,14 +946,14 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Activate/Deactivate test options for the user.
- *
- * @method user_set_tests
- * @param integer id of the current project
- * @param login of user to change password
- * @param json list of options
- */
+    /**
+     * Activate/Deactivate test options for the user.
+     *
+     * @method user_set_tests
+     * @param integer id of the current project
+     * @param login of user to change password
+     * @param json list of options
+     */
     public function user_set_tests($project_id, $login, $options)
     {
         // we check if the plugins are valid
@@ -979,11 +979,11 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Return output test options choosen by the user.
- *
- * @method user_get_tests
- */
+    /**
+     * Return output test options choosen by the user.
+     *
+     * @method user_get_tests
+     */
     public function user_get_tests($project_id, $user)
     {
         $tests = $this->user_get_test_options($project_id, $user);
@@ -998,11 +998,11 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Get test options choosen by the user.
- *
- * @method user_get_test_options
- */
+    /**
+     * Get test options choosen by the user.
+     *
+     * @method user_get_test_options
+     */
     private function user_get_test_options($project_id=null, $user=null)
     {
         if ($project_id == null)
@@ -1019,7 +1019,7 @@ class Zeek extends ZeekOutput {
 
         if ($options
             && is_array($options)
-            && array_key_exists('test', $options))
+                && array_key_exists('test', $options))
         {
             return $options['test'];
         }
@@ -1028,17 +1028,17 @@ class Zeek extends ZeekOutput {
         return $this->zlib->project_get_plugins($project_id);
     }
 
-/**
- * Generate random password.
- *
- * @method password_generate
- * @param integer size of the password
- */
+    /**
+     * Generate random password.
+     *
+     * @method password_generate
+     * @param integer size of the password
+     */
     public function password_generate($size)
     {
         $alphabet = "abcdefghijklmnopqrstuvwxyz"
-            . "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            . "1234567890";
+                  . "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                  . "1234567890";
         $alphabet_size = strlen($alphabet) - 1;
 
         $result = array();
@@ -1049,24 +1049,24 @@ class Zeek extends ZeekOutput {
         return implode($result);
     }
 
-/**
- * Send email.
- *
- * @method send_email
- * @param string email adress
- * @param string title of the email
- * @param string body of the email
- */
+    /**
+     * Send email.
+     *
+     * @method send_email
+     * @param string email adress
+     * @param string title of the email
+     * @param string body of the email
+     */
     public function send_email($destination, $title, $message)
     {
         return mail($destination, $title, $message);
     }
 
-/**
- * Get content type list from database
- *
- * @method refresh_content_type_list
- */
+    /**
+     * Get content type list from database
+     *
+     * @method refresh_content_type_list
+     */
     private function refresh_content_type_list()
     {
         if ($this->content_type_list != null)
@@ -1075,7 +1075,7 @@ class Zeek extends ZeekOutput {
         $options = $this->zlib->option_get($this->project_id);
 
         if (is_array($options) == false
-            || array_key_exists('content_types', $options) == false)
+                               || array_key_exists('content_types', $options) == false)
         {
             $this->error("Impossible to get list of current content types!");
             return false;
@@ -1085,11 +1085,11 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Return the list of actual content
- *
- * @method contents_get_type_list
- */
+    /**
+     * Return the list of actual content
+     *
+     * @method contents_get_type_list
+     */
     public function contents_get_type_list()
     {
         if ($this->refresh_content_type_list() == false)
@@ -1101,11 +1101,11 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Return true if the directory is present or return false
- *
- * @method content_has_directory
- */
+    /**
+     * Return true if the directory is present or return false
+     *
+     * @method content_has_directory
+     */
     private function content_has_directory($directory_name)
     {
         foreach ($this->content_type_list as $type_name => $array)
@@ -1119,15 +1119,15 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Return true if the content is correctly added, otherwise return false.
- *
- * @method contents_set_type
- * @param string name of the content type
- * @param string name of the main directory
- * @param string mime filter
- * @param string options added (color)
- */
+    /**
+     * Return true if the content is correctly added, otherwise return false.
+     *
+     * @method contents_set_type
+     * @param string name of the content type
+     * @param string name of the main directory
+     * @param string mime filter
+     * @param string options added (color)
+     */
     public function contents_set_type($name, $directory_name, $mime, $options=NULL)
     {
         if ($this->refresh_content_type_list() == false)
@@ -1152,7 +1152,7 @@ class Zeek extends ZeekOutput {
         if ($this->mime_validator == null)
         {
             // we create de zeek_mime object
-	    require_once $this->global_path . "lib/mime.php";
+	        require_once $this->global_path . "lib/mime.php";
 
             $this->mime_validator = new ZeekMime();
         }
@@ -1187,13 +1187,13 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Return true if the content is correctly modified, otherwise return false.
- *
- * @method contents_set_type
- * @param string name of the content type
- * @param string options added (color)
- */
+    /**
+     * Return true if the content is correctly modified, otherwise return false.
+     *
+     * @method contents_set_type
+     * @param string name of the content type
+     * @param string options added (color)
+     */
     public function contents_modify_type($name, $options)
     {
         if ($this->refresh_content_type_list() == false)
@@ -1230,12 +1230,12 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Return true if the content is correctly deleted, otherwise return false.
- *
- * @method contents_unset_type
- * @param string name of the content type
- */
+    /**
+     * Return true if the content is correctly deleted, otherwise return false.
+     *
+     * @method contents_unset_type
+     * @param string name of the content type
+     */
     public function contents_unset_type($name)
     {
         if ($this->refresh_content_type_list() == false)
@@ -1263,11 +1263,11 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Get content directory list from database
- *
- * @method refresh_content_directory_list
- */
+    /**
+     * Get content directory list from database
+     *
+     * @method refresh_content_directory_list
+     */
     private function refresh_content_directory_list()
     {
         if ($this->content_directory_list != null)
@@ -1293,19 +1293,19 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Add new content directory, return true if directory correctly added,
- * false otherwise.
- *
- * @method content_add_directory
- * @param string directory name
- * @param string json options associated to the directory
- */
+    /**
+     * Add new content directory, return true if directory correctly added,
+     * false otherwise.
+     *
+     * @method content_add_directory
+     * @param string directory name
+     * @param string json options associated to the directory
+     */
     public function content_add_directory($directory_name, $options)
     {
         if ($this->refresh_content_type_list() == false
-            || $this->refresh_content_directory_list() == false)
-            return false;
+                                               || $this->refresh_content_directory_list() == false)
+                                                   return false;
 
         // Check if the directory doesn't already exists
         if (array_key_exists($directory_name, $this->content_directory_list))
@@ -1334,7 +1334,7 @@ class Zeek extends ZeekOutput {
 
         // Update database content directories
         $this->content_directory_list[$directory_name] =
-            $this->json_decode($options);
+        $this->json_decode($options);
 
         if ($this->zlib->option_set($this->project_id, "content_directories",
                                     $this->content_directory_list) == false)
@@ -1348,12 +1348,12 @@ class Zeek extends ZeekOutput {
     }
 
 
-/**
- * Remove the content directory
- *
- * @method content_remove_directory
- * @param string directory name
- */
+    /**
+     * Remove the content directory
+     *
+     * @method content_remove_directory
+     * @param string directory name
+     */
     public function content_remove_directory($directory_name)
     {
         if ($this->content_valid_directory($directory_name) == false)
@@ -1382,12 +1382,12 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Valid the content directory
- *
- * @method content_valid_directory
- * @param string directory name
- */
+    /**
+     * Valid the content directory
+     *
+     * @method content_valid_directory
+     * @param string directory name
+     */
     private function content_valid_directory($directory_name)
     {
         if ($this->refresh_content_directory_list() == false)
@@ -1404,13 +1404,13 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Add new image to the current project or rewrite existing one
- *
- * @method content_add
- * @param string directory name
- * @param string file inputs
- */
+    /**
+     * Add new image to the current project or rewrite existing one
+     *
+     * @method content_add
+     * @param string directory name
+     * @param string file inputs
+     */
     public function content_add($directory_name, $inputs)
     {
         if ($this->content_valid_directory($directory_name) == false)
@@ -1446,8 +1446,8 @@ class Zeek extends ZeekOutput {
                 $name = substr($name, 0, strpos($name, '.'));
 
             // Move source file to destination file
-	    if ($zlib->file_modify(
-	        $this->project_id, $_SESSION["login"], $uploaded,
+	        if ($zlib->file_modify(
+	            $this->project_id, $_SESSION["login"], $uploaded,
                 $directory_name, $name, $extension) == false)
             {
 
@@ -1475,18 +1475,18 @@ class Zeek extends ZeekOutput {
             }
         }
 
-	$this->success("Content(s) stored in " . "'$directory_name'!");
+	    $this->success("Content(s) stored in " . "'$directory_name'!");
 
         $this->zlib->uploaded_files_delete();
         return $result;
     }
 
-/**
- * Check if image exists
- *
- * @method content_check
- * @param string src filepath
- */
+    /**
+     * Check if image exists
+     *
+     * @method content_check
+     * @param string src filepath
+     */
     public function content_check($src)
     {
         if (file_exists($this->global_path
@@ -1500,13 +1500,13 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Rename existing content
- *
- * @method content_rename
- * @param string actual source file
- * @param string new name
- */
+    /**
+     * Rename existing content
+     *
+     * @method content_rename
+     * @param string actual source file
+     * @param string new name
+     */
     public function content_rename($actual_src, $new_name)
     {
         $directory_name = $this->zlib->file_get_type($actual_src);
@@ -1536,22 +1536,22 @@ class Zeek extends ZeekOutput {
         if ($this->zlib->file_move(
             "$project_dst/$actual_src",
             "$project_dst/$directory_name/$new_name") == false
-          || $this->test_move_file("$actual_src",
-                                   "$directory_name/$new_name") == false)
-              return false;
+                                                      || $this->test_move_file("$actual_src",
+                                                                               "$directory_name/$new_name") == false)
+                                                                                   return false;
 
         $this->success("Content '$directory_name/$new_name' successfully renamed!");
 
         return true;
     }
 
-/**
- * Delete existing image
- *
- * @method content_delete
- * @param string directory name
- * @param string file name
- */
+    /**
+     * Delete existing image
+     *
+     * @method content_delete
+     * @param string directory name
+     * @param string file name
+     */
     public function content_delete($directory_name, $name)
     {
         if ($this->content_valid_directory($directory_name) == false)
@@ -1559,20 +1559,20 @@ class Zeek extends ZeekOutput {
 
         if ($this->zlib->file_delete($this->project_id, $_SESSION["login"],
                                      $directory_name . "/" . $name) == false
-         || $this->test_delete_file("$directory_name/$name") == false)
-                return false;
+                                                                    || $this->test_delete_file("$directory_name/$name") == false)
+                                                                        return false;
 
-	$this->success(
-	    "content '$directory_name/$name' correctly removed!");
+	    $this->success(
+	        "content '$directory_name/$name' correctly removed!");
 
         return true;
     }
 
-/**
- * Give the complete list of contents
- *
- * @method contents_get_list
- */
+    /**
+     * Give the complete list of contents
+     *
+     * @method contents_get_list
+     */
     public function contents_get_list()
     {
         if ($this->refresh_content_directory_list() == false)
@@ -1588,98 +1588,98 @@ class Zeek extends ZeekOutput {
             $get_list[$name]["infos"] = $options;
         }
 
-	if (count($get_list) > 0)
-	{
-	    $this->output_json(array('get_list' => $get_list));
-	    return true;
-	}
-
-        $this->error("No contents found!");
-	return false;
-    }
-
-/**
- * Initialise the files associated to the project.
- *
- * @method file_init
- */
-    public function file_init()
-    {
-	$zlib = $this->zlib;
-	$project_id = $this->project_id;
-	$user = $_SESSION["login"];
-
-	// the index.html file of the user already exist :
-	// we do nothing
-	if (file_exists($zlib->file_get_path($project_id, 'html', 'index', true)))
-	    return true;
-
-	// otherwise we create a generic index.html & css directory
-	if ($zlib->file_create($project_id, $user, 'html', 'index', 'html', true))
- 	{
-	    return $this->file_get_list();
-	}
-
-	return false;
-    }
-
-
-/**
- * Create the file specified
- *
- * @method file_create()
- * @param string type of file
- * @param string filename
- * @param string extension
- * @param boolean is_in_main_directory
- * @param string uploaded (optional)
- */
-    public function file_create($type, $name, $extension,
-				$in_main_directory, $uploaded = null)
-    {
-	$zlib = $this->zlib;
-
-	// we check that the file type is valid
-	if ($this->type_list == null)
-	    $this->file_get_type_list();
-
-	if (in_array($type, $this->type_list) == false)
-	{
-	    $this->clean_upload_on_error("The file type '$type' is invalid!");
-            return false;
-	}
-
-	// case 1 : move the uploaded file in the correct destination
-	if ($uploaded)
-	{
-            $result = false;
-
-	    if ($zlib->file_modify(
-		$this->project_id, $_SESSION["login"], $uploaded, $type, $name,
-		$extension, $in_main_directory))
+	    if (count($get_list) > 0)
 	    {
-		$this->success(
-		    "file '$uploaded' stored as "
-		  . "'$name.$extension' with type '$type' created!");
-
-	        $result = true;
+	        $this->output_json(array('get_list' => $get_list));
+	        return true;
 	    }
 
+        $this->error("No contents found!");
+	    return false;
+    }
+
+    /**
+     * Initialise the files associated to the project.
+     *
+     * @method file_init
+     */
+    public function file_init()
+    {
+	    $zlib = $this->zlib;
+	    $project_id = $this->project_id;
+	    $user = $_SESSION["login"];
+
+	    // the index.html file of the user already exist :
+	    // we do nothing
+	    if (file_exists($zlib->file_get_path($project_id, 'html', 'index', true)))
+	        return true;
+
+	    // otherwise we create a generic index.html & css directory
+	    if ($zlib->file_create($project_id, $user, 'html', 'index', 'html', true))
+ 	    {
+	        return $this->file_get_list();
+	    }
+
+	    return false;
+    }
+
+
+    /**
+     * Create the file specified
+     *
+     * @method file_create()
+     * @param string type of file
+     * @param string filename
+     * @param string extension
+     * @param boolean is_in_main_directory
+     * @param string uploaded (optional)
+     */
+    public function file_create($type, $name, $extension,
+				                $in_main_directory, $uploaded = null)
+    {
+	    $zlib = $this->zlib;
+
+	    // we check that the file type is valid
+	    if ($this->type_list == null)
+	        $this->file_get_type_list();
+
+	    if (in_array($type, $this->type_list) == false)
+	    {
+	        $this->clean_upload_on_error("The file type '$type' is invalid!");
+            return false;
+	    }
+
+	    // case 1 : move the uploaded file in the correct destination
+	    if ($uploaded)
+	    {
+            $result = false;
+
+	        if ($zlib->file_modify(
+		        $this->project_id, $_SESSION["login"], $uploaded, $type, $name,
+		        $extension, $in_main_directory))
+	        {
+		        $this->success(
+		            "file '$uploaded' stored as "
+		          . "'$name.$extension' with type '$type' created!");
+
+	            $result = true;
+	        }
+
             $this->zlib->uploaded_files_delete();
-	    return $result;
-	}
+	        return $result;
+	    }
 
-	// case 2 : create a new empty file
-	if ($zlib->file_create(
-	    $this->project_id, $_SESSION["login"], $type, $name,
-	    $extension, $in_main_directory))
-	{
-	    $this->success(
-		"file '$name.$extension' with type '$type' created!");
-	    return true;
-	}
+	    // case 2 : create a new empty file
+	    if ($zlib->file_create(
+	        $this->project_id, $_SESSION["login"], $type, $name,
+	        $extension, $in_main_directory))
+	    {
+	        $this->success(
+		        "file '$name.$extension' with type '$type' created!");
+	        return true;
+	    }
 
-	return false;
+	    return false;
     }
 
     private function clean_upload_on_error($msg)
@@ -1689,28 +1689,28 @@ class Zeek extends ZeekOutput {
     }
 
 
-/**
- * Delete the file specified
- *
- * @method file_delete()
- * @param string file path
- */
+    /**
+     * Delete the file specified
+     *
+     * @method file_delete()
+     * @param string file path
+     */
     public function file_delete($name)
     {
-	if ($this->zlib->file_delete(
-	    $this->project_id, $_SESSION["login"], $name) == false
-         || $this->test_delete_file("$name") == false)
-	     return false;
+	    if ($this->zlib->file_delete(
+	        $this->project_id, $_SESSION["login"], $name) == false
+                                                          || $this->test_delete_file("$name") == false)
+	                                                          return false;
 
-	$this->success("The file '$name' successfully deleted!");
-	return true;
+	    $this->success("The file '$name' successfully deleted!");
+	    return true;
     }
 
-/**
- * Return the list of current files in "Project" directory
- *
- * @method files_get_list()
- */
+    /**
+     * Return the list of current files in "Project" directory
+     *
+     * @method files_get_list()
+     */
     public function file_get_list()
     {
         if ($this->refresh_content_type_list() == false)
@@ -1723,31 +1723,31 @@ class Zeek extends ZeekOutput {
             array_push($filter_directories, $array[0]);
         }
 
-	$get_list = $this->zlib->file_get_list(
+	    $get_list = $this->zlib->file_get_list(
             $this->project_id, $filter_directories);
 
-	if (is_array($get_list))
-	{
-	    if (count($get_list) > 0)
+	    if (is_array($get_list))
 	    {
-		$this->output_json(array('get_list' => $get_list));
-		return true;
+	        if (count($get_list) > 0)
+	        {
+		        $this->output_json(array('get_list' => $get_list));
+		        return true;
+	        }
+
+	        return $this->file_init();
 	    }
 
-	    return $this->file_init();
-	}
-
         $this->error("No files found!");
-	return false;
+	    return false;
     }
 
-/**
- * Return the list of type of files
- *
- * @method files_get_type_list()
- *
- * @params boolean json_output
- */
+    /**
+     * Return the list of type of files
+     *
+     * @method files_get_type_list()
+     *
+     * @params boolean json_output
+     */
     public function file_get_type_list($is_json_output = false)
     {
 	    $type_list = $this->zlib->file_get_type_list();
@@ -1778,19 +1778,19 @@ class Zeek extends ZeekOutput {
 
 
 
-/**
- * Return the content of the specified file.
- *
- * @method file_get
- * @param string user
- * @param string type
- * @param string name
- * @param boolean is_main_directory
- */
+    /**
+     * Return the content of the specified file.
+     *
+     * @method file_get
+     * @param string user
+     * @param string type
+     * @param string name
+     * @param boolean is_main_directory
+     */
     public function file_get($user, $name)
     {
         if ($this->check_string($user) == false
-         || $this->check_string($name) == false)
+                                       || $this->check_string($name) == false)
         {
             $this->error("user '$user' or/and name '$name' field are invalid!");
             return false;
@@ -1810,14 +1810,14 @@ class Zeek extends ZeekOutput {
     }
 
 
-/**
- * Set the content of the specified file.
- *
- * @method file_set
- * @param string user
- * @param string name
- * @param string data
- */
+    /**
+     * Set the content of the specified file.
+     *
+     * @method file_set
+     * @param string user
+     * @param string name
+     * @param string data
+     */
     public function file_set($user, $name, $data)
     {
 	    $zlib = $this->zlib;
@@ -1853,11 +1853,11 @@ class Zeek extends ZeekOutput {
 	    return $status;
     }
 
-/**
- * Method that instantiate all the plugins.
- *
- * @method plugins_init
- */
+    /**
+     * Method that instantiate all the plugins.
+     *
+     * @method plugins_init
+     */
     public function plugins_init()
     {
         $this->plugins_list = array();
@@ -1893,12 +1893,12 @@ class Zeek extends ZeekOutput {
         }
     }
 
-/**
- * Method that returns the list of plugins.
- *
- * @method plugins_get_list
- * @param string type of the plugin
- */
+    /**
+     * Method that returns the list of plugins.
+     *
+     * @method plugins_get_list
+     * @param string type of the plugin
+     */
     public function plugins_get_list($type)
     {
         if (array_key_exists($type, $this->plugins_list))
@@ -1918,12 +1918,12 @@ class Zeek extends ZeekOutput {
         return array();
     }
 
-/**
- * Method that returns the decodes options if the plugins exist.
- *
- * @method plugins_are_valid
- * @param json name of the plugin
- */
+    /**
+     * Method that returns the decodes options if the plugins exist.
+     *
+     * @method plugins_are_valid
+     * @param json name of the plugin
+     */
     public function plugins_are_valid($options)
     {
         // we check that the json is well formated
@@ -1945,8 +1945,8 @@ class Zeek extends ZeekOutput {
         {
             if (array_key_exists($name, $project_options)
                 && is_bool($project_options[$name])
-                && is_bool($status))
-                    continue;
+                    && is_bool($status))
+                        continue;
 
             $this->error(
                 "Unknown '$name' plugin or invalid status '$status'!");
@@ -1957,15 +1957,15 @@ class Zeek extends ZeekOutput {
         return $decode_options;
     }
 
- /**
-  * Method that replace inside a string <zeek></zeek> content with
-  * data stored in databases.
-  *
-  * @method on_input
-  * @param string input to zeekify
-  *
-  * @return string zeekified output
-  */
+    /**
+     * Method that replace inside a string <zeek></zeek> content with
+     * data stored in databases.
+     *
+     * @method on_input
+     * @param string input to zeekify
+     *
+     * @return string zeekified output
+     */
     public function zeekify($input)
     {
         $zlib = $this->zlib;
@@ -2051,27 +2051,27 @@ class Zeek extends ZeekOutput {
         return $options;
     }
 
-  /**
-   * Method to replace input string with databases content depending on the
-   * options.
-   *
-   * Here are the list of options possible :
-   *  - table: name of the table used
-   *  - offset : offset of the element
-   *  - size: nb of elements
-   *  - sort_by: which element is used for sorting
-   *
-   * Inside the input, use  '{{...}}' symbol to get the attributes value
-   *
-   * @param string input
-   * @param array options
-   * @return string output
-   */
+    /**
+     * Method to replace input string with databases content depending on the
+     * options.
+     *
+     * Here are the list of options possible :
+     *  - table: name of the table used
+     *  - offset : offset of the element
+     *  - size: nb of elements
+     *  - sort_by: which element is used for sorting
+     *
+     * Inside the input, use  '{{...}}' symbol to get the attributes value
+     *
+     * @param string input
+     * @param array options
+     * @return string output
+     */
     private function zeekify_one_by_one($input, $options)
     {
         $zlib = $this->zlib;
 
-        // we check mandatory option : table
+        // we check mandatory option : name
         if (array_key_exists('name', $options) == false)
             return "Zeek name should be defined!";
 
@@ -2138,13 +2138,13 @@ class Zeek extends ZeekOutput {
         $result = $zlib->value_get(
             $this->project_id, $table_name, $sort, $size, $offset);
 
-	// if no value : we return an empty array
-	if ($result == NULL)
+	    // if no value : we return an empty string
+	    if ($result == NULL)
             return "";
 
         $output = "";
 
-	while ($row = $zlib->value_fetch($result))
+	    while ($row = $zlib->value_fetch($result))
         {
             $offset = 0;
 
@@ -2182,12 +2182,138 @@ class Zeek extends ZeekOutput {
     }
 
 
- /**
-  * Method to zeekify all the code & deploy the test platform
-  *
-  * @method test
-  * @params string options associated
-  */
+
+    /**
+     * Method to replace input string with contents data depending on the
+     * options.
+     *
+     * Here are the list of options possible :
+     *  - contents: name of the directory used
+     *  - depth : recursive depth (0 by default)
+     *  - regex : filter elements using regex
+     *  - sort_by: mime/size/path/directory/extension/filename/name{++/--}
+     *  - offset : offset of the element
+     *  - size: nb of elements
+     *
+     * Here is the format proposed for the contents :
+     *  <zeek contents="directory_name" depth="2">
+     *    <div="{{directory_name}}>
+     *      <zeek_contents><img src="{{name}}"></zeek_contents>
+     *    </div>
+     *  </zeek>
+     *
+     * Inside the input, use  '{{...}}' symbol to get the attributes value.
+     * Use variables $0, $1 to display regex matches
+     *
+     * @method zeekify_contents_one_by_one
+     * @param string input
+     * @param array options
+     * @return string output
+     */
+    private function zeekify_contents_one_by_one($input, $options)
+    {
+        $zlib = $this->zlib;
+
+        // we check mandatory option : contents
+        if (array_key_exists('contents', $options) == false)
+            return "Zeek contents name should be defined!";
+
+        $directory_name = $options['contents'];
+
+        if (is_string($directory_name) == false)
+            return "Invalid zeek contents name '$directory_name'!";
+
+        // we check the optional option : depth
+        $depth = array_key_exists('depth', $options) ? $options['depth'] : null;
+
+        if ($depth != null && is_numeric($depth) == false)
+            return "Invalid depth option '$depth': expect an integer!";
+
+        // we check the optional option : regex
+        $regex = array_key_exists('regex', $options) ? $options['regex'] : null;
+
+        if ($regex != null && is_string($regex) == false)
+            return "Invalid regex option '$regex': expect a valid regex!";
+
+        // we get the list of contents
+        $contents_list = $this->contents_get_list($this->project_id, $directory_name, $depth);
+
+        if ($contents_list == false)
+            return "Zeek contents name '$directory_name' not found!";
+
+	    // if no value found : we return an empty string
+	    if (count($contents_list) == 0)
+            return "";
+
+        // we check the optional option : sort_by
+        $sort_by = array_key_exists('sort_by', $options) ? $options['sort_by'] : null;
+
+        if ($sort_by != null && in_array($sort_by, array(
+            "mime", "size", "path", "directory", "extension", "filename", "name")) == false)
+                return "Invalid sort_by option '$sort_by': expect valid params!";
+
+        // we check the optional option : offset
+        $offset = array_key_exists('offset', $options) ? $options['offset'] : null;
+
+        if ($offset != null && is_numeric($offset) == false)
+            return "Invalid offset option '$offset': expect an integer!";
+
+        // we check the optional option : size
+        $size = array_key_exists('size', $options) ? $options['size'] : null;
+
+        if ($size != null && is_numeric($size) == false)
+            return "Invalid size option '$size': expect an integer!";
+
+        if ($sort_by == null && ($offset != null || $size != null))
+            return "size & offset option can be defined if 'sort_by' is defined!";
+
+        // we handled sort by attributes
+        if ($sort_by != null)
+        {
+            $sorted_list = array();
+
+            $contents_list = $sorted_list;
+        }
+
+        $output = "";
+
+	    while ($contents_list)
+        {
+            $offset = 0;
+
+            // we check that all attributes in the input are valid
+            while ($offset + 2 < strlen($input))
+            {
+                $start_idx = strpos($input, "{{", $offset);
+                $end_idx = strpos($input, "}}", $offset + 2);
+
+                if ($end_idx == 0)
+                    break;
+
+                $output .= substr($input, $offset, $start_idx - $offset);
+
+                if ($start_idx >= $offset && $end_idx + 2 > $offset)
+                {
+                    $attribute_name = substr($input, $start_idx + 2,
+                                             $end_idx - $start_idx - 2);
+
+                    // REPLACE BY THE CONTENT FOUND
+
+                    $offset += $end_idx + 2 - $offset;
+                }
+            }
+
+            $output .= substr($input, $offset, strlen($input) - $offset);
+        }
+    }
+
+
+    /**
+     * Method to zeekify all the code & deploy the test platform
+     *
+     * @method test
+     * @params string options associated
+     */
     public function test($options)
     {
         // we get the user test options
@@ -2211,8 +2337,8 @@ class Zeek extends ZeekOutput {
         foreach ($decode_options as $option => $is_activated)
         {
             if ($is_activated == false
-                || (is_string($is_activated) && $is_activated === "disabled"))
-                continue;
+                              || (is_string($is_activated) && $is_activated === "disabled"))
+                                  continue;
 
             $test_with_options = true;
         }
@@ -2221,10 +2347,10 @@ class Zeek extends ZeekOutput {
         {
             // we deploy the files & apply all the data plugins
             if ($this->deploy_files(
-               $this->test_get_directory(), $decode_options) == false)
+                $this->test_get_directory(), $decode_options) == false)
                     return false;
 
-	    $this->output_json(array(
+	        $this->output_json(array(
                 'href' => $this->test_get_relative_directory()));
 
             return true;
@@ -2235,66 +2361,66 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
- /**
-  * Method to get actual user test directory relative path
-  *
-  * @method test_get_relative_directory
-  */
+    /**
+     * Method to get actual user test directory relative path
+     *
+     * @method test_get_relative_directory
+     */
     private function test_get_relative_directory()
     {
         return 'projects/' . $this->project_id
-	        . '/TEST/' . $_SESSION['login'];
+	         . '/TEST/' . $_SESSION['login'];
     }
 
- /**
-  * Method to get actual user test directory absolute path
-  *
-  * @method test_get_directory
-  */
+    /**
+     * Method to get actual user test directory absolute path
+     *
+     * @method test_get_directory
+     */
     private function test_get_directory()
     {
         return $this->global_path . $this->test_get_relative_directory();
     }
 
- /**
-  * Method to move file from/to test directory
-  *
-  * @method test_delete_file
-  */
+    /**
+     * Method to move file from/to test directory
+     *
+     * @method test_delete_file
+     */
     private function test_move_file($src, $dst)
     {
         $test = $this->test_get_directory();
 
         if (file_exists($test) == false
-         || file_exists("$test/$src") == false)
-            return true;
+                               || file_exists("$test/$src") == false)
+                                   return true;
 
-	return $this->zlib->file_move("$test/$src", "$test/$dst");
+	    return $this->zlib->file_move("$test/$src", "$test/$dst");
     }
 
- /**
-  * Method to delete file from test directory
-  *
-  * @method test_delete_file
-  */
+    /**
+     * Method to delete file from test directory
+     *
+     * @method test_delete_file
+     */
     private function test_delete_file($filepath)
     {
         $test = $this->test_get_directory();
 
         if (file_exists($test) == false
-         || file_exists("$test/$filepath") == false)
-            return true;
+                               || file_exists("$test/$filepath") == false)
+                                   return true;
 
-	return $this->zlib->file_remove("$test/$filepath");
+	    return $this->zlib->file_remove("$test/$filepath");
     }
 
-/**
- * Method to call to deploy the project on his final directory
- *
- * @method deploy
- * @param string destination to deploy files
- * @param string options for the deployment
- */
+    /**
+     * Method to call to deploy the project on his final directory
+     *
+     * @method deploy
+     * @param string destination to deploy files
+     * @param string options for the deployment
+     */
     public function deploy($dst, $options)
     {
         // we get the project deploy options
@@ -2320,17 +2446,17 @@ class Zeek extends ZeekOutput {
         if ($this->deploy_files($dst, $decode_options) == false)
             return false;
 
-	$this->success("Successfully deployed!");
+	    $this->success("Successfully deployed!");
         return true;
     }
 
-/**
- * Method to call to deploy the project on the specified directory
- *
- * @method deploy_files
- * @param string destination to copy the files
- * @param hash options to activate for each file
- */
+    /**
+     * Method to call to deploy the project on the specified directory
+     *
+     * @method deploy_files
+     * @param string destination to copy the files
+     * @param hash options to activate for each file
+     */
     public function deploy_files($destination, $options)
     {
         $zlib = $this->zlib;
@@ -2346,8 +2472,8 @@ class Zeek extends ZeekOutput {
         // we clean all files in the destination
         // but not the zeek directory
         if ($zlib->directory_remove(
-                $destination, $this->global_path) == false)
-            return false;
+            $destination, $this->global_path) == false)
+                return false;
 
         // we start from clean
         if ($zlib->directory_create($destination) == false)
@@ -2363,13 +2489,13 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Method to call to deploy one file
- *
- * @method deploy_one_file
- * @param file details
- * @param hash options to activate for each file
- */
+    /**
+     * Method to call to deploy one file
+     *
+     * @method deploy_one_file
+     * @param file details
+     * @param hash options to activate for each file
+     */
     public function deploy_one_file($destination, $file, $options)
     {
         $zlib = $this->zlib;
@@ -2378,8 +2504,8 @@ class Zeek extends ZeekOutput {
         // check if the file directory exist
         if ($file['in_main_directory'] == false
             && $zlib->directory_create(
-            $destination . '/' . $file['type']) == false)
-                return false;
+                $destination . '/' . $file['type']) == false)
+                    return false;
 
         // we get the file content
         $input = $zlib->file_get($project_id,
@@ -2426,11 +2552,11 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Return the option wanted or an error if it is invalid or not already existing.
- *
- * @method option_get_plugins
- */
+    /**
+     * Return the option wanted or an error if it is invalid or not already existing.
+     *
+     * @method option_get_plugins
+     */
     public function option_get_plugins()
     {
         $project_options = $this->zlib->project_get_plugins($this->project_id);
@@ -2458,11 +2584,11 @@ class Zeek extends ZeekOutput {
     }
 
 
-/**
- * Store the new plugin option wanted or an error if it is invalid.
- *
- * @method option_set_plugins
- */
+    /**
+     * Store the new plugin option wanted or an error if it is invalid.
+     *
+     * @method option_set_plugins
+     */
     public function option_set_plugins($values)
     {
         if ($this->demo_stop())
@@ -2523,12 +2649,12 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Return the option wanted or an error if it is invalid or not already existing.
- *
- * @method option_get
- * @params string option name
- */
+    /**
+     * Return the option wanted or an error if it is invalid or not already existing.
+     *
+     * @method option_get
+     * @params string option name
+     */
     public function option_get($name)
     {
         if ($this->check_string_and_size($name, 25) == false)
@@ -2550,13 +2676,13 @@ class Zeek extends ZeekOutput {
     }
 
 
-/**
- * Store the new option created or modified an option that is already existing.
- *
- * @method option_set
- * @params string option name
- * @params array values associated to the name
- */
+    /**
+     * Store the new option created or modified an option that is already existing.
+     *
+     * @method option_set
+     * @params string option name
+     * @params array values associated to the name
+     */
     public function option_set($name, $values)
     {
         if ($this->demo_stop())
@@ -2592,7 +2718,7 @@ class Zeek extends ZeekOutput {
         $options = $this->zlib->option_get($this->project_id);
 
         if (is_array($options) == false
-            || array_key_exists('plugins', $options) == false)
+                               || array_key_exists('plugins', $options) == false)
         {
             $this->error("Impossible to get list of plugins!");
             return false;
@@ -2601,11 +2727,11 @@ class Zeek extends ZeekOutput {
         return $options['plugins'];
     }
 
-/**
- * Check if project structure is enabled or disabled.
- *
- * @method structure_is_enabled
- */
+    /**
+     * Check if project structure is enabled or disabled.
+     *
+     * @method structure_is_enabled
+     */
     public function structure_is_enabled()
     {
         $plugins = $this->structure_get_plugins();
@@ -2619,13 +2745,13 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Enable or disable project structure.
- *
- * @param boolean is_activated
- *
- * @method structure_enable
- */
+    /**
+     * Enable or disable project structure.
+     *
+     * @param boolean is_activated
+     *
+     * @method structure_enable
+     */
     public function structure_enable($is_enabled)
     {
         if (is_bool($is_enabled) == false)
@@ -2661,13 +2787,13 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Send the project structure.
- *
- * @param boolean expert mode
- *
- * @method structure_get_list
- */
+    /**
+     * Send the project structure.
+     *
+     * @param boolean expert mode
+     *
+     * @method structure_get_list
+     */
     public function structure_get_list($expert_mode)
     {
         if ($this->structure_is_enabled() == false)
@@ -2685,44 +2811,44 @@ class Zeek extends ZeekOutput {
             }
         }
 
-	$this->output_json(array('list' => $result));
-	return true;
+	    $this->output_json(array('list' => $result));
+	    return true;
     }
 
 
-/**
- * Send the project structure.
- *
- * @method structure_get
- */
+    /**
+     * Send the project structure.
+     *
+     * @method structure_get
+     */
     public function structure_get()
     {
         if ($this->structure_is_enabled() == false)
             return false;
 
         // we get the structure project
-	$structure = $this->zlib->structure_get($this->project_id,
+	    $structure = $this->zlib->structure_get($this->project_id,
                                                 $this->project_name);
 
         // we go through all domains
-	foreach ($structure as $domain => $attribute)
-	{
-	    // we go through all attribute of each domain
-	    foreach ($attribute as $name => $options)
+	    foreach ($structure as $domain => $attribute)
 	    {
+	        // we go through all attribute of each domain
+	        foreach ($attribute as $name => $options)
+	        {
                 $db_type = $options['db_type'];
 
-		// we get the css options
-		$css_options = $this->type_complex[$db_type];
+		        // we get the css options
+		        $css_options = $this->type_complex[$db_type];
 
-		// we set the options with the db type
-		$css_options['db_type'] = $db_type;
+		        // we set the options with the db type
+		        $css_options['db_type'] = $db_type;
 
-		if (array_key_exists('sp_type', $options))
+		        if (array_key_exists('sp_type', $options))
                     $css_options['sp_type'] = $options['sp_type'];
 
 
-		if (array_key_exists('db_size', $options))
+		        if (array_key_exists('db_size', $options))
                 {
                     $css_options['db_size'] = $options['db_size'];
 
@@ -2732,38 +2858,38 @@ class Zeek extends ZeekOutput {
                     }
                 }
 
-		// we set the css options before sending the data
-		$structure[$domain][$name] = $css_options;
+		        // we set the css options before sending the data
+		        $structure[$domain][$name] = $css_options;
+	        }
 	    }
-	}
 
-	$this->output_json(array('structure' => $structure));
+	    $this->output_json(array('structure' => $structure));
 
-	return true;
+	    return true;
     }
 
 
-/**
- * Set a new project structure.
- *
- * We compare to the previous structure and process the change.
- *
- * @method structure_set
- * @param array structure to set
- *
- * It has following behavior :
- *  {
- *    structure_name: {
- *         attribute_name: {
- *             sp_type: SP_TYPE, # used in simple mode
- *             db_type: DB_TYPE, # used in expert mode
- *             db_size: DB_SIZE,
- *         },
- *         ...
- *    },
- *    ...
- *  }
- */
+    /**
+     * Set a new project structure.
+     *
+     * We compare to the previous structure and process the change.
+     *
+     * @method structure_set
+     * @param array structure to set
+     *
+     * It has following behavior :
+     *  {
+     *    structure_name: {
+     *         attribute_name: {
+     *             sp_type: SP_TYPE, # used in simple mode
+     *             db_type: DB_TYPE, # used in expert mode
+     *             db_size: DB_SIZE,
+     *         },
+     *         ...
+     *    },
+     *    ...
+     *  }
+     */
     public function structure_set($new_structure)
     {
         if ($this->structure_is_enabled() == false)
@@ -2846,7 +2972,7 @@ class Zeek extends ZeekOutput {
                 }
 
                 if (array_key_exists(
-                          $value['db_type'], $this->type_complex) == false)
+                    $value['db_type'], $this->type_complex) == false)
                 {
                     $this->error("$table_name : invalid type in '$attribute'!");
                     return false;
@@ -2875,42 +3001,42 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Return all asked data in JSON format to client side.
- *
- * @method data_get
- * @param string name of the data expected
- * @param integer offset
- * @param integer number of elements to get
- */
+    /**
+     * Return all asked data in JSON format to client side.
+     *
+     * @method data_get
+     * @param string name of the data expected
+     * @param integer offset
+     * @param integer number of elements to get
+     */
     public function data_get($name, $offset, $size)
     {
         if (isset($name) == false) {
             $this->error("Expecting valid table name!");
             return false;
-	}
+	    }
 
         if (isset($offset) && is_numeric($offset) == false) {
             $this->error("Expecting valid offset!");
             return false;
-	}
+	    }
 
         if (isset($size) && is_numeric($size) == false) {
             $this->error("Expecting valid size!");
             return false;
-	}
+	    }
 
         $result = $this->zlib->value_get(
             $this->project_id, $name, array('id' => 'DEC'), $size, $offset);
 
-	// if no value : we return an empty array
-	if ($result == NULL)
-	    return $this->output_json(array());
+	    // if no value : we return an empty array
+	    if ($result == NULL)
+	        return $this->output_json(array());
 
-	// otherwise we store the values in an array
+	    // otherwise we store the values in an array
         $response = array();
 
-	while ($row = $this->zlib->value_fetch($result)) {
+	    while ($row = $this->zlib->value_fetch($result)) {
             unset($row->project_id);
             array_push($response, $row);
         }
@@ -2919,12 +3045,12 @@ class Zeek extends ZeekOutput {
         return $this->output_json($response);
     }
 
-/**
- * Return the elements with the format expected.
- *
- * @method data_get_tables
- * @param hash params received
- */
+    /**
+     * Return the elements with the format expected.
+     *
+     * @method data_get_tables
+     * @param hash params received
+     */
     public function data_get_tables($params)
     {
         /* we get the name of the table */
@@ -2961,12 +3087,12 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Return the number of elements.
- *
- * @method data_get_number
- * @param string name of the data expected
- */
+    /**
+     * Return the number of elements.
+     *
+     * @method data_get_number
+     * @param string name of the data expected
+     */
     public function data_get_number($name)
     {
         if (!(isset($name))) {
@@ -2979,13 +3105,13 @@ class Zeek extends ZeekOutput {
     }
 
 
-/**
- * Return success message or error.
- *
- * @method data_set
- * @param string name of the data expected
- * @param hash values of the data
- */
+    /**
+     * Return success message or error.
+     *
+     * @method data_set
+     * @param string name of the data expected
+     * @param hash values of the data
+     */
     public function data_set($type, $values_str)
     {
         if (!(isset($type) && isset($values_str))) {
@@ -2993,11 +3119,11 @@ class Zeek extends ZeekOutput {
             return true;
         }
 
-	$params = array();
-	parse_str($values_str, $params);
+	    $params = array();
+	    parse_str($values_str, $params);
 
         if ($this->zlib->value_insert(
-                 $this->project_id, $type, $params) == false) {
+            $this->project_id, $type, $params) == false) {
             return false;
         }
 
@@ -3008,14 +3134,14 @@ class Zeek extends ZeekOutput {
         return true;
     }
 
-/**
- * Return success message or error.
- *
- * @method data_update
- * @param string name of the data expected
- * @param integer id of the data to update
- * @param hash values of the data to update
- */
+    /**
+     * Return success message or error.
+     *
+     * @method data_update
+     * @param string name of the data expected
+     * @param integer id of the data to update
+     * @param hash values of the data to update
+     */
     public function data_update($name, $id, $values_str)
     {
         if (!(isset($name) && isset($id) && isset($values_str))) {
@@ -3023,8 +3149,8 @@ class Zeek extends ZeekOutput {
             return false;
         }
 
-	$params = array();
-	parse_str($values_str, $params);
+	    $params = array();
+	    parse_str($values_str, $params);
 
         if ($this->zlib->value_update($this->project_id, $name, $id, $params)) {
             $this->success("Value correctly updated!");
@@ -3034,13 +3160,13 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Return success message or error.
- *
- * @method data_delete
- * @param string name of the data expected
- * @param integer id of the data to delete
- */
+    /**
+     * Return success message or error.
+     *
+     * @method data_delete
+     * @param string name of the data expected
+     * @param integer id of the data to delete
+     */
     public function data_delete($name, $id)
     {
         if (!(isset($name) and isset($id))) {
@@ -3056,22 +3182,22 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Return success message or error.
- *
- * @method data_clean_all
- * @param string name of the data expected
- */
+    /**
+     * Return success message or error.
+     *
+     * @method data_clean_all
+     * @param string name of the data expected
+     */
     public function data_clean_all()
     {
     }
 
-/**
- * Return all asked data in JSON format to client side.
- *
- * @method get_data
- * @param string
- */
+    /**
+     * Return all asked data in JSON format to client side.
+     *
+     * @method get_data
+     * @param string
+     */
     public function get_data($type)
     {
         $zlib = $this->zlib;
@@ -3108,22 +3234,22 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Launch jquery redirection.
- *
- * @method redirect
- * @param string where to redirect
- */
+    /**
+     * Launch jquery redirection.
+     *
+     * @method redirect
+     * @param string where to redirect
+     */
     public function redirect($url)
     {
         $this->output_json(array("redirect" => $url));
     }
 
-/**
- * Return false with a message error in case of demo option
- *
- * @method demo_stop
- */
+    /**
+     * Return false with a message error in case of demo option
+     *
+     * @method demo_stop
+     */
     public function demo_stop()
     {
         if ($this->is_demo)
@@ -3136,13 +3262,13 @@ class Zeek extends ZeekOutput {
     }
 
 
- /**
- * Return true if the string is not empty and with a size below
- * maximum expected and respect [A-Za-z0-9_] otherwise return false.
- *
- * @method check_string_and_size
- * @param string string to check
- */
+    /**
+     * Return true if the string is not empty and with a size below
+     * maximum expected and respect [A-Za-z0-9_] otherwise return false.
+     *
+     * @method check_string_and_size
+     * @param string string to check
+     */
     public function check_input($input)
     {
         if (preg_match("/^[a-zA-Z0-9_]{1,25}\z/", $input) == 1)
@@ -3154,29 +3280,29 @@ class Zeek extends ZeekOutput {
         return false;
     }
 
-/**
- * Return true if the string is not empty otherwise return false.
- *
- * @method check_string
- * @param string string to check
- */
+    /**
+     * Return true if the string is not empty otherwise return false.
+     *
+     * @method check_string
+     * @param string string to check
+     */
     private function check_string($input)
     {
         return isset($input) and $input != '';
     }
 
-/**
- * Return true if the string is not empty and with a size below
- * maximum expected otherwise return false.
- *
- * @method check_string_and_size
- * @param string string to check
- * @param integer maximum size
- */
+    /**
+     * Return true if the string is not empty and with a size below
+     * maximum expected otherwise return false.
+     *
+     * @method check_string_and_size
+     * @param string string to check
+     * @param integer maximum size
+     */
     private function check_string_and_size($input, $size)
     {
         return isset($input) and $input != ''
-           and strlen($input) <= $size;
+        and strlen($input) <= $size;
     }
 }
 ?>
